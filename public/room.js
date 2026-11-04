@@ -90,6 +90,8 @@ window.Room = (() => {
     closeBtn = document.getElementById("room-close");
     ctx = cv.getContext("2d");
     closeBtn.addEventListener("click", close);
+    document.getElementById("shrine-close").addEventListener("click", closeShrine);
+    document.getElementById("shrine-bow").addEventListener("click", bowAtShrine);
     document.getElementById("paper-prev").addEventListener("click", () => { if (bookPage > 0) { bookPage--; renderBookPage(); } });
     document.getElementById("paper-next").addEventListener("click", () => { if (bookPage < bookPages.length - 1) { bookPage++; renderBookPage(); } });
     document.getElementById("letter-close").addEventListener("click", () => {
@@ -139,6 +141,7 @@ window.Room = (() => {
   }
   function close() {
     cancelAnimationFrame(raf); raf = null;
+    closeShrine();
     document.getElementById("room-letter").hidden = true;
     root.hidden = true;
     const cb = onClose; onClose = null;
@@ -224,13 +227,55 @@ window.Room = (() => {
       else say(bookFirst ? `Đọc đến hết, lòng bạn lắng xuống. (Đã đọc ${n}/${books.length} cuốn.)` : "Bạn đọc lại thong thả. Có một câu lần trước đọc lướt qua, lần này mới dừng lại.");
     };
   }
+  // Close-up of the Buddha altar: touch the altar in the room to come near, then bow.
+  let shrineRaf = null, shrineT0 = 0, shrineBowed = false;
+  function openShrine() {
+    const box = document.getElementById("room-shrine"), cv2 = document.getElementById("shrine-canvas");
+    box.hidden = false; shrineT0 = performance.now(); shrineBowed = false;
+    document.getElementById("shrine-bow").textContent = "Đảnh lễ ba lần";
+    document.getElementById("shrine-caption").textContent = "Đức Phật Thích Ca Mâu Ni ngồi kiết già trên tòa cỏ cát tường, tay phải chạm đất, tay trái ngửa trong lòng. Hai bên là đèn treo và ánh nến. Bạn đứng lặng một lát trước khi đảnh lễ.";
+    const g2 = cv2.getContext("2d");
+    const loop = (now) => {
+      const r = cv2.getBoundingClientRect(), dpr = Math.min(window.devicePixelRatio || 1, 2);
+      if (cv2.width !== Math.round(r.width * dpr) || cv2.height !== Math.round(r.height * dpr)) { cv2.width = Math.round(r.width * dpr); cv2.height = Math.round(r.height * dpr); }
+      const W2 = cv2.width, H2 = cv2.height, t = (now - shrineT0) / 1000;
+      g2.setTransform(1, 0, 0, 1, 0, 0);
+      const bg = g2.createLinearGradient(0, 0, 0, H2); bg.addColorStop(0, "#1b130c"); bg.addColorStop(1, "#0b0805");
+      g2.fillStyle = bg; g2.fillRect(0, 0, W2, H2);
+      const sc = Math.min(W2 / 460, H2 / 640);
+      const baseY = H2 * 0.8;
+      // altar table and cloth
+      g2.fillStyle = "#2a1d12"; g2.fillRect(0, baseY + 8 * sc, W2, H2 - baseY);
+      g2.fillStyle = "#b8862a"; g2.fillRect(W2 / 2 - 230 * sc, baseY + 6 * sc, 460 * sc, 14 * sc);
+      Buddha.lampStand(g2, W2 / 2 - 215 * sc, baseY + 6 * sc, sc * 0.9, t, 1);
+      Buddha.lampStand(g2, W2 / 2 + 215 * sc, baseY + 6 * sc, sc * 0.9, t, -1);
+      Buddha.draw(g2, W2 / 2, baseY, sc * 0.95, t);
+      // flowers and incense in front
+      for (const [fx, fy, fc] of [[-120, 26, "#f2b84a"], [-98, 22, "#f6e6c0"], [-76, 28, "#e8845a"], [96, 24, "#f6e6c0"], [118, 28, "#f2b84a"], [140, 22, "#e8845a"]]) { g2.fillStyle = fc; g2.beginPath(); g2.arc(W2 / 2 + fx * sc, baseY + fy * sc, 9 * sc, 0, 7); g2.fill(); }
+      g2.fillStyle = "#5a3a1a"; g2.beginPath(); g2.ellipse(W2 / 2, baseY + 34 * sc, 26 * sc, 8 * sc, 0, 0, 7); g2.fill();
+      g2.strokeStyle = "#8a6a3a"; g2.lineWidth = 2 * sc; for (const k of [-8, 0, 8]) { g2.beginPath(); g2.moveTo(W2 / 2 + k * sc, baseY + 30 * sc); g2.lineTo(W2 / 2 + k * 1.4 * sc, baseY - 6 * sc); g2.stroke(); }
+      g2.strokeStyle = "rgba(230,230,220,0.2)"; g2.lineWidth = 2 * sc; g2.beginPath();
+      for (let q = 0; q < 16; q++) { const yy = baseY - 8 * sc - q * 9 * sc, xx = W2 / 2 + Math.sin(t * 1.3 + q * 0.5) * q * 1.6 * sc; q ? g2.lineTo(xx, yy) : g2.moveTo(xx, yy); }
+      g2.stroke();
+      const v = g2.createRadialGradient(W2 / 2, H2 * 0.45, H2 * 0.2, W2 / 2, H2 * 0.45, H2 * 0.8);
+      v.addColorStop(0, "rgba(0,0,0,0)"); v.addColorStop(1, "rgba(0,0,0,0.55)");
+      g2.fillStyle = v; g2.fillRect(0, 0, W2, H2);
+      shrineRaf = requestAnimationFrame(loop);
+    };
+    cancelAnimationFrame(shrineRaf); shrineRaf = requestAnimationFrame(loop);
+  }
+  function closeShrine() { cancelAnimationFrame(shrineRaf); shrineRaf = null; document.getElementById("room-shrine").hidden = true; }
+  function bowAtShrine() {
+    const first = onRead ? onRead("k_altar") : false;
+    document.getElementById("shrine-caption").textContent = !shrineBowed && first
+      ? "Bạn chắp tay, cúi đầu ba lần: “Namo tassa bhagavato arahato sammāsambuddhassa”, nghĩa là kính lễ Đức Thế Tôn, bậc A-la-hán, bậc Chánh Đẳng Giác. Lòng bạn lặng đi một chút."
+      : "Bạn chắp tay đảnh lễ thêm một lần. Khói nhang vẫn thẳng, ngọn nến vẫn nhỏ và đều.";
+    shrineBowed = true;
+    document.getElementById("shrine-bow").textContent = "Đảnh lễ thêm";
+  }
   function examineHermit(id) {
     if (id.startsWith("book:")) { const b = books[Number(id.slice(5))]; if (b) showBook(b); return; }
-    if (id === "altar") {
-      const first = onRead ? onRead("k_altar") : false;
-      say(first ? HTEXT.altarFirst : HTEXT.altarAgain);
-      return;
-    }
+    if (id === "altar") { openShrine(); return; }
     say(HTEXT[id]);
   }
   function examine(id) {
@@ -300,24 +345,8 @@ window.Room = (() => {
     ctx.fillStyle = "#33261a"; ctx.fillRect(14 + ax, 440 + ay, 146, 10); ctx.fillRect(24 + ax, 450 + ay, 8, 66); ctx.fillRect(142 + ax, 450 + ay, 8, 66);
     ctx.fillStyle = "#b8862a"; ctx.fillRect(18 + ax, 436 + ay, 138, 8);                    // yellow altar cloth
     ctx.fillStyle = "#98701f"; ctx.fillRect(18 + ax, 444 + ay, 138, 3);
-    // lotus pedestal
-    ctx.fillStyle = "#c98a8a";
-    for (let k = -3; k <= 3; k++) { ctx.beginPath(); ctx.ellipse(86 + k * 10 + ax, 430 + ay - Math.abs(k) * 0.8, 7, 5, k * 0.18, 0, 7); ctx.fill(); }
-    ctx.fillStyle = "#e0a0a0";
-    for (let k = -2; k <= 2; k++) { ctx.beginPath(); ctx.ellipse(86 + k * 11 + ax, 425 + ay, 6, 4.2, k * 0.2, 0, 7); ctx.fill(); }
-    // the image: crossed legs, robe, bare right shoulder, hands in lap, head with ushnisha and flame
-    ctx.fillStyle = "#d2a23c";
-    ctx.beginPath(); ctx.ellipse(86 + ax, 417 + ay, 30, 9, 0, 0, 7); ctx.fill();            // folded legs
-    ctx.beginPath(); ctx.moveTo(62 + ax, 414 + ay); ctx.quadraticCurveTo(64 + ax, 372 + ay, 86 + ax, 364 + ay); ctx.quadraticCurveTo(108 + ax, 372 + ay, 110 + ax, 414 + ay); ctx.closePath(); ctx.fill(); // torso
-    ctx.fillStyle = "#e0b552";
-    ctx.beginPath(); ctx.moveTo(86 + ax, 366 + ay); ctx.quadraticCurveTo(110 + ax, 372 + ay, 110 + ax, 414 + ay); ctx.lineTo(78 + ax, 414 + ay); ctx.quadraticCurveTo(70 + ax, 392 + ay, 76 + ax, 372 + ay); ctx.closePath(); ctx.fill(); // robe over left shoulder
-    ctx.fillStyle = "#b88728"; ctx.beginPath(); ctx.ellipse(86 + ax, 408 + ay, 11, 4, 0, 0, 7); ctx.fill(); // hands in lap
-    ctx.fillStyle = "#d9ab45"; ctx.beginPath(); ctx.arc(86 + ax, 354 + ay, 11, 0, 7); ctx.fill();            // head
-    ctx.fillStyle = "#b88728"; ctx.beginPath(); ctx.arc(86 + ax, 345 + ay, 6, Math.PI, 0); ctx.fill();       // ushnisha
-    ctx.fillStyle = `rgba(255,205,100,${0.85 * flick})`; ctx.beginPath(); ctx.moveTo(86 + ax, 332 + ay); ctx.quadraticCurveTo(82 + ax, 340 + ay, 86 + ax, 344 + ay); ctx.quadraticCurveTo(90 + ax, 340 + ay, 86 + ax, 332 + ay); ctx.fill(); // flame finial
-    ctx.fillStyle = "#6a4a12"; ctx.fillRect(82 + ax, 353 + ay, 2, 2); ctx.fillRect(89 + ax, 353 + ay, 2, 2); ctx.fillRect(84 + ax, 358 + ay, 5, 1.4); // eyes and mouth
-    // halo
-    ctx.strokeStyle = "rgba(240,200,100,0.35)"; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(86 + ax, 358 + ay, 24, 0, 7); ctx.stroke();
+    // the image itself (same drawing as the close-up, smaller)
+    Buddha.draw(ctx, 93 + ax0, 436 + ay, 0.235, time);
     // two candles
     for (const cx2 of [34, 138]) {
       ctx.fillStyle = "#e8dcc0"; ctx.fillRect(cx2 + ax - 3, 416 + ay, 6, 20);

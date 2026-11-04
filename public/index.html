@@ -133,6 +133,14 @@
     <canvas id="room-canvas" class="room-canvas"></canvas>
     <button id="room-close" class="pill room-close" type="button">Ra ngoài</button>
     <p id="room-caption" class="room-caption"></p>
+    <div id="room-shrine" class="room-shrine" hidden>
+      <canvas id="shrine-canvas" class="shrine-canvas"></canvas>
+      <p id="shrine-caption" class="room-caption shrine-caption"></p>
+      <div class="shrine-actions">
+        <button id="shrine-bow" class="primary" type="button">Đảnh lễ ba lần</button>
+        <button id="shrine-close" class="pill" type="button">Quay lại</button>
+      </div>
+    </div>
     <div id="room-letter" class="room-letter" hidden>
       <article class="paper" aria-live="polite">
         <h3 id="letter-title" class="paper-title"></h3>
@@ -177,6 +185,7 @@
 <script src="story.js"></script>
 <script src="audio.js"></script>
 <script src="world.js"></script>
+<script src="buddha.js"></script>
 <script src="room.js"></script>
 <script src="app.js"></script>
 </body>
