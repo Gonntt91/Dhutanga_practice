@@ -155,10 +155,10 @@
     const day = h >= 6 && h <= 18 || h >= 30;
     const base = hgt - 10;
     // arc path of the sky
-    g.strokeStyle = "rgba(220,213,197,0.35)"; g.lineWidth = 1.2; g.setLineDash([3, 4]);
+    g.strokeStyle = "rgba(240,234,215,0.6)"; g.lineWidth = 1.2; g.setLineDash([3, 4]);
     g.beginPath(); g.ellipse(w / 2, base, w / 2 - 14, base - 8, 0, Math.PI, 0); g.stroke(); g.setLineDash([]);
     // horizon
-    g.strokeStyle = "rgba(220,213,197,0.55)"; g.beginPath(); g.moveTo(4, base); g.lineTo(w - 4, base); g.stroke();
+    g.strokeStyle = "rgba(240,234,215,0.8)"; g.beginPath(); g.moveTo(4, base); g.lineTo(w - 4, base); g.stroke();
     // body position: u in [0,1] across the visible part of its journey
     let hh = h >= 30 ? h - 24 : h;
     let u, isSun;
