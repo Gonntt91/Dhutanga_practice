@@ -7,8 +7,8 @@
   const RUNS_KEY = "dhutanga.runs";    // how many nights have been finished
   const FIND_DIST = 34;
   const DARKNESS = {
-    "Chiều tàn": 0.42, "Chạng vạng": 0.6, "Đầu hôm": 0.72, "Canh hai": 0.84,
-    "Canh ba": 0.9, "Canh tư": 0.82, "Gà gáy": 0.68, "Rạng sáng": 0.45, "Sáng sớm": 0.1, "Sáng": 0.08,
+    "Chiều tàn": 0.42, "Chạng vạng": 0.55, "Đầu hôm": 0.6, "Canh hai": 0.66,
+    "Canh ba": 0.7, "Canh tư": 0.64, "Gà gáy": 0.55, "Rạng sáng": 0.45, "Sáng sớm": 0.1, "Sáng": 0.08,
   };
 
   // How far from the character each role can look around (world units). The monk sits in the
@@ -720,7 +720,7 @@
     const btn = (parent, text, fn) => { const b = el("button", "dev-btn", text); b.type = "button"; b.addEventListener("click", fn); parent.appendChild(b); return b; };
 
     const times = row("Giờ");
-    [["Sáng sớm", 0.1], ["Sáng", 0.08], ["Chiều tàn", 0.42], ["Chạng vạng", 0.6], ["Canh hai", 0.84], ["Canh ba", 0.9], ["Rạng sáng", 0.45]].forEach(([n, d]) =>
+    [["Sáng sớm", 0.1], ["Sáng", 0.08], ["Chiều tàn", 0.42], ["Chạng vạng", 0.55], ["Canh hai", 0.66], ["Canh ba", 0.7], ["Rạng sáng", 0.45]].forEach(([n, d]) =>
       btn(times, n, () => { state.devDark = d; pushView(); }));
     btn(times, "Tự động", () => { state.devDark = null; pushView(); });
 

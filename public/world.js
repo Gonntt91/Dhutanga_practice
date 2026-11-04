@@ -211,7 +211,7 @@ window.World = (() => {
       else { b.y -= 3.5 * dt; b.x += Math.sin(b.age * 0.8 + b.seed) * 5 * dt; }
     }
     for (let i = bots.length - 1; i >= 0; i--) if (bots[i].age > bots[i].life) bots.splice(i, 1);
-    const night = view.role && view.darkness >= 0.6;
+    const night = view.role && view.darkness >= 0.5;
     if (!night || bots.length >= 2) return;
     botWait -= dt;
     if (botWait > 0) return;
@@ -922,7 +922,7 @@ window.World = (() => {
     sctx.globalCompositeOperation = "source-over";
     sctx.clearRect(0, 0, shade.width, shade.height);
     const dark = viewerIsGhost ? view.darkness * 0.72 : view.darkness;
-    sctx.fillStyle = `rgba(3,6,8,${dark})`;
+    sctx.fillStyle = `rgba(7,14,26,${dark})`;
     sctx.fillRect(0, 0, shade.width, shade.height);
     sctx.globalCompositeOperation = "destination-out";
     for (const l of lights) {
@@ -938,6 +938,18 @@ window.World = (() => {
     }
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.drawImage(shade, 0, 0);
+    if (dayMix < 0.5 && view.darkness >= 0.5) {
+      // moonlight: a cool wash plus a pale glow from the upper right so the night is dim but readable
+      const cw = canvas.width, ch = canvas.height, m = 1 - dayMix * 2;
+      ctx.globalCompositeOperation = "lighter";
+      ctx.fillStyle = `rgba(40,72,112,${0.085 * m})`;
+      ctx.fillRect(0, 0, cw, ch);
+      const moon = ctx.createRadialGradient(cw, 0, 0, cw, 0, cw * 1.2);
+      moon.addColorStop(0, `rgba(150,185,230,${0.20 * m})`);
+      moon.addColorStop(1, "rgba(150,185,230,0)");
+      ctx.fillStyle = moon; ctx.fillRect(0, 0, cw, ch);
+      ctx.globalCompositeOperation = "source-over";
+    }
     if (dayMix > 0.02) {
       // sunlight: warm wash, a glow from the upper left and slanting beams through the trees
       const cw = canvas.width, ch = canvas.height;
