@@ -9,8 +9,8 @@ window.TRACE_TEXT = {
     "đặt nửa vắt cơm lên một ngôi mộ không tên",
   ],
   chant: [
-    "tụng Bát Nhã, hồi hướng cho những người nằm đây",
-    "hồi hướng cho người đã xua đuổi mình sáng qua",
+    "tụng kinh Từ (Mettā) bằng tiếng Pāli, hồi hướng cho những người nằm đây",
+    "rải tâm từ cho người đã xua đuổi mình sáng qua",
   ],
   sigh: [
     "thở dài giữa các ngôi mộ",
@@ -62,7 +62,7 @@ window.STORY = {
         time: "Chiều tàn",
         place: "gate",
         lines: [
-          "Bát còn nửa vắt cơm nguội. Sáng nay đi khất thực qua bảy nhà. Hai nhà đặt cơm, bốn nhà đóng cửa.",
+          "Bát còn nửa vắt cơm nguội. Sáng nay đi khất thực qua bảy nhà. Hai nhà đặt cơm, bốn nhà đóng cửa, một nhà thả chó ra chào. Con chó thì không có ý xấu, nó chỉ muốn làm quen.",
           "Nhà thứ bảy, một người đàn ông đứng chắn ngõ: “Đi chỗ khác. Thời này sư giả nhiều lắm.”",
           "Mặt trời xuống sau rặng tre. Câu nói ấy vẫn còn đâu đó trong ngực.",
         ],
@@ -76,6 +76,7 @@ window.STORY = {
         place: "gate",
         lines: [
           "Cổng nghĩa địa không có cánh. Mộ đất lẫn mộ vôi tróc lở, nhang tàn cắm xiêu vẹo.",
+          "Thầy tự nhủ: không sợ. Cái bụng thầy nghe vậy, bèn kêu một tiếng dài, như phản đối.",
           "Xa xa có tiếng chó sủa, rồi im.",
           { if: "lantern", text: "Sau bụi tre, có một đốm đèn lồng vừa lay động rồi tắt. Có ai đó đang ở gần đây." },
         ],
@@ -100,7 +101,7 @@ window.STORY = {
         time: "Canh hai",
         place: "graves", pose: "sit",
         lines: [
-          "Lá khô xào xạc phía sau lưng, đều đều như bước chân.",
+          "Lá khô xào xạc phía sau lưng, đều đều như bước chân. Thầy đã định bụng là gió. Gió thì đâu có đi theo nhịp.",
           { if: "sigh", text: "Rồi có tiếng thở dài, rất gần. Không phải gió. Đêm nay thầy không ngồi một mình." },
           { unless: "sigh", text: "Thầy nín thở nghe. Chỉ có tiếng dế." },
           "Tim đập nhanh. Sợ là thật.",
@@ -115,14 +116,39 @@ window.STORY = {
         time: "Canh ba",
         place: "graves", pose: "sit",
         lines: [
-          "Cơn buồn ngủ kéo đến như nước lên. Đầu gục xuống một lần, hai lần.",
+          "Cơn buồn ngủ kéo đến như nước lên. Đầu gục xuống một lần, hai lần. Lần thứ ba, trán suýt chạm đất, thầy giật mình, nhìn quanh xem có ai thấy không. May là chỉ có người chết.",
           "Hạnh ngồi không nằm. Đất ẩm và mát. Nằm xuống một chút thôi cũng chẳng ai biết.",
         ],
         choices: [
           { label: "Nằm xuống một chút", delta: -2, next: "m6" },
           { label: "Đứng dậy đi kinh hành quanh các ngôi mộ", delta: 1, next: "m6" },
-          { label: "Ngồi thẳng lưng, đếm hơi thở từ một đến mười", delta: 1, next: "m6" },
+          { label: "Ngồi thẳng lưng, theo dõi hơi thở, ghi nhận từng ý nghĩ đi qua", delta: 0, next: "m5w" },
         ],
+      },
+      m5w: {
+        time: "Canh ba",
+        place: "graves", pose: "sit",
+        watch: {
+          seconds: 36,
+          intro: "Thầy ngồi thẳng. Hơi vào, hơi ra. Ý nghĩ nào trôi tới thì chạm vào nó, gọi tên nó, rồi quay về hơi thở.",
+          thoughts: [
+            { kind: "nghĩ", text: "Mai ăn gì nhỉ? Mà mai thầy có gì để ăn đâu." },
+            { kind: "nghĩ", text: "Câu nói sáng nay… lẽ ra thầy nên đáp lại thế này." },
+            { kind: "muốn", text: "Một ly trà nóng. Chỉ một ly thôi." },
+            { kind: "muốn", text: "Giá mà trời sáng sớm hơn một chút." },
+            { kind: "đau", text: "Chân trái tê rồi. Chân phải cũng bắt đầu tê theo." },
+            { kind: "đau", text: "Một con muỗi đang đậu ngay trên mũi thầy." },
+            { kind: "nghe", text: "Có tiếng sột soạt sau lưng. Có thật không?" },
+            { kind: "nghe", text: "Tiếng dế. Tiếng gió. Hình như có cả tiếng thở." },
+          ],
+          results: [
+            { min: 0, text: "Thầy lạc hơi nhiều, lạc rồi lại nhớ ra là mình đang ngồi. Lúc nhớ ra, thầy cười thầm. Nhớ ra cũng là một lần quay về." },
+            { min: 3, text: "Có những ý nghĩ trôi qua, thầy chạm vào, gọi tên, rồi thả. Muỗi thì vẫn ở trên mũi, nhưng thầy đã bớt giận nó." },
+            { min: 6, text: "Ý nghĩ đến rồi đi như người qua cổng. Thầy không đuổi, không mời, chỉ đứng yên làm cái cổng." },
+          ],
+          delta: [0, 1, 2],
+          next: "m6",
+        },
       },
       m6: {
         time: "Canh tư",
@@ -133,8 +159,8 @@ window.STORY = {
           "Thầy chắp tay. Còn lại một việc trước khi trời sáng.",
         ],
         choices: [
-          { label: "Tụng Bát Nhã, hồi hướng cho những người nằm đây", delta: 1, next: "end", trace: { kind: "chant", variant: 0 } },
-          { label: "Hồi hướng cho người đàn ông đã xua đuổi mình", delta: 2, next: "end", trace: { kind: "chant", variant: 1 } },
+          { label: "Tụng kinh Từ (Mettā), hồi hướng cho những người nằm đây", delta: 1, next: "end", trace: { kind: "chant", variant: 0 } },
+          { label: "Rải tâm từ cho người đàn ông đã xua đuổi mình", delta: 2, next: "end", trace: { kind: "chant", variant: 1 } },
         ],
       },
       end: {

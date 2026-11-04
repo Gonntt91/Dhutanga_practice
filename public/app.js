@@ -109,9 +109,18 @@
   }
   const passes = (item, f) => (!item.if || f.has(item.if)) && (!item.unless || !f.has(item.unless));
 
+  // Mist replaces the visible meter: heavier when the character is troubled, thinner as it clears.
+  // Monk and villager: higher meter = calmer. Ghost: lower "Chấp" = lighter.
+  function mistLevel() {
+    if (!state.role) return 0.4;
+    const m = state.meter / 10;
+    return state.role === "ghost" ? 0.15 + m * 0.85 : 1 - m * 0.85;
+  }
+
   function pushView() {
     const sc = currentScene();
     World.setView({
+      mist: mistLevel(),
       role: state.role,
       pose: currentPose(),
       darkness: sc ? DARKNESS[sc.time] ?? 0.8 : 0.78,
@@ -258,6 +267,7 @@
   }
 
   function leaveRole() {
+    stopWatch();
     state.role = null;
     state.sceneId = null;
     state.sceneOpen = false;
@@ -321,6 +331,7 @@
     $("sheet-body").scrollTop = 0;
 
     if (scene.end) return renderEnding(scene);
+    if (scene.watch) return renderWatch(scene);
 
     let i = 0;
     for (const line of scene.lines) {
@@ -349,6 +360,67 @@
     $("whispers").replaceChildren();
     showWalkOrScene();
     sendPresence(true);
+  }
+
+  // ---------- sit-and-note mini-game ----------
+  // No score shown: thoughts drift by, tap one to note it and return to the breath.
+  let watchTimer = null;
+  function stopWatch() { clearInterval(watchTimer); watchTimer = null; }
+
+  function renderWatch(scene) {
+    stopWatch();
+    const w = scene.watch;
+    const lines = $("lines");
+    lines.appendChild(el("p", null, w.intro));
+    const box = el("div", "watch");
+    const ring = el("div", "breath");
+    const field = el("div", "thoughts");
+    const note = el("div", "watch-note", "Chạm vào ý nghĩ để ghi nhận");
+    box.append(field, ring, note);
+    lines.appendChild(box);
+    const skip = el("button", "text-btn watch-skip", "Tua");
+    skip.type = "button";
+    $("choices").appendChild(skip);
+
+    let left = w.seconds, returned = 0, spawned = 0;
+    const pool = [...w.thoughts].sort(() => Math.random() - 0.5);
+    const finish = () => {
+      stopWatch();
+      const idx = returned >= 6 ? 2 : returned >= 3 ? 1 : 0;
+      const res = [...w.results].reverse().find((r) => returned >= r.min) || w.results[0];
+      box.remove(); skip.remove();
+      lines.appendChild(el("p", null, `Trong buổi ngồi, thầy đã quay về ${returned} lần.`));
+      lines.appendChild(el("p", "ending", res.text));
+      state.meter = Math.max(0, Math.min(10, state.meter + w.delta[idx]));
+      pushView();
+      const go = el("button", "choice", "Tiếp tục ngồi tới canh tư");
+      go.type = "button";
+      go.addEventListener("click", () => { state.sceneId = w.next; $("whispers").replaceChildren(); showWalkOrScene(); sendPresence(true); });
+      $("choices").appendChild(go);
+    };
+    const spawn = () => {
+      const t = pool[spawned++ % pool.length];
+      const b = el("button", "thought", t.text);
+      b.type = "button";
+      b.style.left = 6 + Math.random() * 38 + "%";
+      b.addEventListener("click", () => {
+        if (b.dataset.done) return;
+        b.dataset.done = "1"; returned++;
+        b.classList.add("noted");
+        b.textContent = `${t.kind}, ${t.kind}…`;
+        note.textContent = "Ghi nhận. Quay về hơi thở.";
+        setTimeout(() => b.remove(), 1200);
+      });
+      field.appendChild(b);
+      setTimeout(() => b.remove(), 9000);
+    };
+    spawn();
+    watchTimer = setInterval(() => {
+      left -= 1;
+      if (left % 4 === 0 && left > 4) spawn();
+      if (left <= 0) finish();
+    }, 1000);
+    skip.addEventListener("click", finish);
   }
 
   function renderEnding(scene) {

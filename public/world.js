@@ -116,7 +116,7 @@ window.World = (() => {
   const player = { x: SPAWN.monk.x, y: SPAWN.monk.y, tx: null, ty: null, facing: 1, phase: 0, moving: false };
   const others = new Map();
   const ripples = [];
-  const view = { role: null, pose: null, darkness: 0.75, flags: new Set(), marker: null, nick: "", anchor: 0.55 };
+  const view = { mist: 0.4, role: null, pose: null, darkness: 0.75, flags: new Set(), marker: null, nick: "", anchor: 0.55 };
   let tapHandler = null;
 
   function init(canvasEl, onTap) {
@@ -529,7 +529,7 @@ window.World = (() => {
     // drifting fog
     for (const f of fog) {
       const fy = camY + f.y * viewH;
-      ellipse(f.x, fy, f.rx, f.ry, "rgba(200,210,205,0.035)");
+      ellipse(f.x, fy, f.rx * (1 + view.mist * 0.5), f.ry * (1 + view.mist * 0.9), `rgba(200,210,205,${0.03 + view.mist * 0.075})`);
     }
 
     // darkness with light holes

@@ -172,3 +172,28 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--lantern); o
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
+
+/* Meter is no longer shown: the mist carries that signal. */
+.meter { display: none; }
+
+/* Sit-and-note mini-game */
+.watch { position: relative; height: 190px; margin: 6px 0 4px; overflow: hidden; }
+.breath {
+  position: absolute; left: 50%; bottom: 14px; width: 64px; height: 64px; margin-left: -32px;
+  border-radius: 50%; border: 1px solid var(--ash-dim);
+  background: radial-gradient(circle, rgba(220,213,197,0.14), transparent 70%);
+  animation: breathe 8s ease-in-out infinite;
+}
+@keyframes breathe { 0%,100% { transform: scale(0.7); opacity: 0.55; } 50% { transform: scale(1.35); opacity: 1; } }
+.watch-note { position: absolute; left: 0; right: 0; bottom: 0; text-align: center; font: 11px/1.4 var(--font-ui); color: var(--ash-dim); }
+.thoughts { position: absolute; inset: 0 0 40px 0; }
+.thought {
+  position: absolute; bottom: 30px; max-width: 58%; padding: 8px 12px; text-align: left;
+  font: italic 14px/1.4 var(--font-body); color: var(--ash);
+  background: rgba(20,28,26,0.85); border: 1px solid var(--line); border-radius: 14px;
+  animation: drift 9s linear forwards; cursor: pointer;
+}
+.thought.noted { animation: none; opacity: 0.5; color: var(--jade); border-color: var(--jade); transition: opacity 1s; }
+@keyframes drift { from { transform: translateY(0); opacity: 0; } 10% { opacity: 1; } 80% { opacity: 0.9; } to { transform: translateY(-150px); opacity: 0; } }
+.watch-skip { justify-self: end; }
+@media (prefers-reduced-motion: reduce) { .breath { animation: none; } }
