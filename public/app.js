@@ -476,6 +476,12 @@
     toast("Một con cú đen bay ngang qua nghĩa địa, kêu hai tiếng rồi im.");
   });
 
+  window.addEventListener("crow", (e) => {
+    if (!state.role) return;
+    if (state.soundOn) NightAudio.crow(e.detail.pan, e.detail.n);
+    toast("Một con quạ đen lao qua trên đầu, kêu những tiếng khản đặc.");
+  });
+
   // ---------- boot ----------
   World.init($("world"), (x, y) => {
     if (!state.role) return;

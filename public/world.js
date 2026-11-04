@@ -156,6 +156,54 @@ window.World = (() => {
     ctx.restore();
   }
 
+  // A crow: faster, jagged wings, caws harshly a few times while crossing.
+  const crow = { on: false, x: 0, y: 0, dir: 1, called: false, wait: 35 + Math.random() * 25, phase: 0, yRel: 0.15 };
+  function updateCrow(dt) {
+    if (!crow.on) {
+      if (!view.role) return;
+      crow.wait -= dt;
+      if (crow.wait > 0 || owl.on) return;
+      crow.on = true; crow.called = false;
+      crow.dir = Math.random() < 0.5 ? 1 : -1;
+      crow.x = crow.dir > 0 ? -30 : W + 30;
+      crow.yRel = 0.08 + Math.random() * 0.25;
+      return;
+    }
+    crow.x += crow.dir * 78 * dt;
+    crow.phase += dt;
+    if (!crow.called && crow.x > W * 0.3 && crow.x < W * 0.7) {
+      crow.called = true;
+      window.dispatchEvent(new CustomEvent("crow", { detail: { pan: (crow.x / W) * 2 - 1, n: 2 + Math.floor(Math.random() * 3) } }));
+    }
+    if (crow.x < -40 || crow.x > W + 40) { crow.on = false; crow.wait = 55 + Math.random() * 50; }
+  }
+  function drawCrow() {
+    if (!crow.on) return;
+    const x = crow.x, y = camY + viewH * crow.yRel + Math.sin(crow.phase * 2.3) * 4;
+    const flap = Math.sin(crow.phase * 11);
+    ctx.save();
+    ctx.globalCompositeOperation = "source-over";
+    ctx.translate(x, y);
+    ctx.scale(crow.dir, 1);
+    ctx.fillStyle = "#050707";
+    ctx.strokeStyle = "rgba(170,190,200,0.22)";
+    ctx.lineWidth = 0.7;
+    for (const s of [-1, 1]) {
+      ctx.beginPath();
+      ctx.moveTo(0, -1);
+      ctx.lineTo(s * 9, -8 - flap * 8);
+      ctx.lineTo(s * 17, -5 - flap * 10);
+      ctx.lineTo(s * 24, -2 - flap * 12);
+      ctx.lineTo(s * 14, 1 - flap * 3);
+      ctx.lineTo(s * 6, 3);
+      ctx.closePath(); ctx.fill(); ctx.stroke();
+    }
+    ctx.beginPath(); ctx.ellipse(0, 1, 3.6, 7, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(5.2, -3, 2.6, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(7.4, -3.6); ctx.lineTo(12, -2.4); ctx.lineTo(7.4, -1.6); ctx.fill();
+    ctx.restore();
+  }
+
   // ---------- runtime state ----------
   let canvas, ctx, shade, sctx;
   let dpr = 1;
@@ -257,6 +305,7 @@ window.World = (() => {
     for (const f of fog) { f.x += f.v * dt; if (f.x - f.rx > W) f.x = -f.rx; }
     for (const f of fireflies) f.p += dt * f.v;
     updateOwl(dt);
+    updateCrow(dt);
   }
 
   // ---------- drawing helpers ----------
@@ -613,6 +662,7 @@ window.World = (() => {
     // above darkness: warm glows, fireflies, ripples, labels, marker
     ctx.setTransform(k, 0, 0, k, 0, -camY * k);
     drawOwl();
+    drawCrow();
     ctx.globalCompositeOperation = "lighter";
     for (const l of lights) {
       if (l.r < 50) continue;
