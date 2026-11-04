@@ -235,7 +235,25 @@
   }
 
   // ---------- presence ----------
+  // Tell the player when another real person steps into the night.
+  const knownRoles = new Map();
+  let peersPrimed = false;
+  function announceNewcomers() {
+    for (const p of state.peers) {
+      if (p.pid === state.pid || !p.role) continue;
+      if (peersPrimed && knownRoles.get(p.pid) !== p.role && state.role) {
+        const info = ROLE_INFO[p.role];
+        const who = p.nick ? `${p.nick} (${info.name.toLowerCase()})` : `Một ${info.name.toLowerCase()}`;
+        toast(`${who} vừa bước vào đêm này. Họ là người chơi thật.`);
+      }
+      knownRoles.set(p.pid, p.role);
+    }
+    for (const id of [...knownRoles.keys()]) if (!state.peers.some((p) => p.pid === id)) knownRoles.delete(id);
+    peersPrimed = true;
+  }
+
   function onPeers() {
+    announceNewcomers();
     const others = state.peers.filter((p) => p.pid !== state.pid && p.role);
     World.setOthers(others);
     const total = state.peers.length - 1;

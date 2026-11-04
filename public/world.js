@@ -869,7 +869,7 @@ window.World = (() => {
 
   function drawCharacter(c, lights, viewerIsGhost) {
     if (c.role === "monk") drawMonk(c.x, c.y, c.pose, c.phase, c.moving, c.facing || 1, lights);
-    else if (c.role === "ghost") drawGhost(c.x, c.y, c.phase, viewerIsGhost || c.isMe ? 0.9 : 0.38, lights);
+    else if (c.role === "ghost") drawGhost(c.x, c.y, c.phase, viewerIsGhost || c.isMe ? 0.9 : 0.66, lights);
     else if (c.role === "villager") drawVillager(c.x, c.y, c.phase, c.moving, c.facing || 1, lights);
     else ellipse(c.x, c.y - 4, 3, 3, "rgba(220,213,197,0.35)");
   }
@@ -1019,15 +1019,24 @@ window.World = (() => {
     ctx.textAlign = "center";
     for (const it of items) {
       if (it.kind !== "char" || !it.label) continue;
-      if (it.role === "ghost" && !viewerIsGhost && !it.isMe) continue; // the living don't see a ghost's name
       const lift = it.role === "ghost" ? 46 : it.pose === "sit" ? 36 : 44;
+      const other = !it.isMe;
+      if (other) {
+        // another real player: a slowly pulsing ring at their feet so they stand out from ambient ghosts
+        const pulse = 0.5 + 0.5 * Math.sin(time * 2.6 + it.x);
+        const rc = it.role === "monk" ? "208,138,77" : it.role === "villager" ? "230,197,111" : "120,215,190";
+        ctx.strokeStyle = `rgba(${rc},${0.35 + 0.35 * pulse})`;
+        ctx.lineWidth = 1.2;
+        ctx.beginPath(); ctx.ellipse(it.x, it.y + 2, 15 + pulse * 3, 6 + pulse * 1.2, 0, 0, Math.PI * 2); ctx.stroke();
+      }
       if (dayMix > 0.5) {
         // daylight: dark text with a pale outline so names read on bright grass
         ctx.lineWidth = 2.6; ctx.lineJoin = "round";
         ctx.strokeStyle = "rgba(250,246,230,0.85)";
         ctx.strokeText(it.label, it.x, it.y - lift);
         ctx.fillStyle = it.isMe ? "#20301c" : "rgba(32,48,28,0.8)";
-      } else ctx.fillStyle = it.isMe ? "rgba(220,213,197,0.95)" : "rgba(220,213,197,0.6)";
+      } else if (other && it.role === "ghost") ctx.fillStyle = "rgba(150,230,205,0.9)";
+      else ctx.fillStyle = it.isMe ? "rgba(220,213,197,0.95)" : "rgba(220,213,197,0.75)";
       ctx.fillText(it.label, it.x, it.y - lift);
     }
 
