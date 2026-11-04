@@ -409,6 +409,10 @@
     $("walk-time").textContent = sc.time;
     $("walk-text").textContent = `Đi tới ${World.PLACES[sc.place].name}`;
     pushView();
+    // set off on its own so the story keeps moving; tapping elsewhere still takes over
+    const place = World.PLACES[sc.place];
+    state.findTarget = null;
+    World.walkTo(place.x, place.y + 6);
   }
 
   function openScene() {
