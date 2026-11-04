@@ -1015,12 +1015,28 @@ window.World = (() => {
     for (const it of items) {
       if (it.kind !== "char" || !it.label) continue;
       if (it.role === "ghost" && !viewerIsGhost && !it.isMe) continue; // the living don't see a ghost's name
-      ctx.fillStyle = it.isMe ? "rgba(220,213,197,0.95)" : "rgba(220,213,197,0.6)";
       const lift = it.role === "ghost" ? 46 : it.pose === "sit" ? 36 : 44;
+      if (dayMix > 0.5) {
+        // daylight: dark text with a pale outline so names read on bright grass
+        ctx.lineWidth = 2.6; ctx.lineJoin = "round";
+        ctx.strokeStyle = "rgba(250,246,230,0.85)";
+        ctx.strokeText(it.label, it.x, it.y - lift);
+        ctx.fillStyle = it.isMe ? "#20301c" : "rgba(32,48,28,0.8)";
+      } else ctx.fillStyle = it.isMe ? "rgba(220,213,197,0.95)" : "rgba(220,213,197,0.6)";
       ctx.fillText(it.label, it.x, it.y - lift);
     }
 
     if (view.marker && PLACES[view.marker]) drawMarker(PLACES[view.marker]);
+  }
+
+  // Place-name text: gold at night; dark brown with a pale outline by day.
+  function markerText(text, x, y, a) {
+    if (dayMix > 0.5) {
+      ctx.lineWidth = 2.8; ctx.lineJoin = "round";
+      ctx.strokeStyle = "rgba(255,250,230,0.9)"; ctx.strokeText(text, x, y);
+      ctx.fillStyle = "#5a3a10";
+    } else ctx.fillStyle = `rgba(230,197,111,${a})`;
+    ctx.fillText(text, x, y);
   }
 
   function drawMarker(p) {
@@ -1031,9 +1047,8 @@ window.World = (() => {
       ctx.strokeStyle = `rgba(230,197,111,${0.5 + 0.4 * pulse})`;
       ctx.lineWidth = 1.4;
       ctx.beginPath(); ctx.ellipse(p.x, p.y, 20 + pulse * 4, 9 + pulse * 2, 0, 0, Math.PI * 2); ctx.stroke();
-      ctx.fillStyle = "rgba(230,197,111,0.9)";
       ctx.font = '500 10px "Be Vietnam Pro", system-ui, sans-serif';
-      ctx.fillText(p.name, p.x, p.y + 24);
+      markerText(p.name, p.x, p.y + 24, 0.9);
       return;
     }
     const ay = onTop ? camY + 96 : camY + viewH - 140;
@@ -1042,7 +1057,7 @@ window.World = (() => {
     ctx.fillStyle = `rgba(230,197,111,${0.6 + 0.35 * pulse})`;
     ctx.beginPath(); ctx.moveTo(ax, ay + dir * 8); ctx.lineTo(ax - 7, ay - dir * 2); ctx.lineTo(ax + 7, ay - dir * 2); ctx.closePath(); ctx.fill();
     ctx.font = '500 10px "Be Vietnam Pro", system-ui, sans-serif';
-    ctx.fillText(p.name, ax, ay - dir * 12);
+    markerText(p.name, ax, ay - dir * 12, 0.9);
   }
 
   function roleName(role) {
