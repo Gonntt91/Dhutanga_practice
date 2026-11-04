@@ -133,6 +133,12 @@
     (!item.if || f.has(item.if)) && (!item.unless || !f.has(item.unless)) &&
     (!item.ifv || state.vars.has(item.ifv)) && (!item.unlessv || !state.vars.has(item.unlessv));
 
+  // Darkness comes from the scene's time of day, unless the dev panel forces a value.
+  function currentDarkness(sc) {
+    if (state.devDark != null) return state.devDark;
+    return sc ? DARKNESS[sc.time] ?? 0.8 : 0.78;
+  }
+
   // Mist replaces the visible meter: heavier when the character is troubled, thinner as it clears.
   // Monk and villager: higher meter = calmer. Ghost: lower "Chấp" = lighter.
   function mistLevel() {
@@ -143,13 +149,13 @@
 
   function pushView() {
     const sc = currentScene();
-    NightAudio.setDay(!!sc && (DARKNESS[sc.time] ?? 0.8) < 0.3);
+    NightAudio.setDay(currentDarkness(sc) < 0.3);
     World.setView({
       mist: mistLevel(),
       lookRange: state.role ? LOOK_RANGE[state.role] : Infinity,
       role: state.role,
       pose: currentPose(),
-      darkness: sc ? DARKNESS[sc.time] ?? 0.8 : 0.78,
+      darkness: currentDarkness(sc),
       flags: flags(),
       marker: sc && !state.sceneOpen ? sc.place : null,
       anchor: state.sceneOpen && !$("sheet").classList.contains("collapsed") ? 0.3 : 0.5,
@@ -408,7 +414,7 @@
   }
 
   // ---------- finds: things lying around the graveyard ----------
-  const visibleFinds = () => FINDS.filter((f) => (f.role === state.role || f.role === "any") && !state.found.has(f.id) && (f.minRuns || 0) <= runCount());
+  const visibleFinds = () => FINDS.filter((f) => (f.role === state.role || f.role === "any") && !state.found.has(f.id) && (state.devAllFinds || (f.minRuns || 0) <= runCount()));
   function refreshFinds() { World.setFinds(state.role ? visibleFinds().map((f) => ({ id: f.id, role: f.role, x: f.x, y: f.y })) : []); }
   function nearestFind(x, y) {
     let best = null, bd = 34;
@@ -700,6 +706,74 @@
     if (!state.role) return;
     if (state.soundOn) NightAudio.crow(e.detail.pan, e.detail.n);
   });
+
+  // ---------- dev panel: open the game with ?dev to test any time of day or scene ----------
+  if (new URLSearchParams(location.search).has("dev")) {
+    const panel = el("div", "dev-panel");
+    const toggle = el("button", "pill dev-toggle", "DEV");
+    toggle.type = "button";
+    const body = el("div", "dev-body");
+    body.hidden = true;
+    toggle.addEventListener("click", () => { body.hidden = !body.hidden; refreshDev(); });
+    const row = (label) => { const r = el("div", "dev-row"); r.appendChild(el("span", "dev-label", label)); body.appendChild(r); return r; };
+    const btn = (parent, text, fn) => { const b = el("button", "dev-btn", text); b.type = "button"; b.addEventListener("click", fn); parent.appendChild(b); return b; };
+
+    const times = row("Giờ");
+    [["Sáng sớm", 0.1], ["Sáng", 0.08], ["Chiều tàn", 0.42], ["Chạng vạng", 0.6], ["Canh hai", 0.84], ["Canh ba", 0.9], ["Rạng sáng", 0.45]].forEach(([n, d]) =>
+      btn(times, n, () => { state.devDark = d; pushView(); }));
+    btn(times, "Tự động", () => { state.devDark = null; pushView(); });
+
+    const roles = row("Vai");
+    ["monk", "ghost", "villager"].forEach((r) => btn(roles, ROLE_INFO[r].name, () => { if (state.role) leaveRole(); startRole(r); refreshDev(); }));
+
+    const jump = row("Cảnh");
+    const sel = el("select", "dev-select");
+    jump.appendChild(sel);
+    btn(jump, "Nhảy tới", () => {
+      if (!state.role || !sel.value) return;
+      closeFind(true); stopWatch();
+      state.sceneId = sel.value;
+      state.sceneOpen = false;
+      const sc = currentScene();
+      const place = World.PLACES[sc.place];
+      World.setPlayer(place.x, place.y + 8);
+      showWalkOrScene();
+      sendPresence(true);
+    });
+
+    const data = row("Dữ liệu");
+    btn(data, "Mở khóa hết", () => {
+      state.completed = { monk: true, ghost: true, villager: true }; saveCompleted();
+      ["c_non", "c_dep", "c_bat", "c_vo", "c_anh"].forEach(remember);
+      try { localStorage.setItem(RUNS_KEY, "3"); } catch {}
+      toast("Đã mở khóa: 3 vai xong, đủ 5 manh mối.");
+    });
+    btn(data, "Hiện hết vật", () => { state.devAllFinds = !state.devAllFinds; refreshFinds(); toast(state.devAllFinds ? "Hiện tất cả vật bị bỏ quên" : "Ẩn bớt theo số đêm"); });
+    btn(data, "Xóa dữ liệu", () => {
+      try { [STORE_KEY, MEM_KEY, RUNS_KEY].forEach((k) => localStorage.removeItem(k)); } catch {}
+      state.completed = {}; state.vars = new Set(); toast("Đã xóa dữ liệu đã lưu.");
+    });
+
+    const fx = row("Hiệu ứng");
+    btn(fx, "Cú", () => window.dispatchEvent(new CustomEvent("owl", { detail: { pan: 0 } })));
+    btn(fx, "Quạ", () => window.dispatchEvent(new CustomEvent("crow", { detail: { pan: 0, n: 3 } })));
+    btn(fx, "Chó", () => NightAudio.dog());
+    btn(fx, "Gà", () => NightAudio.rooster());
+    btn(fx, "Nhà hoang", () => Room.open({ onPhoto() {}, onClose() {} }));
+
+    function refreshDev() {
+      sel.replaceChildren();
+      if (!state.role) { sel.appendChild(el("option", null, "(chọn vai trước)")); sel.firstChild.value = ""; return; }
+      for (const id of Object.keys(STORY[state.role].scenes)) {
+        const o = el("option", null, `${id} · ${STORY[state.role].scenes[id].time}`);
+        o.value = id; if (id === state.sceneId) o.selected = true;
+        sel.appendChild(o);
+      }
+    }
+    panel.append(toggle, body);
+    $("app").appendChild(panel);
+    refreshDev();
+  }
 
   // ---------- boot ----------
   World.init($("world"), (x, y) => {

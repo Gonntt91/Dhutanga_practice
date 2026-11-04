@@ -97,6 +97,13 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--lantern); o
   font: 16px/1.6 var(--font-body); color: var(--ash);
 }
 .room-caption.pulse { animation: fadein 0.7s ease both; }
+.dev-panel { position: absolute; z-index: 20; left: 10px; bottom: 150px; display: grid; gap: 6px; justify-items: start; }
+.dev-toggle { background: #3a1f1f; border-color: #8a4a4a; color: #f0b8b8; }
+.dev-body { width: min(340px, calc(100vw - 20px)); max-height: 52vh; overflow-y: auto; padding: 10px; border-radius: 10px; background: rgba(12, 18, 17, 0.96); border: 1px solid #8a4a4a; display: grid; gap: 8px; }
+.dev-row { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; }
+.dev-label { width: 100%; font: 600 10px/1.2 var(--font-ui); letter-spacing: 0.06em; text-transform: uppercase; color: var(--ash-dim); }
+.dev-btn { font: 12px/1.2 var(--font-ui); color: var(--ash); background: rgba(255, 255, 255, 0.05); border: 1px solid var(--line); border-radius: 6px; padding: 5px 8px; }
+.dev-select { flex: 1; min-width: 0; font: 12px var(--font-ui); background: #141c1a; color: var(--ash); border: 1px solid var(--line); border-radius: 6px; padding: 5px; }
 .find-card { z-index: 4; padding-top: 14px; }
 .find-label { margin-bottom: 8px; color: var(--ash-dim); }
 .sheet-handle {

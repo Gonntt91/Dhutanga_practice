@@ -91,3 +91,7 @@ Thêm loại dấu vết mới thì sửa ở hai chỗ: `TRACE_TEXT` trong `sto
 - **Ký ức qua các đêm:** lựa chọn có `remember: "khóa"` được nhớ lại, và dòng truyện có `ifv` / `unlessv` đọc lại nó ở đêm sau.
 - **Buổi sáng khất thực** (nhà sư), **nhà hoang** ở rìa nghĩa địa, ma ngẫu nhiên ban đêm, cú, quạ, chó sủa xa.
 - Dấu vết mới giữa người chơi: `keepsake` (món đồ cũ), `lamp` (đèn nhỏ), `bowl`. Thêm loại mới thì sửa `TRACE_TEXT` và `TRACE_KINDS`.
+
+### Chế độ phát triển
+
+Mở `http://localhost:3000/?dev` sẽ có nút **DEV** ở góc dưới trái: ép giờ trong ngày (sáng sớm, chiều tàn, canh ba...), đổi vai, nhảy tới một cảnh bất kỳ, mở khóa hết vai và manh mối, hiện hết vật bị bỏ quên, gọi thử cú, quạ, chó, gà và cảnh nhà hoang. Không có `?dev` thì panel không xuất hiện.
