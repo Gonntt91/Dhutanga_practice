@@ -1,0 +1,12 @@
+{
+  "name": "dhutanga-practice",
+  "version": "0.1.0",
+  "description": "Một đêm đầu đà – multiplayer web prototype (monk / ghost / villager)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "engines": { "node": ">=18" },
+  "license": "MIT"
+}

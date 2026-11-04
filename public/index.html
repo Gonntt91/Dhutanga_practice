@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#0c1211">
+<title>Một Đêm Đầu Đà</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Literata:opsz,wght@7..72,400;7..72,500&family=Be+Vietnam+Pro:wght@400;500&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app" class="app">
+  <canvas id="world" class="world" aria-label="Nghĩa địa. Chạm vào một chỗ để đi tới đó."></canvas>
+
+  <header class="hud">
+    <div class="hud-left">
+      <div id="presence-count" class="label">Đang kết nối…</div>
+      <div id="role-chip" class="role-chip" hidden></div>
+    </div>
+    <div class="hud-right">
+      <button id="traces-btn" class="pill" type="button">Dấu vết <span id="traces-count" class="count">0</span></button>
+      <button id="sound-toggle" class="pill" type="button" aria-pressed="false" aria-label="Bật âm thanh">Âm thanh</button>
+    </div>
+  </header>
+
+  <div id="toast" class="toast" aria-live="polite"></div>
+
+  <!-- walking prompt -->
+  <div id="walk-bar" class="walk-bar" hidden>
+    <div>
+      <div id="walk-time" class="label time"></div>
+      <div id="walk-text" class="walk-text"></div>
+    </div>
+    <div class="walk-actions">
+      <button id="gesture-walk" class="pill" type="button"></button>
+      <button id="walk-btn" class="primary" type="button">Đi tới</button>
+    </div>
+  </div>
+
+  <!-- story sheet -->
+  <section id="sheet" class="sheet" hidden aria-live="polite">
+    <button id="sheet-handle" class="sheet-handle" type="button" aria-expanded="true">
+      <span class="grip" aria-hidden="true"></span>
+      <span class="sheet-head">
+        <span id="time-label" class="label time"></span>
+        <span id="meter" class="meter" aria-label="">
+          <span id="meter-name" class="label"></span>
+          <span class="meter-track"><span id="meter-fill" class="meter-fill"></span></span>
+        </span>
+      </span>
+    </button>
+    <div id="sheet-body" class="sheet-body">
+      <div id="lines" class="lines"></div>
+      <div id="whispers" class="whispers"></div>
+      <div id="choices" class="choices"></div>
+      <div class="sheet-foot">
+        <button id="gesture" class="pill" type="button"></button>
+        <button id="leave" class="text-btn" type="button">Đổi vai</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- role picker -->
+  <section id="picker" class="picker">
+    <div class="picker-inner">
+      <h1 class="display">Đêm nay, bạn là ai?</h1>
+      <p class="lede">Một đêm ở nghĩa địa đầu làng, nhìn qua ba đôi mắt. Người khác đang chơi cùng lúc sẽ hiện lên trong cảnh, và việc họ làm có thể đổi điều bạn thấy.</p>
+      <label class="label" for="nick">Tên hiển thị (không bắt buộc)</label>
+      <input id="nick" maxlength="24" autocomplete="off" placeholder="Một người lạ">
+      <div id="role-list" class="roles"></div>
+      <p class="disclaimer">Đây là trải nghiệm mô phỏng để chiêm nghiệm hạnh đầu đà. Xin đừng tự ý ngủ ở nghĩa địa hay nhà hoang ngoài đời thật.</p>
+    </div>
+  </section>
+
+  <!-- traces panel -->
+  <section id="traces-panel" class="panel" hidden aria-label="Dấu vết đêm nay">
+    <div class="panel-head">
+      <h2 class="label">Dấu vết đêm nay</h2>
+      <button id="traces-close" class="text-btn" type="button">Đóng</button>
+    </div>
+    <p class="hint">Việc người khác làm trong đêm được ghi lại ở đây, và có thể hiện ra trong câu chuyện của bạn.</p>
+    <ol id="trace-list" class="trace-list"></ol>
+    <p id="trace-empty" class="hint">Chưa ai để lại gì. Hãy là người đầu tiên đi qua đêm này.</p>
+  </section>
+</div>
+
+<script src="story.js"></script>
+<script src="audio.js"></script>
+<script src="world.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
