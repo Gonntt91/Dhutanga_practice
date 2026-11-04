@@ -780,7 +780,7 @@
   });
 
   // ---------- dev panel: open the game with ?dev to test any time of day or scene ----------
-  if (new URLSearchParams(location.search).has("dev")) {
+  if (new URLSearchParams(location.search).has("dev") && !(window.APP_CONFIG && window.APP_CONFIG.dev === false)) {
     const panel = el("div", "dev-panel");
     const toggle = el("button", "pill dev-toggle", "DEV");
     toggle.type = "button";

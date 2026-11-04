@@ -198,6 +198,17 @@ function serveStatic(req, res, url) {
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://${req.headers.host || "localhost"}`);
   try {
+    // Tiny health check for uptime pingers: no state, no disk, no SSE.
+    if ((req.method === "GET" || req.method === "HEAD") && url.pathname === "/healthz") {
+      res.writeHead(200, { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store" });
+      return res.end(req.method === "HEAD" ? undefined : "ok");
+    }
+    // Runtime flags for the client. The dev panel (?dev) is off in production unless DEV_PANEL=1.
+    if (req.method === "GET" && url.pathname === "/config.js") {
+      const dev = process.env.DEV_PANEL ? process.env.DEV_PANEL === "1" : process.env.NODE_ENV !== "production";
+      res.writeHead(200, { "Content-Type": "text/javascript; charset=utf-8", "Cache-Control": "no-store" });
+      return res.end(`window.APP_CONFIG = { dev: ${dev} };`);
+    }
     if (req.method === "GET" && url.pathname === "/events") return handleEvents(req, res, url);
     if (req.method === "POST" && url.pathname === "/api/presence") return await handlePresence(req, res);
     if (req.method === "POST" && url.pathname === "/api/emit") return await handleEmit(req, res);

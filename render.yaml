@@ -1,0 +1,14 @@
+# Render blueprint: one free web service running the Node server.
+services:
+  - type: web
+    name: dhutanga-practice
+    runtime: node
+    plan: free
+    buildCommand: "echo no build step"
+    startCommand: npm start
+    healthCheckPath: /healthz
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: "20"
