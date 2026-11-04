@@ -26,6 +26,10 @@
     </div>
   </header>
 
+  <div id="sky" class="sky" hidden aria-live="polite">
+    <canvas id="sky-canvas" class="sky-canvas" width="168" height="64"></canvas>
+    <div class="sky-text"><span id="sky-name" class="sky-name"></span><span id="sky-hint" class="sky-hint"></span></div>
+  </div>
   <div id="toast" class="toast" aria-live="polite"></div>
   <button id="look-back" class="pill look-back" type="button" hidden>Về chỗ</button>
 
@@ -99,6 +103,7 @@
       <label class="label" for="nick">Tên hiển thị (không bắt buộc)</label>
       <input id="nick" maxlength="24" autocomplete="off" placeholder="Một người lạ">
       <div id="role-list" class="roles"></div>
+      <p class="disclaimer credits">Tiếng gà, quạ, chó, cú là ghi âm thật từ Wikimedia Commons (alys, National Park Service, Amada44, Vianney Bajart). Chi tiết giấy phép trong sounds/CREDITS.md.</p>
       <p class="disclaimer">Đây là trải nghiệm mô phỏng để chiêm nghiệm hạnh đầu đà. Xin đừng tự ý ngủ ở nghĩa địa hay nhà hoang ngoài đời thật.</p>
     </div>
   </section>

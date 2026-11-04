@@ -133,6 +133,75 @@
     (!item.if || f.has(item.if)) && (!item.unless || !f.has(item.unless)) &&
     (!item.ifv || state.vars.has(item.ifv)) && (!item.unlessv || !state.vars.has(item.unlessv));
 
+  // ---------- sky dial: sun by day, moon by night, plus the name of the hour ----------
+  // hour: on a 24h clock continued past midnight (24 = midnight, 30 = 6am next day) so the sky moves smoothly.
+  const CLOCK = {
+    "Sáng sớm": { h: 6.4, hint: "khoảng 6 giờ sáng" },
+    "Sáng": { h: 8.5, hint: "buổi sáng" },
+    "Chiều tàn": { h: 17.2, hint: "khoảng 17 giờ" },
+    "Chạng vạng": { h: 18.4, hint: "mặt trời vừa lặn" },
+    "Đầu hôm": { h: 20, hint: "khoảng 19 giờ" },
+    "Canh hai": { h: 22, hint: "khoảng 21 đến 23 giờ" },
+    "Canh ba": { h: 24.6, hint: "quanh nửa đêm" },
+    "Canh tư": { h: 26.6, hint: "khoảng 1 đến 3 giờ sáng" },
+    "Gà gáy": { h: 28.6, hint: "gần sáng" },
+    "Rạng sáng": { h: 29.7, hint: "trời hửng sáng" },
+  };
+  const sky = { h: 20, target: 20, raf: null, name: "" };
+  function drawSky() {
+    const cv = $("sky-canvas"), g = cv.getContext("2d");
+    const w = cv.width, hgt = cv.height, h = sky.h;
+    g.clearRect(0, 0, w, hgt);
+    const day = h >= 6 && h <= 18 || h >= 30;
+    const base = hgt - 10;
+    // arc path of the sky
+    g.strokeStyle = "rgba(220,213,197,0.35)"; g.lineWidth = 1.2; g.setLineDash([3, 4]);
+    g.beginPath(); g.ellipse(w / 2, base, w / 2 - 14, base - 8, 0, Math.PI, 0); g.stroke(); g.setLineDash([]);
+    // horizon
+    g.strokeStyle = "rgba(220,213,197,0.55)"; g.beginPath(); g.moveTo(4, base); g.lineTo(w - 4, base); g.stroke();
+    // body position: u in [0,1] across the visible part of its journey
+    let hh = h >= 30 ? h - 24 : h;
+    let u, isSun;
+    if (hh >= 6 && hh <= 18) { u = (hh - 6) / 12; isSun = true; }
+    else { const nh = hh < 6 ? hh + 24 : hh; u = Math.max(0, Math.min(1, (nh - 18) / 12)); isSun = false; }
+    const ang = Math.PI * (1 - u);
+    const rx = w / 2 - 14, ry = base - 8;
+    const x = w / 2 + Math.cos(ang) * rx, y = base - Math.sin(ang) * ry;
+    // twilight tint near the horizon
+    const low = 1 - Math.sin(Math.PI * u);
+    if (isSun) {
+      const col = low > 0.55 ? "#ffb25a" : "#ffe27a";
+      const gl = g.createRadialGradient(x, y, 0, x, y, 20); gl.addColorStop(0, col + "cc"); gl.addColorStop(1, col + "00");
+      g.fillStyle = gl; g.beginPath(); g.arc(x, y, 20, 0, 7); g.fill();
+      g.fillStyle = col; g.beginPath(); g.arc(x, y, 7, 0, 7); g.fill();
+      g.strokeStyle = col; g.lineWidth = 1.2;
+      for (let k = 0; k < 8; k++) { const a = k * Math.PI / 4; g.beginPath(); g.moveTo(x + Math.cos(a) * 10, y + Math.sin(a) * 10); g.lineTo(x + Math.cos(a) * 13, y + Math.sin(a) * 13); g.stroke(); }
+    } else {
+      const gl = g.createRadialGradient(x, y, 0, x, y, 20); gl.addColorStop(0, "rgba(190,215,255,0.5)"); gl.addColorStop(1, "rgba(190,215,255,0)");
+      g.fillStyle = gl; g.beginPath(); g.arc(x, y, 20, 0, 7); g.fill();
+      g.fillStyle = "#e8eefc"; g.beginPath(); g.arc(x, y, 7.5, 0, 7); g.fill();
+      g.fillStyle = "rgba(20,32,52,0.95)"; g.beginPath(); g.arc(x + 3.6, y - 1.2, 6.4, 0, 7); g.fill(); // crescent
+      g.fillStyle = "rgba(255,255,255,0.8)";
+      [[-24, -12], [22, -20], [-10, -22], [30, -8]].forEach(([dx, dy], i) => { g.fillRect(w / 2 + dx, base + dy * 0.9, 1.4, 1.4); }); // a few stars
+    }
+  }
+  function updateSky(sc) {
+    const name = state.devTime || (sc ? sc.time : null);
+    const clock = name && CLOCK[name];
+    $("sky").hidden = !state.role || !clock;
+    if (!clock) return;
+    $("sky-name").textContent = name;
+    $("sky-hint").textContent = clock.hint;
+    sky.target = clock.h;
+    if (sky.raf) return;
+    const step = () => {
+      const d = sky.target - sky.h;
+      if (Math.abs(d) < 0.02) { sky.h = sky.target; drawSky(); sky.raf = null; return; }
+      sky.h += d * 0.08; drawSky(); sky.raf = requestAnimationFrame(step);
+    };
+    sky.raf = requestAnimationFrame(step);
+  }
+
   // Darkness comes from the scene's time of day, unless the dev panel forces a value.
   function currentDarkness(sc) {
     if (state.devDark != null) return state.devDark;
@@ -151,6 +220,7 @@
     const sc = currentScene();
     NightAudio.setDay(currentDarkness(sc) < 0.3);
     $("app").classList.toggle("day", currentDarkness(sc) < 0.3);
+    updateSky(sc);
     World.setView({
       mist: mistLevel(),
       lookRange: state.role ? LOOK_RANGE[state.role] : Infinity,
@@ -721,8 +791,8 @@
 
     const times = row("Giờ");
     [["Sáng sớm", 0.1], ["Sáng", 0.08], ["Chiều tàn", 0.42], ["Chạng vạng", 0.55], ["Canh hai", 0.66], ["Canh ba", 0.7], ["Rạng sáng", 0.45]].forEach(([n, d]) =>
-      btn(times, n, () => { state.devDark = d; pushView(); }));
-    btn(times, "Tự động", () => { state.devDark = null; pushView(); });
+      btn(times, n, () => { state.devDark = d; state.devTime = n; pushView(); }));
+    btn(times, "Tự động", () => { state.devDark = null; state.devTime = null; pushView(); });
 
     const roles = row("Vai");
     ["monk", "ghost", "villager"].forEach((r) => btn(roles, ROLE_INFO[r].name, () => { if (state.role) leaveRole(); startRole(r); refreshDev(); }));

@@ -6,7 +6,7 @@ window.NightAudio = (() => {
   let day = false; // daytime: birds instead of crickets
 
   function start() {
-    if (ctx) { ctx.resume(); master.gain.value = 0.9; scheduleCrickets(); scheduleFar(); return; }
+    if (ctx) { ctx.resume(); master.gain.value = 0.9; loadSamples(); scheduleCrickets(); scheduleFar(); return; }
     const AudioCtx = window.AudioContext || window.webkitAudioContext;
     if (!AudioCtx) return;
     ctx = new AudioCtx();
@@ -32,6 +32,7 @@ window.NightAudio = (() => {
     windGain.gain.value = 0.18;
     wind.connect(lp).connect(windGain).connect(master);
     wind.start();
+    loadSamples();
     scheduleCrickets();
     scheduleFar();
   }
@@ -108,7 +109,7 @@ window.NightAudio = (() => {
   }
 
   // Low owl hoot: "hu-hu... huuu", slight vibrato, panned to where the owl is.
-  function owl(pan = 0) {
+  function owlSynth(pan = 0) {
     if (!ctx || ctx.state !== "running") return;
     const t = ctx.currentTime;
     const out = ctx.createStereoPanner ? ctx.createStereoPanner() : null;
@@ -134,7 +135,7 @@ window.NightAudio = (() => {
 
   // Crow: harsh, rasping "kaa!" — sawtooth through distortion and a nasal band-pass,
   // pitch falling, with a noise burst for the rasp. Eerier than the owl on purpose.
-  function crow(pan = 0, n = 3) {
+  function crowSynth(pan = 0, n = 3) {
     if (!ctx || ctx.state !== "running") return;
     const out = ctx.createStereoPanner ? ctx.createStereoPanner() : null;
     if (out) { out.pan.value = Math.max(-1, Math.min(1, pan)); out.connect(master); }
@@ -192,7 +193,7 @@ window.NightAudio = (() => {
     osc.connect(f1).connect(lp).connect(g).connect(out || master);
     osc.start(at); osc.stop(at + len + 0.05);
   }
-  function dog() {
+  function dogSynth() {
     if (!ctx || ctx.state !== "running") return;
     const pan = Math.random() * 1.6 - 0.8;
     const run = (start, base, vol, muffle, p) => {
@@ -207,7 +208,7 @@ window.NightAudio = (() => {
   }
 
   // Occasional far-off owl, quieter than the one that flies over.
-  function farOwl() {
+  function farOwlSynth() {
     if (!ctx || ctx.state !== "running") return;
     const t = ctx.currentTime;
     [[0, 0.2, 360], [0.4, 0.2, 340], [1.05, 0.8, 300]].forEach(([at, len, f]) => {
@@ -241,7 +242,7 @@ window.NightAudio = (() => {
   }
 
   // Rooster: "ò... ó o o ooo" — rising cry, held note, then a falling, wavering finish.
-  function rooster() {
+  function roosterSynth() {
     if (!ctx || ctx.state !== "running") return;
     const t = ctx.currentTime;
     const notes = [[0, 0.28, 520, 760], [0.34, 0.4, 780, 820], [0.8, 0.22, 700, 640], [1.08, 0.7, 650, 360]];
@@ -261,6 +262,47 @@ window.NightAudio = (() => {
     });
   }
   function setDay(v) { day = !!v; }
+
+  // ---------- real recordings (public/sounds, see CREDITS.md); synthesis is the fallback ----------
+  const SAMPLE_FILES = { rooster: "sounds/rooster.mp3", raven: "sounds/raven.mp3", dog: "sounds/dog.mp3", owl: "sounds/owl.mp3" };
+  const samples = {};
+  let samplesRequested = false;
+  function loadSamples() {
+    if (samplesRequested || !ctx) return;
+    samplesRequested = true;
+    for (const [name, url] of Object.entries(SAMPLE_FILES)) {
+      fetch(url).then((r) => (r.ok ? r.arrayBuffer() : Promise.reject()))
+        .then((b) => ctx.decodeAudioData(b))
+        .then((buf) => { samples[name] = buf; })
+        .catch(() => {});
+    }
+  }
+  function playSample(name, { gain = 0.5, pan = 0, rate = 1, lowpass = 0, delay = 0 } = {}) {
+    const buf = samples[name];
+    if (!buf || !ctx || ctx.state !== "running") return false;
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    src.playbackRate.value = rate;
+    let node = src;
+    if (lowpass) { const lp = ctx.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = lowpass; node.connect(lp); node = lp; }
+    const g = ctx.createGain(); g.gain.value = gain; node.connect(g); node = g;
+    if (ctx.createStereoPanner) { const p = ctx.createStereoPanner(); p.pan.value = Math.max(-1, Math.min(1, pan)); node.connect(p); node = p; }
+    node.connect(master);
+    src.start(ctx.currentTime + delay);
+    return true;
+  }
+  const rand = (a, b) => a + Math.random() * (b - a);
+  function owl(pan = 0) { if (!playSample("owl", { gain: 0.45, pan, rate: rand(0.95, 1.02) })) owlSynth(pan); }
+  function farOwl() { if (!playSample("owl", { gain: 0.13, pan: rand(-0.8, 0.8), lowpass: 1100, rate: rand(0.93, 0.99) })) farOwlSynth(); }
+  function crow(pan = 0, n = 3) { if (!playSample("raven", { gain: 0.6, pan, rate: rand(0.85, 0.95) })) crowSynth(pan, n); }
+  function rooster() { if (!playSample("rooster", { gain: 0.42 })) roosterSynth(); }
+  function dog() {
+    const pan = rand(-0.8, 0.8);
+    if (!playSample("dog", { gain: 0.22, pan, lowpass: 1700, rate: rand(0.9, 1.05) })) return dogSynth();
+    // sometimes a second, farther dog answers
+    if (Math.random() < 0.5) playSample("dog", { gain: 0.1, pan: -pan, lowpass: 1000, rate: rand(1.1, 1.2), delay: rand(2.4, 3.6) });
+  }
+
 
   let farTimer = null;
   function scheduleFar() {
