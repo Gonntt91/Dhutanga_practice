@@ -111,6 +111,8 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--lantern); o
 .sky-name { font: 600 15px/1.15 var(--font-display); color: var(--ash); text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6); }
 .sky-hint { font: 500 10px/1.3 var(--font-ui); color: var(--ash-dim); text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6); letter-spacing: 0.02em; }
 .app.day .sky-name, .app.day .sky-hint { color: #f6f1de; }
+.zoom-ctl { position: absolute; z-index: 4; right: max(12px, env(safe-area-inset-right, 0px)); top: calc(env(safe-area-inset-top, 0px) + 104px); display: grid; gap: 6px; }
+.zoom-btn { width: 36px; height: 36px; padding: 0; font: 600 18px/1 var(--font-ui); background: var(--panel); }
 .chat-btn { position: absolute; z-index: 4; right: max(12px, env(safe-area-inset-right, 0px)); top: calc(env(safe-area-inset-top, 0px) + 62px); background: var(--panel); }
 .chat-panel {
   position: absolute; z-index: 7; left: 10px; right: 10px; top: calc(env(safe-area-inset-top, 0px) + 58px); max-width: 420px; margin: 0 auto;
@@ -129,6 +131,13 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--lantern); o
 .chat-form { display: flex; gap: 8px; }
 .chat-form input { flex: 1; min-width: 0; font: 16px var(--font-body); color: var(--ash); background: #0f1614; border: 1px solid var(--line); border-radius: 8px; padding: 9px 11px; }
 .chat-send { padding: 9px 16px; }
+.room-letter { position: absolute; inset: 0; z-index: 3; display: grid; place-items: center; padding: 20px; background: rgba(4, 7, 7, 0.72); overflow-y: auto; }
+.paper { width: min(100%, 360px); max-height: 88%; overflow-y: auto; padding: 22px 22px 18px; border-radius: 4px; color: #2b2418; background: #e8dcc0 linear-gradient(180deg, rgba(255,255,255,0.12), rgba(120,90,40,0.12)); box-shadow: 0 10px 40px rgba(0,0,0,0.6); transform: rotate(-0.6deg); animation: fadein 0.6s ease both; }
+.paper-title { margin: 0 0 10px; font: 600 20px/1.2 var(--font-display); color: #4a3418; }
+.paper-body p { margin: 0 0 10px; font: 16px/1.6 "Literata", Georgia, serif; }
+.paper-body p.sign { text-align: right; font-style: italic; }
+.paper-body p.stain { font: 12px/1.4 var(--font-ui); color: #7a6a4a; }
+.paper-close { margin-top: 6px; background: rgba(60, 45, 20, 0.12); color: #3a2c14; border-color: rgba(60, 45, 20, 0.4); }
 .find-card { z-index: 4; padding-top: 14px; }
 .find-label { margin-bottom: 8px; color: var(--ash-dim); }
 .sheet-handle {

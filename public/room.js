@@ -5,6 +5,8 @@ window.Room = (() => {
   let root, cv, ctx, cap, closeBtn, raf = null, onClose = null, onPhoto = null;
   let px = 0, py = 0, tpx = 0, tpy = 0, t0 = 0, scale = 1, ox = 0, oy = 0;
   let flipped = false, bowlsLifted = false, last = 0;
+  let drawerOpen = false, hasWife = false, onLore = null;
+  const read = new Set(); // letters read during this visit
   let dust = [];
 
   // objects: hit boxes in logical coords (before parallax), depth is how much they move.
@@ -14,8 +16,45 @@ window.Room = (() => {
     { id: "chair", x: 40, y: 430, w: 80, h: 130, depth: 1.0 },
     { id: "bowls", x: 140, y: 438, w: 120, h: 46, depth: 1.1 },
     { id: "photo", x: 255, y: 452, w: 60, h: 40, depth: 1.1 },
+    { id: "calendar", x: 150, y: 168, w: 56, h: 74, depth: 0.5 },
+    { id: "shoe", x: 196, y: 566, w: 40, h: 22, depth: 1.1 },
+    { id: "drawer", x: 168, y: 492, w: 124, h: 26, depth: 1.1 },
   ];
+  // objects that only exist once the drawer is open
+  const DRAWER_OBJ = [
+    { id: "letter1", x: 176, y: 506, w: 46, h: 26, depth: 1.1 },
+    { id: "letter2", x: 230, y: 508, w: 50, h: 24, depth: 1.1 },
+  ];
+  const LETTERS = {
+    letter1: {
+      title: "Thư chưa gửi",
+      body: [
+        "Hạnh con,",
+        "Mẹ đi bán xôi sớm, cơm nguội mẹ để trong chạn, con nhớ ăn. Nếu nước lên thì con cứ ở trên gác, đừng chạy theo mẹ. Mẹ về ngay, mẹ hứa.",
+        "Mẹ để ba cái bát úp trên bàn: một cho con, một cho mẹ, một cho ai đi qua nhà mình lúc đói. Nhà mình nghèo, nhưng bát thì bao giờ cũng có một cái dành cho khách.",
+        { sign: "Mẹ." },
+        { stain: "Tờ giấy có một vệt nước ố vàng ở góc, đã khô từ lâu." },
+      ],
+      lore: "r_thu1",
+    },
+    letter2: {
+      title: "Phong thư dán kín: “Gửi mẹ Sáu”",
+      body: [
+        "Mẹ ơi,",
+        "Năm nay con lại nấu xôi gấc như mẹ dạy, nấu đúng cái nồi đồng mẹ để lại. Con mang lên đặt ở bậc cửa tịnh thất vì nghe thầy ở đó hay cho người đói ăn. Con không dám ra nghĩa địa, sợ nhìn thấy mộ mẹ là con khóc, mà con khóc thì mẹ lại thương.",
+        "Hồi đó cả xóm nuôi con, mỗi nhà một bát cơm. Con trả mãi chưa hết. Ông nhà con khó tính lắm, nhưng ông không biết, trong cái nồi xôi con nấu mỗi năm có phần của ông nữa.",
+        "Nếu mẹ còn đứng ở gốc gạo chờ con, thì con ở đây rồi. Mẹ đừng chờ nữa.",
+        { sign: "Hạnh." },
+      ],
+      lore: "r_thu2",
+    },
+  };
   const TEXT = {
+    calendar: "Tờ lịch cũ dừng ở một ngày khoanh đỏ: rằm tháng tám. Bên cạnh có dòng chữ nguệch ngoạc bằng than: “Nước lên. Mẹ về ngay.”",
+    shoe: "Dưới gầm bàn có một chiếc dép trẻ con, một chiếc thôi. Chiếc kia chắc đang ở một nơi nào đó ngoài nghĩa địa.",
+    drawerShut: "Ngăn kéo bàn kẹt cứng. Kéo mạnh một cái mới ra.",
+    drawerOpen: "Trong ngăn kéo có hai lá thư: một tờ giấy gấp đôi đã ố vàng, và một phong thư dán kín.",
+    sealed: "Phong thư dán kín, ngoài bì chỉ có dòng chữ “Gửi mẹ Sáu”. Có vẻ chưa đủ duyên để mở. Bạn chưa biết người viết là ai.",
     cobweb: "Mạng nhện dệt xong thì chủ nhà không về nữa. Con nhện không biết, vẫn kiên nhẫn chờ ruồi.",
     window: "Ngoài khung cửa là nghĩa địa. Nhìn từ đây, nó giống một mảnh vườn có nhiều khách ngủ say.",
     chair: "Chiếc ghế gãy một chân, dựa vào tường như người mệt đã đứng lâu.",
@@ -33,6 +72,7 @@ window.Room = (() => {
     closeBtn = document.getElementById("room-close");
     ctx = cv.getContext("2d");
     closeBtn.addEventListener("click", close);
+    document.getElementById("letter-close").addEventListener("click", () => { document.getElementById("room-letter").hidden = true; });
     const move = (e) => {
       const r = cv.getBoundingClientRect();
       tpx = ((e.clientX - r.left) / r.width - 0.5) * 2;
@@ -58,7 +98,9 @@ window.Room = (() => {
 
   function open(opts) {
     if (!root) build();
-    onClose = opts.onClose; onPhoto = opts.onPhoto;
+    onClose = opts.onClose; onPhoto = opts.onPhoto; onLore = opts.onLore || null;
+    hasWife = !!opts.hasWife; drawerOpen = false; read.clear();
+    document.getElementById("room-letter").hidden = true;
     flipped = !!opts.flipped; bowlsLifted = false; px = py = tpx = tpy = 0; t0 = performance.now(); last = t0;
     dust = Array.from({ length: 40 }, () => ({ x: Math.random() * LW, y: 80 + Math.random() * 420, v: 3 + Math.random() * 6, p: Math.random() * 6 }));
     root.hidden = false;
@@ -68,6 +110,7 @@ window.Room = (() => {
   }
   function close() {
     cancelAnimationFrame(raf); raf = null;
+    document.getElementById("room-letter").hidden = true;
     root.hidden = true;
     const cb = onClose; onClose = null;
     if (cb) cb({ flipped });
@@ -80,12 +123,34 @@ window.Room = (() => {
     const r = cv.getBoundingClientRect();
     const dpr = cv.width / r.width;
     const lx = ((e.clientX - r.left) * dpr - ox) / scale, ly = ((e.clientY - r.top) * dpr - oy) / scale;
-    for (const o of [...OBJ].reverse()) {
+    for (const o of [...OBJ, ...(drawerOpen ? DRAWER_OBJ : [])].reverse()) {
       const [sx, sy] = shift(o.depth);
       if (lx >= o.x + sx && lx <= o.x + o.w + sx && ly >= o.y + sy && ly <= o.y + o.h + sy) { examine(o.id); return; }
     }
   }
+  function showLetter(id) {
+    const L = LETTERS[id];
+    document.getElementById("letter-title").textContent = L.title;
+    const body = document.getElementById("letter-body");
+    body.replaceChildren();
+    for (const part of L.body) {
+      const p = document.createElement("p");
+      if (typeof part === "string") p.textContent = part;
+      else if (part.sign) { p.className = "sign"; p.textContent = part.sign; }
+      else { p.className = "stain"; p.textContent = part.stain; }
+      body.appendChild(p);
+    }
+    document.getElementById("room-letter").hidden = false;
+    if (onLore && !read.has(id)) onLore(L.lore);
+    read.add(id);
+  }
   function examine(id) {
+    if (id === "drawer") {
+      if (!drawerOpen) { drawerOpen = true; say(TEXT.drawerOpen); } else say(TEXT.drawerOpen);
+      return;
+    }
+    if (id === "letter1") return showLetter("letter1");
+    if (id === "letter2") { if (hasWife) return showLetter("letter2"); say(TEXT.sealed); return; }
     if (id === "bowls") { say(bowlsLifted ? TEXT.bowls1 : TEXT.bowls0); bowlsLifted = true; return; }
     if (id === "photo") {
       if (!flipped) { flipped = true; if (onPhoto) onPhoto(); say(TEXT.photoUp); }
@@ -129,6 +194,14 @@ window.Room = (() => {
     for (let k = 0; k < 5; k++) { ctx.beginPath(); ctx.moveTo(12 + cx, 150 + cy); ctx.lineTo(12 + cx + 80 * Math.cos(k * 0.38), 150 + cy + 80 * Math.sin(k * 0.38)); ctx.stroke(); }
     for (let r = 20; r <= 70; r += 18) { ctx.beginPath(); ctx.arc(12 + cx, 150 + cy, r, 0, 1.6); ctx.stroke(); }
 
+    // wall calendar with a red-circled date
+    const [kx, ky] = shift(0.5);
+    ctx.fillStyle = "#cfc3a4"; ctx.fillRect(150 + kx, 168 + ky, 56, 74);
+    ctx.fillStyle = "#8a2f25"; ctx.fillRect(150 + kx, 168 + ky, 56, 12);
+    ctx.fillStyle = "rgba(60,50,35,0.55)";
+    for (let rr = 0; rr < 4; rr++) for (let cc = 0; cc < 5; cc++) ctx.fillRect(156 + cc * 9 + kx, 188 + rr * 12 + ky, 5, 5);
+    ctx.strokeStyle = "#b02a20"; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.arc(183 + kx, 212 + ky, 7, 0, 7); ctx.stroke();
+
     // floor with converging planks
     poly([[-60, 460], [LW + 60, 460], [LW + 140, LH + 20], [-140, LH + 20]], "#232a26", 0.8);
     const [fx] = shift(0.8);
@@ -142,10 +215,25 @@ window.Room = (() => {
     ctx.fillRect(48 + chx, 430 + chy, 8, 120); ctx.fillRect(100 + chx, 470 + chy, 8, 80); // back post, front leg (one short)
     ctx.fillRect(48 + chx, 500 + chy, 62, 8); ctx.fillRect(48 + chx, 430 + chy, 40, 7);
 
+    // child's sandal under the table
+    const [shx, shy] = shift(1.1);
+    ctx.fillStyle = "#4a3a2c"; ctx.beginPath(); ctx.ellipse(214 + shx, 578 + shy, 17, 6, -0.15, 0, 7); ctx.fill();
+    ctx.fillStyle = "#6a523c"; ctx.beginPath(); ctx.ellipse(214 + shx, 576 + shy, 11, 3.2, -0.15, 0, 7); ctx.fill();
     // table
     const [tx, ty] = shift(1.1);
     ctx.fillStyle = "#3a3128";
     ctx.fillRect(130 + tx, 480 + ty, 200, 10); ctx.fillRect(140 + tx, 490 + ty, 9, 90); ctx.fillRect(312 + tx, 490 + ty, 9, 90);
+    // drawer under the tabletop; open it and two letters peek out
+    ctx.fillStyle = "#2e261d"; ctx.fillRect(168 + tx, 490 + ty, 124, drawerOpen ? 36 : 24);
+    ctx.fillStyle = "#1b150f"; ctx.fillRect(172 + tx, 494 + ty, 116, drawerOpen ? 28 : 16);
+    ctx.fillStyle = "#8a7a5a"; ctx.fillRect(222 + tx, 500 + ty + (drawerOpen ? 20 : 8), 16, 3);
+    if (drawerOpen) {
+      ctx.fillStyle = "#d9cfae"; ctx.fillRect(176 + tx, 504 + ty, 44, 24);
+      ctx.fillStyle = "rgba(90,70,40,0.5)"; for (let q = 0; q < 3; q++) ctx.fillRect(180 + tx, 509 + q * 5 + ty, 34, 1.4);
+      ctx.fillStyle = hasWife ? "#e7dcc0" : "#c9c0a4"; ctx.fillRect(232 + tx, 507 + ty, 46, 22);
+      ctx.strokeStyle = "rgba(90,70,40,0.6)"; ctx.lineWidth = 1; ctx.strokeRect(232 + tx, 507 + ty, 46, 22);
+      ctx.beginPath(); ctx.moveTo(232 + tx, 507 + ty); ctx.lineTo(255 + tx, 520 + ty); ctx.lineTo(278 + tx, 507 + ty); ctx.stroke();
+    }
     // three upturned bowls
     ctx.fillStyle = "#6a6358";
     for (let i = 0; i < 3; i++) { ctx.beginPath(); ctx.arc(170 + i * 34 + tx, 480 + ty, 15, Math.PI, 0); ctx.fill(); }
@@ -163,8 +251,9 @@ window.Room = (() => {
     ctx.restore();
     // glow on interactive objects
     const pulse = 0.5 + 0.5 * Math.sin(time * 2.4);
-    for (const o of OBJ) {
+    for (const o of [...OBJ, ...(drawerOpen ? DRAWER_OBJ : [])]) {
       if (o.id === "photo" && flipped) continue;
+      if (o.id === "drawer" && drawerOpen) continue;
       const [sx, sy] = shift(o.depth);
       ctx.strokeStyle = `rgba(230,197,111,${0.10 + 0.14 * pulse})`; ctx.lineWidth = 1;
       ctx.strokeRect(o.x + sx, o.y + sy, o.w, o.h);

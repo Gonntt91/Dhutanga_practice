@@ -1,7 +1,9 @@
 // 2D portrait world: a cemetery seen from a high 3/4 angle, scrolling vertically.
 // World units: 400 wide x 2000 tall. Everything is drawn procedurally on canvas.
 window.World = (() => {
-  const W = 400;
+  const W = 640;            // world width (content was authored for 400, then shifted by SHIFT)
+  const SHIFT = window.WORLD_SHIFT || 0;
+  const BASE_VIEW_W = 400;  // at zoom 1 the screen shows this many world units across
   const H = 2000;
 
   const PLACES = {
@@ -141,12 +143,44 @@ window.World = (() => {
     for (const [x, y] of [[78, 1975], [325, 1962], [52, 2110], [318, 2135], [92, 2290], [340, 2310]]) decor.push({ kind: "house", x, y });
     for (const [x, y] of [[20, 2050], [372, 2060], [140, 2200], [258, 2240], [30, 2380], [380, 2420]]) decor.push({ kind: "tree", x, y, s: 0.8 + r() * 0.4 });
     for (const [cx, cy, n] of [[255, 2060, 5], [120, 2380, 6]]) for (let i = 0; i < n; i++) decor.push({ kind: "bamboo", x: cx + (r() - 0.5) * 36, y: cy + (r() - 0.5) * 24, h: 60 + r() * 45, lean: (r() - 0.5) * 0.3, seed: r() * 10 });
-    for (let i = 0; i < 320; i++) tufts.push({ x: r() * W, y: r() * H, s: 0.6 + r() * 0.9, h: Math.floor(r() * 1000) });
-    for (let i = 0; i < 70; i++) grassPatches.push({ x: r() * W, y: r() * 2500, rx: 30 + r() * 60, ry: 12 + r() * 22, c: r() < 0.5 ? "120,190,70" : "60,130,50" });
+    for (let i = 0; i < 520; i++) tufts.push({ x: r() * W, y: r() * H, s: 0.6 + r() * 0.9, h: Math.floor(r() * 1000) });
+    for (let i = 0; i < 110; i++) grassPatches.push({ x: r() * W, y: r() * 2500, rx: 30 + r() * 60, ry: 12 + r() * 22, c: r() < 0.5 ? "120,190,70" : "60,130,50" });
+  })();
+
+  // Shift everything authored in the original 400-wide space to the middle of the wider world,
+  // then fill both wings with extra scenery.
+  (function widenWorld() {
+    PATH.forEach((p) => { p[0] += SHIFT; });
+    Object.values(PLACES).forEach((p) => { p.x += SHIFT; });
+    UNNAMED.x += SHIFT;
+    Object.values(SPAWN).forEach((p) => { p.x += SHIFT; });
+    decor.forEach((d) => { d.x += SHIFT; });
+    const r = rng(23);
+    const wings = [[14, SHIFT - 14], [W - SHIFT + 14, W - 14]];
+    const near = (x, y, d, kind) => decor.some((o) => (!kind || o.kind === kind) && Math.hypot(o.x - x, o.y - y) < d);
+    for (const [x0, x1] of wings) {
+      let n = 0, tries = 0;
+      while (n < 26 && tries < 2000) {            // graves
+        tries++;
+        const x = x0 + r() * (x1 - x0), y = 700 + r() * 760;
+        if (near(x, y, 26, "grave")) continue;
+        decor.push({ kind: "grave", type: Math.floor(r() * 4), x, y, s: 0.8 + r() * 0.5, incense: r() < 0.06 });
+        n++;
+      }
+      for (let i = 0; i < 6; i++) { // trees
+        const x = x0 + r() * (x1 - x0), y = 250 + r() * 1500;
+        if (!near(x, y, 60, "tree")) decor.push({ kind: "tree", x, y, s: 0.7 + r() * 0.5 });
+      }
+      const cx = x0 + (x1 - x0) * (0.3 + r() * 0.4), cy = 1380 + r() * 260; // a bamboo grove
+      for (let i = 0; i < 8; i++) decor.push({ kind: "bamboo", x: cx + (r() - 0.5) * 50, y: cy + (r() - 0.5) * 34, h: 60 + r() * 55, lean: (r() - 0.5) * 0.35, seed: r() * 10 });
+    }
+    // extra houses and trees around the village on both sides
+    for (const [x, y] of [[44, 2060], [596, 2090], [30, 2220], [610, 2240]]) decor.push({ kind: "house", x, y });
+    for (const [x, y] of [[110, 2330], [530, 2350], [60, 2150], [580, 2170]]) decor.push({ kind: "tree", x, y, s: 0.8 + r() * 0.4 });
   })();
 
   const fog = Array.from({ length: 7 }, (_, i) => ({ x: Math.random() * W, y: i / 7, rx: 120 + Math.random() * 120, ry: 26 + Math.random() * 20, v: 3 + Math.random() * 5 }));
-  const fireflies = Array.from({ length: 14 }, () => ({ x: 30 + Math.random() * 340, y: 700 + Math.random() * 900, p: Math.random() * 6.28, v: 0.4 + Math.random() * 0.6 }));
+  const fireflies = Array.from({ length: 14 }, () => ({ x: 30 + Math.random() * (W - 60), y: 700 + Math.random() * 900, p: Math.random() * 6.28, v: 0.4 + Math.random() * 0.6 }));
 
   // A black owl crosses the sky now and then and hoots once mid-flight.
   const owl = { on: false, x: 0, y: 0, dir: 1, hooted: false, wait: 10 + Math.random() * 8, phase: 0 };
@@ -158,17 +192,18 @@ window.World = (() => {
       if (owl.wait > 0) return;
       owl.on = true; owl.hooted = false;
       owl.dir = Math.random() < 0.5 ? 1 : -1;
-      owl.x = owl.dir > 0 ? -30 : W + 30;
+      owl.x = owl.dir > 0 ? camX - 30 : camX + viewW + 30;
       owl.yRel = 0.1 + Math.random() * 0.16;
       return;
     }
     owl.x += owl.dir * 46 * dt;
     owl.phase += dt;
-    if (!owl.hooted && owl.x > W * 0.38 && owl.x < W * 0.62) {
+    const owlU = (owl.x - camX) / viewW;
+    if (!owl.hooted && owlU > 0.38 && owlU < 0.62) {
       owl.hooted = true;
-      window.dispatchEvent(new CustomEvent("owl", { detail: { pan: (owl.x / W) * 2 - 1 } }));
+      window.dispatchEvent(new CustomEvent("owl", { detail: { pan: owlU * 2 - 1 } }));
     }
-    if (owl.x < -40 || owl.x > W + 40) { owl.on = false; owl.wait = 28 + Math.random() * 30; }
+    if (owlU < -0.1 || owlU > 1.1) { owl.on = false; owl.wait = 28 + Math.random() * 30; }
   }
   function drawOwl() {
     if (!owl.on) return;
@@ -202,7 +237,7 @@ window.World = (() => {
 
   // Ambient ghost bots: rare, only at night, only in the graveyard stretch of the map.
   // "rise" ghosts form at a grave and fade away; "pass" ghosts drift across and vanish.
-  const GY = { y0: 620, y1: 1280, x0: 40, x1: 360 };
+  const GY = { y0: 620, y1: 1280, x0: 40, x1: 600 };
   const bots = [];
   let botWait = 14 + Math.random() * 12;
   function updateBots(dt) {
@@ -272,7 +307,7 @@ window.World = (() => {
     ctx.textAlign = "center";
     const lines = wrapText(b.text, 112);
     const w = Math.max(...lines.map((l) => ctx.measureText(l).width)) + 12, h = lines.length * 12 + 8;
-    const bx = Math.max(6, Math.min(W - 6 - w, x - w / 2)), by = y - h - 6;
+    const bx = Math.max(camX + 6, Math.min(camX + viewW - 6 - w, x - w / 2)), by = y - h - 6;
     const a = Math.min(1, b.t / 0.25, (b.life - b.t) / 0.8);
     const rc = b.role === "monk" ? "208,138,77" : b.role === "villager" ? "230,197,111" : "120,215,190";
     ctx.globalAlpha = Math.max(0, a);
@@ -320,17 +355,18 @@ window.World = (() => {
       if (crow.wait > 0 || owl.on) return;
       crow.on = true; crow.called = false;
       crow.dir = Math.random() < 0.5 ? 1 : -1;
-      crow.x = crow.dir > 0 ? -30 : W + 30;
+      crow.x = crow.dir > 0 ? camX - 30 : camX + viewW + 30;
       crow.yRel = 0.08 + Math.random() * 0.25;
       return;
     }
     crow.x += crow.dir * 78 * dt;
     crow.phase += dt;
-    if (!crow.called && crow.x > W * 0.3 && crow.x < W * 0.7) {
+    const crowU = (crow.x - camX) / viewW;
+    if (!crow.called && crowU > 0.3 && crowU < 0.7) {
       crow.called = true;
-      window.dispatchEvent(new CustomEvent("crow", { detail: { pan: (crow.x / W) * 2 - 1, n: 2 + Math.floor(Math.random() * 3) } }));
+      window.dispatchEvent(new CustomEvent("crow", { detail: { pan: crowU * 2 - 1, n: 2 + Math.floor(Math.random() * 3) } }));
     }
-    if (crow.x < -40 || crow.x > W + 40) { crow.on = false; crow.wait = 55 + Math.random() * 50; }
+    if (crowU < -0.1 || crowU > 1.1) { crow.on = false; crow.wait = 55 + Math.random() * 50; }
   }
   function drawCrow() {
     if (!crow.on) return;
@@ -365,6 +401,7 @@ window.World = (() => {
   let scale = 1;
   let viewH = 800;
   let camY = H - 800;
+  let camX = 0, viewW = BASE_VIEW_W, baseScale = 1, zoom = 1, zoomTarget = 1;
   let last = 0;
   let time = 0;
   const player = { x: SPAWN.monk.x, y: SPAWN.monk.y, tx: null, ty: null, facing: 1, phase: 0, moving: false };
@@ -385,31 +422,42 @@ window.World = (() => {
     window.addEventListener("resize", resize);
     // A short press is a tap; dragging vertically pans the camera so you can look around
     // without moving the character.
-    let press = null;
+    // One finger: tap, or drag to look around. Two fingers: pinch to zoom in and out.
+    const pointers = new Map();
+    let press = null, pinch = null, gestureMulti = false;
+    const pinchDist = () => { const [a, b] = [...pointers.values()]; return Math.hypot(a.x - b.x, a.y - b.y) || 1; };
     canvas.addEventListener("pointerdown", (e) => {
-      press = { x: e.clientX, y: e.clientY, lastY: e.clientY, dragged: false, id: e.pointerId };
+      pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
       try { canvas.setPointerCapture(e.pointerId); } catch {}
+      if (pointers.size === 2) { pinch = { d: pinchDist(), z: zoomTarget }; gestureMulti = true; press = null; return; }
+      if (pointers.size === 1) { gestureMulti = false; press = { x: e.clientX, y: e.clientY, lastX: e.clientX, lastY: e.clientY, dragged: false, id: e.pointerId }; }
     });
     canvas.addEventListener("pointermove", (e) => {
+      if (pointers.has(e.pointerId)) pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (pinch && pointers.size >= 2) { setZoom(pinch.z * pinchDist() / pinch.d); return; }
       if (!press || e.pointerId !== press.id) return;
       if (!press.dragged && Math.hypot(e.clientX - press.x, e.clientY - press.y) > 8) press.dragged = true;
       if (!press.dragged) return;
-      const dy = (e.clientY - press.lastY) / scale;
-      press.lastY = e.clientY;
+      const dx = (e.clientX - press.lastX) / scale, dy = (e.clientY - press.lastY) / scale;
+      press.lastX = e.clientX; press.lastY = e.clientY;
       look.on = true; look.idle = 0;
       look.target = clampLook(camY - dy);
-      camY = look.target;
+      look.targetX = clampLookX(camX - dx);
+      camY = look.target; camX = look.targetX;
     });
     const release = (e) => {
+      pointers.delete(e.pointerId);
+      if (pointers.size < 2) pinch = null;
       if (!press || e.pointerId !== press.id) return;
       const p = press; press = null;
       look.idle = 0;
-      if (p.dragged || e.type === "pointercancel") return;
+      if (p.dragged || gestureMulti || e.type === "pointercancel") return;
       const rect = canvas.getBoundingClientRect();
-      const wx = (e.clientX - rect.left) / scale;
+      const wx = (e.clientX - rect.left) / scale + camX;
       const wy = (e.clientY - rect.top) / scale + camY;
       if (tapHandler) tapHandler(wx, wy);
     };
+    canvas.addEventListener("wheel", (e) => { e.preventDefault(); setZoom(zoomTarget * Math.exp(-e.deltaY * 0.0016)); }, { passive: false });
     canvas.addEventListener("pointerup", release);
     canvas.addEventListener("pointercancel", release);
     requestAnimationFrame(frame);
@@ -422,13 +470,26 @@ window.World = (() => {
     canvas.height = Math.round(rect.height * dpr);
     shade.width = canvas.width;
     shade.height = canvas.height;
-    scale = rect.width / W;
+    baseScale = rect.width / BASE_VIEW_W;
+    zoomTarget = clampZoom(zoomTarget);
+    applyZoom();
+  }
+  // Zoom: 1 shows BASE_VIEW_W units across the screen. Zooming out shows more of the wider world,
+  // but never more than the world's own width.
+  function minZoom() { return Math.max(0.62, BASE_VIEW_W / W); }
+  function clampZoom(z) { return Math.max(minZoom(), Math.min(1.8, z)); }
+  function setZoom(z) { zoomTarget = clampZoom(z); }
+  function zoomBy(f) { setZoom(zoomTarget * f); }
+  function applyZoom() {
+    const rect = canvas.getBoundingClientRect();
+    scale = baseScale * zoom;
+    viewW = rect.width / scale;
     viewH = rect.height / scale;
   }
 
   // ---------- public controls ----------
   function setView(patch) { Object.assign(view, patch); }
-  function setPlayer(x, y) { look.on = false; player.x = x; player.y = y; player.tx = null; player.moving = false; camY = clampCam(y - viewH * view.anchor); }
+  function setPlayer(x, y) { look.on = false; player.x = x; player.y = y; player.tx = null; player.moving = false; camY = clampCam(y - viewH * view.anchor); camX = clampCamX(x - viewW / 2); }
   function walkTo(x, y) {
     player.tx = Math.max(12, Math.min(W - 12, x));
     player.ty = Math.max(60, Math.min(2340, y));
@@ -452,23 +513,29 @@ window.World = (() => {
   function ripple(nx, ny, kind) { ripples.push({ x: nx * W, y: ny * H, kind, t: 0 }); }
 
   function clampCam(y) { return Math.max(-viewH * 0.1, Math.min(H + 450 - viewH, y)); }
+  function clampCamX(x) { return Math.max(0, Math.min(W - viewW, x)); }
 
   // Free look: camera detached from the character. Limited by view.lookRange (per role).
-  const look = { on: false, target: 0, idle: 0, announced: false };
+  const look = { on: false, target: 0, targetX: 0, idle: 0, announced: false };
   const LOOK_IDLE_RETURN = 12; // seconds without touching before the camera drifts home
   function homeCam() { return clampCam(player.y - viewH * view.anchor); }
+  function homeCamX() { return clampCamX(player.x - viewW / 2); }
+  function clampLookX(x) { const c = homeCamX(); return clampCamX(Math.max(c - view.lookRange, Math.min(c + view.lookRange, x))); }
   function clampLook(y) {
     const c = homeCam();
     return clampCam(Math.max(c - view.lookRange, Math.min(c + view.lookRange, y)));
   }
-  function lookAt(worldY) { look.on = true; look.idle = 0; look.target = clampLook(worldY - viewH * 0.5); }
+  function lookAt(worldY, worldX) {
+    look.on = true; look.idle = 0; look.target = clampLook(worldY - viewH * 0.5);
+    look.targetX = worldX == null ? homeCamX() : clampLookX(worldX - viewW / 2);
+  }
   function resetLook() { look.on = false; }
   function isLooking() { return look.on; }
   function getMap() {
     const pts = [];
     for (const o of others.values()) pts.push({ x: o.rx, y: o.ry, role: o.role });
     return {
-      W, H, PLACES, path: PATH, others: pts, finds: finds.map((f) => ({ x: f.x, y: f.y })), camY, viewH,
+      W, H, PLACES, path: PATH, others: pts, finds: finds.map((f) => ({ x: f.x, y: f.y })), camX, camY, viewW, viewH, zoom,
       player: { x: player.x, y: player.y }, range: view.lookRange, view: view.role,
     };
   }
@@ -494,12 +561,21 @@ window.World = (() => {
         player.phase += dt * 9;
       }
     }
+    if (Math.abs(zoomTarget - zoom) > 0.0005) { zoom += (zoomTarget - zoom) * Math.min(1, dt * 9); applyZoom(); }
     if (look.on) {
       look.idle += dt;
       if (look.idle > LOOK_IDLE_RETURN) look.on = false;
-      else { look.target = clampLook(look.target); camY += (look.target - camY) * Math.min(1, dt * 5); }
+      else {
+        look.target = clampLook(look.target); look.targetX = clampLookX(look.targetX);
+        camY += (look.target - camY) * Math.min(1, dt * 5);
+        camX += (look.targetX - camX) * Math.min(1, dt * 5);
+      }
     }
-    if (!look.on) camY += (homeCam() - camY) * Math.min(1, dt * 3);
+    if (!look.on) {
+      camY += (homeCam() - camY) * Math.min(1, dt * 3);
+      camX += (homeCamX() - camX) * Math.min(1, dt * 3);
+    }
+    camX = clampCamX(camX);
     if (look.on !== look.announced) {
       look.announced = look.on;
       window.dispatchEvent(new CustomEvent("lookchange", { detail: { on: look.on } }));
@@ -971,7 +1047,7 @@ window.World = (() => {
     const top = camY - 40;
     const bottom = camY + viewH + 80;
     const lights = [];
-    ctx.setTransform(k, 0, 0, k, 0, -camY * k);
+    ctx.setTransform(k, 0, 0, k, -camX * k, -camY * k);
     drawGround(top - 40, bottom);
 
     // collect drawables in view, sort by y (base line)
@@ -1015,7 +1091,7 @@ window.World = (() => {
     sctx.fillRect(0, 0, shade.width, shade.height);
     sctx.globalCompositeOperation = "destination-out";
     for (const l of lights) {
-      const sx = l.x * k;
+      const sx = (l.x - camX) * k;
       const sy = (l.y - camY) * k;
       const sr = l.r * k;
       if (sy < -sr || sy > shade.height + sr) continue;
@@ -1066,7 +1142,7 @@ window.World = (() => {
     }
 
     // above darkness: warm glows, fireflies, ripples, labels, marker
-    ctx.setTransform(k, 0, 0, k, 0, -camY * k);
+    ctx.setTransform(k, 0, 0, k, -camX * k, -camY * k);
     drawFinds();
     drawOwl();
     drawCrow();
@@ -1185,7 +1261,7 @@ window.World = (() => {
       return;
     }
     const ay = onTop ? camY + 96 : camY + viewH - 140;
-    const ax = Math.max(30, Math.min(W - 30, p.x));
+    const ax = Math.max(camX + 30, Math.min(camX + viewW - 30, p.x));
     const dir = onTop ? -1 : 1;
     ctx.fillStyle = `rgba(230,197,111,${0.6 + 0.35 * pulse})`;
     ctx.beginPath(); ctx.moveTo(ax, ay + dir * 8); ctx.lineTo(ax - 7, ay - dir * 2); ctx.lineTo(ax + 7, ay - dir * 2); ctx.closePath(); ctx.fill();
@@ -1197,5 +1273,5 @@ window.World = (() => {
     return role && window.ROLE_INFO ? ROLE_INFO[role].name : "";
   }
 
-  return { say, setFinds, lookAt, resetLook, isLooking, getMap, W, H, PLACES, SPAWN, init, setView, setPlayer, walkTo, stop, getPlayer, setOthers, ripple };
+  return { zoomBy, say, setFinds, lookAt, resetLook, isLooking, getMap, W, H, PLACES, SPAWN, init, setView, setPlayer, walkTo, stop, getPlayer, setOthers, ripple };
 })();

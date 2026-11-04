@@ -33,6 +33,11 @@
   <div id="toast" class="toast" aria-live="polite"></div>
   <button id="look-back" class="pill look-back" type="button" hidden>Về chỗ</button>
 
+  <div id="zoom-ctl" class="zoom-ctl" hidden>
+    <button id="zoom-in" class="pill zoom-btn" type="button" aria-label="Phóng to">+</button>
+    <button id="zoom-out" class="pill zoom-btn" type="button" aria-label="Thu nhỏ">−</button>
+  </div>
+
   <!-- nearby chat -->
   <button id="chat-btn" class="pill chat-btn" type="button" hidden>Trò chuyện <span id="chat-badge" class="count" hidden>0</span></button>
   <section id="chat-panel" class="chat-panel" hidden aria-label="Trò chuyện với người ở gần">
@@ -110,6 +115,13 @@
     <canvas id="room-canvas" class="room-canvas"></canvas>
     <button id="room-close" class="pill room-close" type="button">Ra ngoài</button>
     <p id="room-caption" class="room-caption"></p>
+    <div id="room-letter" class="room-letter" hidden>
+      <article class="paper" aria-live="polite">
+        <h3 id="letter-title" class="paper-title"></h3>
+        <div id="letter-body" class="paper-body"></div>
+        <button id="letter-close" class="pill paper-close" type="button">Gấp thư lại</button>
+      </article>
+    </div>
   </section>
 
   <!-- role picker -->

@@ -515,6 +515,11 @@ window.FINDS = [
     s1: { room: true, lines: [], choices: [] } } },
 ];
 
+// The world is wider than the original 400 units: content built for x in 0..400 is shifted right
+// by WORLD_SHIFT so there is room for scenery on both sides (and for zooming out).
+window.WORLD_SHIFT = 120;
+FINDS.forEach((f) => { f.x += window.WORLD_SHIFT; });
+
 window.CLUE_TOTAL = 5;
 
 window.HANH_REVEAL = [

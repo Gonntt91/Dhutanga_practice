@@ -553,6 +553,8 @@
     $("find-card").hidden = true;
     Room.open({
       flipped: loadMem().has("c_anh"), // the photo stays turned over once you have seen it
+      hasWife: loadMem().has("c_vo"),  // the sealed envelope can only be opened once you know who wrote it
+      onLore: (key) => remember(key),
       onPhoto: () => { remember("c_anh"); state.meter = Math.min(10, state.meter + 1); },
       onClose: () => { if (!find.repeat) state.found.add(find.id); closeFind(false); },
     });
@@ -774,7 +776,9 @@
     if (res.error) { chatNote("Chưa gửi được, thử lại nhé."); return; }
     chatNote(res.heard === 0 ? "Chưa có ai ở gần để nghe thấy. Lại gần người khác nhé." : "");
   });
-  function syncChatButton() { $("chat-btn").hidden = !state.role; if (!state.role) openChat(false); }
+  function syncChatButton() { $("chat-btn").hidden = !state.role; $("zoom-ctl").hidden = !state.role; if (!state.role) openChat(false); }
+  $("zoom-in").addEventListener("click", () => World.zoomBy(1.25));
+  $("zoom-out").addEventListener("click", () => World.zoomBy(0.8));
 
   // ---------- look around & map ----------
   window.addEventListener("lookchange", (e) => { $("look-back").hidden = !e.detail.on; });
@@ -836,7 +840,7 @@
     g.beginPath(); g.arc(m.player.x * sx, m.player.y * sy, 5, 0, 7); g.stroke();
     // current view window
     g.strokeStyle = "rgba(220,213,197,0.45)"; g.lineWidth = 1; g.setLineDash([4, 3]);
-    g.strokeRect(1, m.camY * sy, w - 2, m.viewH * sy); g.setLineDash([]);
+    g.strokeRect(m.camX * sx, m.camY * sy, m.viewW * sx, m.viewH * sy); g.setLineDash([]);
   }
   function openMap() {
     $("map-panel").hidden = false;

@@ -163,6 +163,7 @@ async function handleEmit(req, res) {
 // ---------- chat ----------
 // Nearby chat only: a message reaches players within CHAT_RANGE world units of the speaker.
 // Nothing is stored. A light filter blocks links, phone numbers and a few slurs.
+const WORLD_W = 640, WORLD_H = 2000;
 const CHAT_RANGE = 260;
 const CHAT_MAX = 80;
 const BLOCKED_TOKENS = new Set(["dm", "dmm", "dcm", "dcmm", "dkm", "vcl", "vkl", "clgt", "cmm", "ditme", "ditmemay", "fuck", "shit", "bitch", "nigger", "nigga", "cunt"]);
@@ -205,10 +206,10 @@ async function handleChat(req, res) {
   if (why) return json(res, 400, { error: "blocked", reason: why });
   peer.lastChat = now;
   const msg = { id: crypto.randomUUID(), from: peer.sid, role: peer.presence.role, nick: peer.presence.nick, text, at: now };
-  const sx = peer.presence.x * 400, sy = peer.presence.y * 2000;
+  const sx = peer.presence.x * WORLD_W, sy = peer.presence.y * WORLD_H;
   let heard = 0;
   for (const p of peers.values()) {
-    const near = p === peer || Math.hypot(p.presence.x * 400 - sx, p.presence.y * 2000 - sy) <= CHAT_RANGE;
+    const near = p === peer || Math.hypot(p.presence.x * WORLD_W - sx, p.presence.y * WORLD_H - sy) <= CHAT_RANGE;
     if (!near) continue;
     if (p !== peer) heard++;
     send(p.res, "chat", msg);
