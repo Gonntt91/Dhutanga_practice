@@ -3,7 +3,7 @@ window.NightAudio = (() => {
   let ctx = null;
   let master = null;
   let cricketTimer = null;
-  let day = false; // daytime: birds instead of crickets
+  let day = false; // daytime: crickets stay silent
 
   function start() {
     if (ctx) { ctx.resume(); master.gain.value = 0.9; loadSamples(); scheduleCrickets(); scheduleFar(); return; }
@@ -65,7 +65,7 @@ window.NightAudio = (() => {
   function scheduleCrickets() {
     clearTimeout(cricketTimer);
     cricketTimer = setTimeout(() => {
-      if (ctx && ctx.state === "running") (day ? bird : chirp)();
+      if (ctx && ctx.state === "running" && !day) chirp(); // daytime: no crickets
       scheduleCrickets();
     }, 700 + Math.random() * 1800);
   }
@@ -223,24 +223,6 @@ window.NightAudio = (() => {
     });
   }
 
-  // Small bird: a few quick rising/falling whistles.
-  function bird() {
-    const t = ctx.currentTime;
-    const n = 2 + Math.floor(Math.random() * 4);
-    const base = 2400 + Math.random() * 1200;
-    for (let i = 0; i < n; i++) {
-      const s = t + i * 0.13;
-      const osc = ctx.createOscillator(); osc.type = "sine";
-      osc.frequency.setValueAtTime(base, s);
-      osc.frequency.exponentialRampToValueAtTime(base * (i % 2 ? 0.8 : 1.3), s + 0.09);
-      const g = ctx.createGain();
-      g.gain.setValueAtTime(0.0001, s);
-      g.gain.linearRampToValueAtTime(0.03, s + 0.02);
-      g.gain.exponentialRampToValueAtTime(0.0001, s + 0.1);
-      osc.connect(g).connect(master); osc.start(s); osc.stop(s + 0.12);
-    }
-  }
-
   // Rooster: "ò... ó o o ooo" — rising cry, held note, then a falling, wavering finish.
   function roosterSynth() {
     if (!ctx || ctx.state !== "running") return;
@@ -313,5 +295,5 @@ window.NightAudio = (() => {
     }, 22000 + Math.random() * 38000);
   }
 
-  return { start, stop, bell, sigh, owl, crow, dog, farOwl, rooster, bird, setDay };
+  return { start, stop, bell, sigh, owl, crow, dog, farOwl, rooster, setDay };
 })();
