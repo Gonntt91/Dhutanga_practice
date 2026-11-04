@@ -156,6 +156,42 @@ window.World = (() => {
     ctx.restore();
   }
 
+  // Ambient ghost bots: rare, only at night, only in the graveyard stretch of the map.
+  // "rise" ghosts form at a grave and fade away; "pass" ghosts drift across and vanish.
+  const GY = { y0: 620, y1: 1280, x0: 40, x1: 360 };
+  const bots = [];
+  let botWait = 14 + Math.random() * 12;
+  function updateBots(dt) {
+    for (const b of bots) {
+      b.age += dt;
+      b.phase += dt;
+      if (b.type === "pass") { b.x += b.vx * dt; b.y += Math.sin(b.age * 0.9 + b.seed) * 4 * dt; }
+      else { b.y -= 3.5 * dt; b.x += Math.sin(b.age * 0.8 + b.seed) * 5 * dt; }
+    }
+    for (let i = bots.length - 1; i >= 0; i--) if (bots[i].age > bots[i].life) bots.splice(i, 1);
+    const night = view.role && view.darkness >= 0.6;
+    if (!night || bots.length >= 2) return;
+    botWait -= dt;
+    if (botWait > 0) return;
+    // only conjure one where the player can see it, inside the graveyard zone
+    const y0 = Math.max(GY.y0, camY + 60), y1 = Math.min(GY.y1, camY + viewH - 60);
+    if (y1 <= y0) { botWait = 4; return; }
+    const seed = Math.random() * 10;
+    if (Math.random() < 0.55) {
+      const graves = decor.filter((d) => d.kind === "grave" && d.y > y0 && d.y < y1 && d.x > GY.x0 && d.x < GY.x1);
+      if (graves.length) {
+        const g = graves[Math.floor(Math.random() * graves.length)];
+        bots.push({ type: "rise", x: g.x, y: g.y - 6, age: 0, life: 6 + Math.random() * 4, phase: Math.random() * 6, seed });
+        botWait = 35 + Math.random() * 50;
+        return;
+      }
+    }
+    const dir = Math.random() < 0.5 ? 1 : -1;
+    bots.push({ type: "pass", x: dir > 0 ? GY.x0 - 10 : GY.x1 + 10, y: y0 + Math.random() * (y1 - y0), vx: dir * (22 + Math.random() * 14), age: 0, life: 7 + Math.random() * 5, phase: Math.random() * 6, seed });
+    botWait = 35 + Math.random() * 50;
+  }
+  const botAlpha = (b) => Math.max(0, Math.min(1, b.age / 1.6, (b.life - b.age) / 2.2)) * 0.55;
+
   // A crow: faster, jagged wings, caws harshly a few times while crossing.
   const crow = { on: false, x: 0, y: 0, dir: 1, called: false, wait: 35 + Math.random() * 25, phase: 0, yRel: 0.15 };
   function updateCrow(dt) {
@@ -306,6 +342,7 @@ window.World = (() => {
     for (const f of fireflies) f.p += dt * f.v;
     updateOwl(dt);
     updateCrow(dt);
+    updateBots(dt);
   }
 
   // ---------- drawing helpers ----------
@@ -609,6 +646,7 @@ window.World = (() => {
     const items = [];
     for (const d of decor) if (d.y > top - 20 && d.y < bottom + 160) items.push(d);
     for (const [pid, o] of others) items.push({ kind: "char", role: o.role, x: o.rx, y: o.ry, pose: o.pose, phase: o.phase, moving: o.moving, facing: o.x >= o.rx ? 1 : -1, label: o.nick || roleName(o.role), pid });
+    for (const b of bots) items.push({ kind: "ghostbot", x: b.x, y: b.y, phase: b.phase, alpha: botAlpha(b) });
     if (view.role) items.push({ kind: "char", role: view.role, x: player.x, y: player.y, pose: view.pose, phase: player.phase, moving: player.moving, facing: player.facing, label: "bạn", isMe: true });
     items.sort((a, b) => a.y - b.y);
 
@@ -624,6 +662,7 @@ window.World = (() => {
         case "shrine": drawShrine(it); break;
         case "house": drawHouse(it, lights); break;
         case "char": drawCharacter(it, lights, viewerIsGhost); break;
+        case "ghostbot": drawGhost(it.x, it.y, it.phase, it.alpha, lights); break;
       }
     }
 
