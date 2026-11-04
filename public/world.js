@@ -150,6 +150,7 @@ window.World = (() => {
   // A black owl crosses the sky now and then and hoots once mid-flight.
   const owl = { on: false, x: 0, y: 0, dir: 1, hooted: false, wait: 10 + Math.random() * 8, phase: 0 };
   function updateOwl(dt) {
+    if (view.darkness < 0.5) { owl.on = false; if (owl.wait < 8) owl.wait = 8; return; } // owls only fly at night
     if (!owl.on) {
       if (!view.role || view.darkness < 0.5) return;
       owl.wait -= dt;
@@ -274,6 +275,7 @@ window.World = (() => {
   // A crow: faster, jagged wings, caws harshly a few times while crossing.
   const crow = { on: false, x: 0, y: 0, dir: 1, called: false, wait: 35 + Math.random() * 25, phase: 0, yRel: 0.15 };
   function updateCrow(dt) {
+    if (view.darkness < 0.5) { crow.on = false; if (crow.wait < 10) crow.wait = 10; return; } // crows too: night only
     if (!crow.on) {
       if (!view.role) return;
       crow.wait -= dt;

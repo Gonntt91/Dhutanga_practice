@@ -219,6 +219,7 @@
   function pushView() {
     const sc = currentScene();
     NightAudio.setDay(currentDarkness(sc) < 0.3);
+    NightAudio.setNight(currentDarkness(sc) >= 0.5);
     $("app").classList.toggle("day", currentDarkness(sc) < 0.3);
     updateSky(sc);
     World.setView({
@@ -769,12 +770,12 @@
   });
 
   window.addEventListener("owl", (e) => {
-    if (!state.role) return;
+    if (!state.role || currentDarkness(currentScene()) < 0.5) return;
     if (state.soundOn) NightAudio.owl(e.detail.pan);
   });
 
   window.addEventListener("crow", (e) => {
-    if (!state.role) return;
+    if (!state.role || currentDarkness(currentScene()) < 0.5) return;
     if (state.soundOn) NightAudio.crow(e.detail.pan, e.detail.n);
   });
 
