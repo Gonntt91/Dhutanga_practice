@@ -30,7 +30,7 @@ window.Room = (() => {
   const BOOK_SLOTS = [[240, 205], [292, 205], [240, 285], [292, 285], [240, 365], [292, 365]];
   const BOOK_COLORS = [["#7a3b2a", "#caa96a"], ["#2f4a46", "#cdbf8c"], ["#4a3a22", "#d2b46a"], ["#5a2f3d", "#d8c08a"], ["#33402b", "#c9bd84"], ["#3c3a2a", "#d0b068"]];
   const HOBJ = [
-    { id: "altar", x: 22, y: 322, w: 116, h: 138, depth: 0.9 },
+    { id: "altar", x: 30, y: 324, w: 146, h: 130, depth: 0.9 },
     { id: "robe", x: 150, y: 150, w: 72, h: 120, depth: 0.6 },
     { id: "bowl", x: 152, y: 466, w: 84, h: 46, depth: 1.1 },
     { id: "mat", x: 80, y: 580, w: 240, h: 96, depth: 1.2 },
@@ -40,8 +40,8 @@ window.Room = (() => {
     robe: "Chiếc y nâu phơi trên sào, vá chằng vá đụp bằng đủ thứ vải. Đúng nghĩa y phấn tảo: y may từ những mảnh vải người ta đã bỏ đi.",
     bowl: "Cái bát đen trên giá gỗ là bát khất thực. Thầy Minh ăn từ bát này đã ba mươi năm, và bát chưa bao giờ đầy quá ba phần.",
     mat: "Một tấm chiếu cói và cái gối gỗ cứng. Không có giường. Thầy Minh nói ngài ngồi nhiều hơn nằm, và nằm thì cũng chẳng ngủ được lâu.",
-    altarFirst: "Một tượng Phật nhỏ bằng gỗ và một ngọn đèn dầu, không hoa quả cầu kỳ. Bạn chắp tay đảnh lễ, thấy lòng lặng đi một chút.",
-    altarAgain: "Bạn chắp tay đảnh lễ thêm một lần. Ngọn đèn vẫn nhỏ và đều.",
+    altarFirst: "Bàn thờ Đức Phật Thích Ca Mâu Ni: một pho tượng ngồi kiết già trên tòa sen, hai ngọn nến, một nén nhang và bình hoa cúc vàng. Bạn chắp tay, đảnh lễ ba lần: “Namo tassa bhagavato arahato sammāsambuddhassa”, tức là kính lễ Đức Thế Tôn, bậc A-la-hán, bậc Chánh Đẳng Giác. Lòng bạn lặng đi một chút.",
+    altarAgain: "Bạn chắp tay đảnh lễ thêm một lần. Khói nhang vẫn thẳng, ngọn nến vẫn nhỏ và đều.",
   };
   const LETTERS = {
     letter1: {
@@ -90,7 +90,10 @@ window.Room = (() => {
     closeBtn = document.getElementById("room-close");
     ctx = cv.getContext("2d");
     closeBtn.addEventListener("click", close);
+    document.getElementById("paper-prev").addEventListener("click", () => { if (bookPage > 0) { bookPage--; renderBookPage(); } });
+    document.getElementById("paper-next").addEventListener("click", () => { if (bookPage < bookPages.length - 1) { bookPage++; renderBookPage(); } });
     document.getElementById("letter-close").addEventListener("click", () => {
+      document.getElementById("paper-nav").hidden = true;
       document.getElementById("room-letter").hidden = true;
       document.querySelector("#room-letter .paper").classList.remove("book");
       if (afterPaper) { const f = afterPaper; afterPaper = null; f(); }
@@ -170,24 +173,55 @@ window.Room = (() => {
     if (onLore && !read.has(id)) onLore(L.lore);
     read.add(id);
   }
+  // Long texts are split into pages so a player can sit and read; reaching the last page counts as having read it.
+  let bookPages = [], bookPage = 0, bookCur = null, bookReached = false, bookFirst = false;
+  function paginate(b) {
+    const budget = 1050;
+    const pages = []; let cur = [], len = 0;
+    const size = (x) => (typeof x === "string" ? x.length : x.h ? 80 : x.verse ? x.verse.join(" ").length + 40 : x.quote ? x.quote.length : 0);
+    for (const x of b.body) {
+      const n = size(x);
+      if (cur.length && len + n > budget) { pages.push(cur); cur = []; len = 0; }
+      cur.push(x); len += n;
+    }
+    if (cur.length) pages.push(cur);
+    return pages;
+  }
+  function renderBookPage() {
+    const b = bookCur, body = document.getElementById("letter-body");
+    body.replaceChildren();
+    if (bookPage === 0) { const src = document.createElement("p"); src.className = "stain"; src.textContent = b.source; body.appendChild(src); }
+    for (const x of bookPages[bookPage]) {
+      let el;
+      if (typeof x === "string") { el = document.createElement("p"); el.textContent = x; }
+      else if (x.h) { el = document.createElement("h4"); el.textContent = x.h; }
+      else if (x.verse) { el = document.createElement("p"); el.className = "verse"; el.innerHTML = ""; x.verse.forEach((l, k) => { if (k) el.appendChild(document.createElement("br")); el.appendChild(document.createTextNode(l)); }); }
+      else { el = document.createElement("p"); el.className = "quote"; el.textContent = x.quote; }
+      body.appendChild(el);
+    }
+    const last = bookPage === bookPages.length - 1;
+    if (last) {
+      const hint = document.createElement("p"); hint.className = "stain"; hint.textContent = b.hint; body.appendChild(hint);
+      const note = document.createElement("p"); note.className = "stain"; note.textContent = window.HERMIT_NOTE || ""; body.appendChild(note);
+      if (!bookReached) { bookReached = true; bookFirst = onRead ? onRead(b.id) : false; readKeys.add(b.id); }
+    }
+    const nav = document.getElementById("paper-nav");
+    nav.hidden = bookPages.length < 2;
+    document.getElementById("paper-page").textContent = `Trang ${bookPage + 1}/${bookPages.length}`;
+    document.getElementById("paper-prev").disabled = bookPage === 0;
+    document.getElementById("paper-next").disabled = last;
+    document.getElementById("room-letter").scrollTop = 0;
+  }
   function showBook(b) {
     document.querySelector("#room-letter .paper").classList.add("book");
     document.getElementById("letter-title").textContent = b.title;
-    const body = document.getElementById("letter-body");
-    body.replaceChildren();
-    const src = document.createElement("p"); src.className = "stain"; src.textContent = b.source; body.appendChild(src);
-    for (const t of b.body) { const p = document.createElement("p"); p.textContent = t; body.appendChild(p); }
-    const hint = document.createElement("p"); hint.className = "stain"; hint.textContent = b.hint; body.appendChild(hint);
-    const note = document.createElement("p"); note.className = "stain";
-    note.textContent = "Đây là bản tóm lược theo ý kinh, không phải bản dịch, và chưa được vị thầy Theravāda duyệt.";
-    body.appendChild(note);
+    bookCur = b; bookPages = paginate(b); bookPage = 0; bookReached = false; bookFirst = false;
     document.getElementById("room-letter").hidden = false;
-    document.getElementById("room-letter").scrollTop = 0;
-    const first = onRead ? onRead(b.id) : false;
-    readKeys.add(b.id);
+    renderBookPage();
     afterPaper = () => {
       const n = books.filter((x) => readKeys.has(x.id)).length;
-      say(first ? `Đọc xong, lòng bạn lắng xuống. (Đã đọc ${n}/${books.length} cuốn.)` : "Bạn đọc lại thong thả. Có một câu lần trước đọc lướt qua, lần này mới dừng lại.");
+      if (!bookReached) say("Bạn đọc dở rồi gấp sách lại. Khi nào rảnh, quay lại đọc tiếp đến trang cuối.");
+      else say(bookFirst ? `Đọc đến hết, lòng bạn lắng xuống. (Đã đọc ${n}/${books.length} cuốn.)` : "Bạn đọc lại thong thả. Có một câu lần trước đọc lướt qua, lần này mới dừng lại.");
     };
   }
   function examineHermit(id) {
@@ -259,16 +293,44 @@ window.Room = (() => {
       if (books[i] && readKeys.has(books[i].id)) { ctx.fillStyle = "#e6c56f"; ctx.beginPath(); ctx.arc(x + 22 + bx, y + 48 + by, 3, 0, 7); ctx.fill(); }
     });
 
-    // altar with a small wooden Buddha and an oil lamp
-    const [ax, ay] = shift(0.9);
-    ctx.fillStyle = "#33261a"; ctx.fillRect(24 + ax, 440 + ay, 112, 10); ctx.fillRect(34 + ax, 450 + ay, 8, 70); ctx.fillRect(118 + ax, 450 + ay, 8, 70);
-    ctx.fillStyle = "#b08a3e"; ctx.beginPath(); ctx.ellipse(70 + ax, 436 + ay, 30, 7, 0, 0, 7); ctx.fill();
-    ctx.fillStyle = "#c79b43";
-    ctx.beginPath(); ctx.moveTo(48 + ax, 434 + ay); ctx.quadraticCurveTo(52 + ax, 396 + ay, 70 + ax, 388 + ay); ctx.quadraticCurveTo(88 + ax, 396 + ay, 92 + ax, 434 + ay); ctx.closePath(); ctx.fill();
-    ctx.beginPath(); ctx.arc(70 + ax, 378 + ay, 10, 0, 7); ctx.fill(); ctx.beginPath(); ctx.arc(70 + ax, 366 + ay, 4, 0, 7); ctx.fill();
-    ctx.fillStyle = "#5a3a1a"; ctx.beginPath(); ctx.ellipse(112 + ax, 436 + ay, 11, 4, 0, 0, 7); ctx.fill();
+    // altar of the Buddha Sakyamuni: yellow cloth, a seated image on a lotus, candles, incense, flowers
+    const [ax0, ay] = shift(0.9);
+    const ax = ax0 + 16;
     const flick = 0.75 + 0.25 * Math.sin(time * 9) + 0.1 * Math.sin(time * 23);
-    ctx.fillStyle = `rgba(255,200,90,${0.9 * flick})`; ctx.beginPath(); ctx.ellipse(112 + ax, 426 + ay, 2.6, 6.5 * flick, 0, 0, 7); ctx.fill();
+    ctx.fillStyle = "#33261a"; ctx.fillRect(14 + ax, 440 + ay, 146, 10); ctx.fillRect(24 + ax, 450 + ay, 8, 66); ctx.fillRect(142 + ax, 450 + ay, 8, 66);
+    ctx.fillStyle = "#b8862a"; ctx.fillRect(18 + ax, 436 + ay, 138, 8);                    // yellow altar cloth
+    ctx.fillStyle = "#98701f"; ctx.fillRect(18 + ax, 444 + ay, 138, 3);
+    // lotus pedestal
+    ctx.fillStyle = "#c98a8a";
+    for (let k = -3; k <= 3; k++) { ctx.beginPath(); ctx.ellipse(86 + k * 10 + ax, 430 + ay - Math.abs(k) * 0.8, 7, 5, k * 0.18, 0, 7); ctx.fill(); }
+    ctx.fillStyle = "#e0a0a0";
+    for (let k = -2; k <= 2; k++) { ctx.beginPath(); ctx.ellipse(86 + k * 11 + ax, 425 + ay, 6, 4.2, k * 0.2, 0, 7); ctx.fill(); }
+    // the image: crossed legs, robe, bare right shoulder, hands in lap, head with ushnisha and flame
+    ctx.fillStyle = "#d2a23c";
+    ctx.beginPath(); ctx.ellipse(86 + ax, 417 + ay, 30, 9, 0, 0, 7); ctx.fill();            // folded legs
+    ctx.beginPath(); ctx.moveTo(62 + ax, 414 + ay); ctx.quadraticCurveTo(64 + ax, 372 + ay, 86 + ax, 364 + ay); ctx.quadraticCurveTo(108 + ax, 372 + ay, 110 + ax, 414 + ay); ctx.closePath(); ctx.fill(); // torso
+    ctx.fillStyle = "#e0b552";
+    ctx.beginPath(); ctx.moveTo(86 + ax, 366 + ay); ctx.quadraticCurveTo(110 + ax, 372 + ay, 110 + ax, 414 + ay); ctx.lineTo(78 + ax, 414 + ay); ctx.quadraticCurveTo(70 + ax, 392 + ay, 76 + ax, 372 + ay); ctx.closePath(); ctx.fill(); // robe over left shoulder
+    ctx.fillStyle = "#b88728"; ctx.beginPath(); ctx.ellipse(86 + ax, 408 + ay, 11, 4, 0, 0, 7); ctx.fill(); // hands in lap
+    ctx.fillStyle = "#d9ab45"; ctx.beginPath(); ctx.arc(86 + ax, 354 + ay, 11, 0, 7); ctx.fill();            // head
+    ctx.fillStyle = "#b88728"; ctx.beginPath(); ctx.arc(86 + ax, 345 + ay, 6, Math.PI, 0); ctx.fill();       // ushnisha
+    ctx.fillStyle = `rgba(255,205,100,${0.85 * flick})`; ctx.beginPath(); ctx.moveTo(86 + ax, 332 + ay); ctx.quadraticCurveTo(82 + ax, 340 + ay, 86 + ax, 344 + ay); ctx.quadraticCurveTo(90 + ax, 340 + ay, 86 + ax, 332 + ay); ctx.fill(); // flame finial
+    ctx.fillStyle = "#6a4a12"; ctx.fillRect(82 + ax, 353 + ay, 2, 2); ctx.fillRect(89 + ax, 353 + ay, 2, 2); ctx.fillRect(84 + ax, 358 + ay, 5, 1.4); // eyes and mouth
+    // halo
+    ctx.strokeStyle = "rgba(240,200,100,0.35)"; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(86 + ax, 358 + ay, 24, 0, 7); ctx.stroke();
+    // two candles
+    for (const cx2 of [34, 138]) {
+      ctx.fillStyle = "#e8dcc0"; ctx.fillRect(cx2 + ax - 3, 416 + ay, 6, 20);
+      ctx.fillStyle = `rgba(255,200,90,${0.9 * flick})`; ctx.beginPath(); ctx.ellipse(cx2 + ax, 411 + ay, 2.6, 6.5 * flick, 0, 0, 7); ctx.fill();
+    }
+    // incense bowl with rising smoke, and a vase of flowers
+    ctx.fillStyle = "#5a3a1a"; ctx.beginPath(); ctx.ellipse(48 + ax, 434 + ay, 9, 4, 0, 0, 7); ctx.fill();
+    ctx.strokeStyle = "#7a5a3a"; ctx.lineWidth = 1; for (const k of [-3, 0, 3]) { ctx.beginPath(); ctx.moveTo(48 + k + ax, 432 + ay); ctx.lineTo(48 + k * 1.5 + ax, 410 + ay); ctx.stroke(); }
+    ctx.strokeStyle = "rgba(220,220,210,0.22)"; ctx.lineWidth = 1.2; ctx.beginPath();
+    for (let q = 0; q < 14; q++) { const yy = 408 + ay - q * 5, xx = 48 + ax + Math.sin(time * 1.4 + q * 0.6) * (q * 0.8); q ? ctx.lineTo(xx, yy) : ctx.moveTo(xx, yy); }
+    ctx.stroke();
+    ctx.fillStyle = "#3a5a4a"; ctx.fillRect(120 + ax, 424 + ay, 8, 12);
+    for (const [fx2, fy2, fc] of [[116, 416, "#f2b84a"], [124, 410, "#f6e6c0"], [132, 417, "#e8845a"]]) { ctx.fillStyle = fc; ctx.beginPath(); ctx.arc(fx2 + ax, fy2 + ay, 4.2, 0, 7); ctx.fill(); }
 
     // alms bowl on a small stand
     const [obx, oby] = shift(1.1);
@@ -287,7 +349,7 @@ window.Room = (() => {
     // lamp light, drifting motes, glow on things you can touch
     ctx.globalCompositeOperation = "lighter";
     const [lx, ly] = shift(0.9);
-    const lg = ctx.createRadialGradient(112 + lx, 426 + ly, 4, 112 + lx, 426 + ly, 260);
+    const lg = ctx.createRadialGradient(86 + lx, 400 + ly, 4, 86 + lx, 400 + ly, 270);
     lg.addColorStop(0, `rgba(255,190,90,${0.30 * flick})`); lg.addColorStop(1, "rgba(255,190,90,0)");
     ctx.fillStyle = lg; ctx.fillRect(-60, 100, LW + 120, 640);
     for (const d of dust) {

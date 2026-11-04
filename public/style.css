@@ -138,6 +138,23 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--lantern); o
 .paper-body p.sign { text-align: right; font-style: italic; }
 .paper-body p.stain { font: 12px/1.4 var(--font-ui); color: #7a6a4a; }
 .paper-close { margin-top: 6px; background: rgba(60, 45, 20, 0.12); color: #3a2c14; border-color: rgba(60, 45, 20, 0.4); }
+.role-row { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.mind { display: flex; align-items: center; gap: 6px; padding: 0; background: none; border: 0; color: inherit; }
+.mind .orb {
+  width: 24px; height: 24px; border-radius: 50%; flex: none;
+  background: radial-gradient(circle at 34% 30%, rgba(255,255,255,0.85), var(--mind, #e6c56f) 42%, var(--mind-dark, #7a5a14) 100%);
+  box-shadow: 0 0 calc(6px + 16px * var(--glow, 0)) calc(1px + 4px * var(--glow, 0)) var(--mind, #e6c56f), inset 0 0 0 1.5px rgba(255,255,255,0.35);
+  transition: box-shadow 0.8s ease;
+}
+.mind.moon .orb { animation: moonpulse 3.2s ease-in-out infinite; }
+@keyframes moonpulse { 0%, 100% { filter: brightness(1); } 50% { filter: brightness(1.18); } }
+.mind-name { font: 500 11px/1.2 var(--font-ui); color: var(--ash-dim); letter-spacing: 0.02em; text-shadow: 0 1px 3px rgba(0,0,0,0.6); }
+.app.day .mind-name { color: #f1ecdc; }
+.mind-info { position: absolute; z-index: 7; left: 12px; right: 12px; top: calc(env(safe-area-inset-top, 0px) + 56px); max-width: 420px; margin: 0 auto; padding: 12px 14px; background: rgba(12,18,17,0.96); border: 1px solid var(--line); border-radius: 12px; backdrop-filter: blur(8px); }
+.mind-info-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.mind-legend { list-style: none; margin: 0 0 8px; padding: 0; display: grid; gap: 7px; font: 14px/1.4 var(--font-body); }
+.mind-legend li { display: flex; align-items: center; gap: 10px; }
+.mind-legend i { width: 16px; height: 16px; border-radius: 50%; flex: none; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.3); }
 .find-card { z-index: 4; padding-top: 14px; }
 .find-label { margin-bottom: 8px; color: var(--ash-dim); }
 .sheet-handle {
@@ -263,6 +280,14 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--lantern); o
 @keyframes nudge { 0%, 100% { box-shadow: 0 0 0 0 rgba(230, 197, 111, 0.55); } 50% { box-shadow: 0 0 0 9px rgba(230, 197, 111, 0); } }
 @media (prefers-reduced-motion: reduce) { .primary.nudge { animation: none; box-shadow: 0 0 0 3px rgba(230, 197, 111, 0.5); } }
 
+.paper-nav { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 10px 0 4px; }
+.paper-nav .pill { background: rgba(60, 45, 20, 0.12); color: #3a2c14; border-color: rgba(60, 45, 20, 0.4); }
+.paper-nav .pill:disabled { opacity: 0.35; }
+.paper-page { font: 12px var(--font-ui); color: #6a5a3a; }
+.paper-body h4 { margin: 14px 0 6px; font: 600 16px/1.3 var(--font-display); color: #4a3418; letter-spacing: 0.01em; }
+.paper-body p.verse { margin: 0 0 12px; padding-left: 10px; border-left: 2px solid rgba(120, 90, 40, 0.4); font-style: italic; }
+.paper-body p.quote { margin-left: 14px; font-style: italic; color: #4a3a22; }
+.paper.book .paper-body { min-height: 38vh; }
 /* Reading a sutta summary: a darker, old-manuscript paper. */
 .paper.book { background: #d8c9a0 linear-gradient(180deg, rgba(255,255,255,0.08), rgba(110,80,30,0.16)); transform: none; max-height: 90%; }
 .paper.book .paper-body p { font-size: 15.5px; }

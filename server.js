@@ -143,6 +143,7 @@ async function handlePresence(req, res) {
     x: Math.min(1, Math.max(0, Number(body.x) || 0.5)),
     y: Math.min(1, Math.max(0, Number(body.y) || 0.95)),
     pose: body.pose === "sit" ? "sit" : null,
+    mood: Math.round(Math.min(1, Math.max(0, Number(body.mood) || 0.5)) * 50) / 50,
   };
   broadcast("peers", publicPeers());
   json(res, 200, { ok: true });

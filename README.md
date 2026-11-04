@@ -101,3 +101,7 @@ Mở `http://localhost:3000/?dev` sẽ có nút **DEV** ở góc dưới trái: 
 Gõ cửa tịnh thất (đốm sáng ở sân) rồi bước vào: kệ sách có 6 cuốn (`HERMIT_BOOKS` trong `story.js`): Chuyển Pháp Luân, Vô Ngã Tướng, Tứ Niệm Xứ, Kinh Từ Bi, Kinh Kālāma, Mười Ba Hạnh Đầu Đà. Đọc mỗi cuốn làm lòng lắng xuống một lần mỗi đêm, và game nhớ cuốn nào đã đọc.
 
 Nội dung là **tóm lược theo ý kinh bằng lời của game, không phải bản dịch**, vì các bản dịch hiện đại có bản quyền. **Chưa được vị thầy Theravāda duyệt**, cần duyệt trước khi phát hành rộng.
+
+### Màu tâm
+
+Vòng tròn cạnh tên vai ở góc trên trái thể hiện tâm trạng: đen (sân) → đỏ (tham, chấp) → xám cam (mê mờ) → vàng (tín, hoan hỷ) → trắng như ánh trăng (sáng, thấy rõ). Nhà sư bắt đầu ở màu vàng, hồn ma ở màu đỏ (hồn ma càng buông, màu càng sáng). Lựa chọn xấu làm màu tối đi tạm thời, đọc kinh, đảnh lễ, ngồi quan sát làm màu sáng lên rồi dần trở về mức nền. Người khác thấy màu này như một quầng sáng quanh nhân vật. Ý tưởng mượn từ cách Thanh Tịnh Đạo ví màu máu ở tim của người nặng về tham, sân, si, tín, tuệ. Chưa được thầy Theravāda duyệt.

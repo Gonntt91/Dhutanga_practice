@@ -17,7 +17,12 @@
   <header class="hud">
     <div class="hud-left">
       <div id="presence-count" class="label">Đang kết nối…</div>
-      <div id="role-chip" class="role-chip" hidden></div>
+      <div class="role-row">
+        <div id="role-chip" class="role-chip" hidden></div>
+        <button id="mind" class="mind" type="button" hidden aria-label="Màu tâm trạng">
+          <span class="orb"></span><span id="mind-name" class="mind-name"></span>
+        </button>
+      </div>
     </div>
     <div class="hud-right">
       <button id="map-btn" class="pill" type="button">Bản đồ</button>
@@ -37,6 +42,19 @@
     <button id="zoom-in" class="pill zoom-btn" type="button" aria-label="Phóng to">+</button>
     <button id="zoom-out" class="pill zoom-btn" type="button" aria-label="Thu nhỏ">−</button>
   </div>
+
+  <section id="mind-info" class="mind-info" hidden aria-label="Ý nghĩa màu tâm">
+    <div class="mind-info-head"><span class="label">Màu của tâm</span><button id="mind-info-close" class="text-btn" type="button">Đóng</button></div>
+    <ul class="mind-legend">
+      <li><i style="background:#0b0b0d"></i><b>Đen</b>: sân, u tối, tức giận.</li>
+      <li><i style="background:#c62a1e"></i><b>Đỏ</b>: tham, bám chấp, nhớ nhung không buông.</li>
+      <li><i style="background:#c9893a"></i><b>Xám cam</b>: mê mờ, lưỡng lự, chưa thấy rõ.</li>
+      <li><i style="background:#e6c56f"></i><b>Vàng</b>: tin tưởng, hoan hỷ, an ổn.</li>
+      <li><i style="background:#eef3ff"></i><b>Trắng như ánh trăng</b>: trong sáng, thấy rõ.</li>
+    </ul>
+    <p class="hint">Màu đổi theo lựa chọn của bạn. Điều xấu làm màu tối đi một lúc, đọc kinh, ngồi quan sát, buông bỏ làm màu sáng lên rồi dần trở về. Người khác cũng thấy màu tâm của bạn quanh nhân vật.</p>
+    <p class="hint">Ý tưởng mượn từ Thanh Tịnh Đạo (chương 3), nơi người ta ví màu máu nơi tim của người nặng về tham, sân, si, tín, tuệ khác nhau (đỏ, đen, đục như nước rửa thịt, vàng như hoa kaṇikāra, và trong sáng như dầu mè). Game chỉ mượn để vẽ, không phải giáo lý chính xác, và chưa được thầy Theravāda duyệt.</p>
+  </section>
 
   <!-- nearby chat -->
   <button id="chat-btn" class="pill chat-btn" type="button" hidden>Trò chuyện <span id="chat-badge" class="count" hidden>0</span></button>
@@ -119,6 +137,11 @@
       <article class="paper" aria-live="polite">
         <h3 id="letter-title" class="paper-title"></h3>
         <div id="letter-body" class="paper-body"></div>
+        <div id="paper-nav" class="paper-nav" hidden>
+          <button id="paper-prev" class="pill" type="button">‹ Trước</button>
+          <span id="paper-page" class="paper-page"></span>
+          <button id="paper-next" class="pill" type="button">Sau ›</button>
+        </div>
         <button id="letter-close" class="pill paper-close" type="button">Gấp thư lại</button>
       </article>
     </div>

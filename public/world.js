@@ -289,6 +289,32 @@ window.World = (() => {
     });
   }
 
+  // Mind colour: 0 = black (anger, gloom) -> red (craving) -> amber (confusion) -> yellow (faith, joy) -> moon white (clarity).
+  const MOOD_STOPS = [[0, [11, 11, 13]], [0.16, [122, 20, 16]], [0.3, [198, 42, 30]], [0.4, [201, 137, 58]], [0.52, [230, 197, 111]], [0.78, [244, 234, 200]], [1, [238, 243, 255]]];
+  function moodRgb(g) {
+    g = Math.max(0, Math.min(1, g));
+    for (let i = 1; i < MOOD_STOPS.length; i++) {
+      if (g <= MOOD_STOPS[i][0]) {
+        const [g0, c0] = MOOD_STOPS[i - 1], [g1, c1] = MOOD_STOPS[i], t = (g - g0) / (g1 - g0 || 1);
+        return c0.map((v, k) => Math.round(v + (c1[k] - v) * t));
+      }
+    }
+    return MOOD_STOPS[MOOD_STOPS.length - 1][1];
+  }
+  // A soft halo of the player's mind colour: dark and heavy when troubled, moon-bright when clear.
+  function drawAura(x, y, g) {
+    if (g == null) return;
+    const [r, gg, b] = moodRgb(g);
+    const bright = Math.max(0, (g - 0.55) / 0.45);
+    const radius = 24 + bright * 16;
+    const a = g < 0.18 ? 0.38 : 0.16 + bright * 0.34;
+    const grd = ctx.createRadialGradient(x, y - 16, 2, x, y - 16, radius);
+    grd.addColorStop(0, `rgba(${r},${gg},${b},${a * (1 - 0.3 * dayMix)})`);
+    grd.addColorStop(1, `rgba(${r},${gg},${b},0)`);
+    ctx.fillStyle = grd;
+    ctx.beginPath(); ctx.arc(x, y - 16, radius, 0, Math.PI * 2); ctx.fill();
+  }
+
   // Speech bubbles above heads (nearby chat). key: "me" or a player's public id.
   const bubbles = new Map();
   function say(key, text, role) { bubbles.set(key, { text, role, t: 0, life: Math.min(10, 4.5 + text.length * 0.07) }); }
@@ -407,7 +433,7 @@ window.World = (() => {
   const player = { x: SPAWN.monk.x, y: SPAWN.monk.y, tx: null, ty: null, facing: 1, phase: 0, moving: false };
   const others = new Map();
   const ripples = [];
-  const view = { lookRange: Infinity, mist: 0.4, hint: false, role: null, pose: null, darkness: 0.75, flags: new Set(), marker: null, nick: "", anchor: 0.55 };
+  const view = { mood: null, lookRange: Infinity, mist: 0.4, hint: false, role: null, pose: null, darkness: 0.75, flags: new Set(), marker: null, nick: "", anchor: 0.55 };
   // The shown darkness eases toward the scene's darkness, so dusk and dawn fade in instead of snapping.
   let shownDark = view.darkness;
   let tapHandler = null;
@@ -504,8 +530,8 @@ window.World = (() => {
       const x = p.x * W;
       const y = p.y * H;
       const o = others.get(p.pid);
-      if (o) Object.assign(o, { x, y, role: p.role, nick: p.nick, pose: p.pose });
-      else others.set(p.pid, { x, y, rx: x, ry: y, role: p.role, nick: p.nick, pose: p.pose, phase: Math.random() * 6 });
+      if (o) Object.assign(o, { x, y, role: p.role, nick: p.nick, pose: p.pose, mood: p.mood });
+      else others.set(p.pid, { x, y, rx: x, ry: y, role: p.role, nick: p.nick, pose: p.pose, mood: p.mood, phase: Math.random() * 6 });
     }
     for (const id of [...others.keys()]) if (!seen.has(id)) others.delete(id);
   }
@@ -1053,9 +1079,9 @@ window.World = (() => {
     // collect drawables in view, sort by y (base line)
     const items = [];
     for (const d of decor) if (d.y > top - 20 && d.y < bottom + 160) items.push(d);
-    for (const [pid, o] of others) items.push({ kind: "char", role: o.role, x: o.rx, y: o.ry, pose: o.pose, phase: o.phase, moving: o.moving, facing: o.x >= o.rx ? 1 : -1, label: o.nick || roleName(o.role), pid });
+    for (const [pid, o] of others) items.push({ kind: "char", mood: o.mood, role: o.role, x: o.rx, y: o.ry, pose: o.pose, phase: o.phase, moving: o.moving, facing: o.x >= o.rx ? 1 : -1, label: o.nick || roleName(o.role), pid });
     for (const b of bots) items.push({ kind: "ghostbot", x: b.x, y: b.y, phase: b.phase, alpha: botAlpha(b) });
-    if (view.role) items.push({ kind: "char", role: view.role, x: player.x, y: player.y, pose: view.pose, phase: player.phase, moving: player.moving, facing: player.facing, label: "bạn", isMe: true });
+    if (view.role) items.push({ kind: "char", mood: view.mood, role: view.role, x: player.x, y: player.y, pose: view.pose, phase: player.phase, moving: player.moving, facing: player.facing, label: "bạn", isMe: true });
     items.sort((a, b) => a.y - b.y);
 
     const viewerIsGhost = view.role === "ghost";
@@ -1071,7 +1097,7 @@ window.World = (() => {
         case "sign": drawSign(it); break;
         case "house": drawHouse(it, lights); if (shownDark < 0.3) drawSmoke(it); break;
         case "ruin": drawRuin(it); break;
-        case "char": drawCharacter(it, lights, viewerIsGhost); break;
+        case "char": drawAura(it.x, it.y, it.mood); drawCharacter(it, lights, viewerIsGhost); break;
         case "ghostbot": drawGhost(it.x, it.y, it.phase, it.alpha, lights); break;
       }
     }
@@ -1273,5 +1299,5 @@ window.World = (() => {
     return role && window.ROLE_INFO ? ROLE_INFO[role].name : "";
   }
 
-  return { zoomBy, say, setFinds, lookAt, resetLook, isLooking, getMap, W, H, PLACES, SPAWN, init, setView, setPlayer, walkTo, stop, getPlayer, setOthers, ripple };
+  return { moodRgb, zoomBy, say, setFinds, lookAt, resetLook, isLooking, getMap, W, H, PLACES, SPAWN, init, setView, setPlayer, walkTo, stop, getPlayer, setOthers, ripple };
 })();

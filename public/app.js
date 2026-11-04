@@ -42,6 +42,7 @@
     completed: loadCompleted(),
     vars: new Set(),      // per-night variables + remembered keys
     found: new Set(),     // finds already examined tonight
+    moodShift: 0,           // temporary swing of the mind colour (decays back to the baseline)
     readTonight: new Set(), // books read tonight (each calms the mind once per night)
     findTarget: null,     // find the player is walking towards
     findOpen: null,       // { find, step } while the card is showing
@@ -88,7 +89,7 @@
   function sendPresence(force) {
     if (!state.connected) return;
     const p = World.getPlayer();
-    const key = `${state.role}|${state.sceneId}|${currentPose()}|${state.nick}`;
+    const key = `${state.role}|${state.sceneId}|${currentPose()}|${state.nick}|${Math.round(moodValue() * 25)}`;
     const now = Date.now();
     const movedEnough = Math.abs(p.nx - state.lastSent.x) > 0.004 || Math.abs(p.ny - state.lastSent.y) > 0.002;
     if (!force && key === state.lastSent.key && (!movedEnough || now - state.lastSent.t < 350)) return;
@@ -96,6 +97,7 @@
     post("/api/presence", {
       role: state.role, scene: state.sceneId, nick: state.nick,
       x: state.role ? p.nx : 0.5, y: state.role ? p.ny : 0.99, pose: currentPose(),
+      mood: state.role ? moodValue() : 0.5,
     });
   }
 
@@ -229,6 +231,7 @@
     NightAudio.setNight(currentDarkness(sc) >= 0.5);
     $("app").classList.toggle("day", currentDarkness(sc) < 0.3);
     updateSky(sc);
+    if (state.role) updateMood();
     World.setView({
       mist: mistLevel(),
       lookRange: state.role ? LOOK_RANGE[state.role] : Infinity,
@@ -358,6 +361,8 @@
     $("sheet").hidden = true;
     $("walk-bar").hidden = true;
     $("role-chip").hidden = true;
+    state.moodShift = 0;
+    updateMood();
     syncChatButton();
     delete $("app").dataset.role;
     const list = $("role-list");
@@ -397,6 +402,8 @@
     $("app").dataset.role = role;
     $("role-chip").hidden = false;
     $("role-chip").textContent = ROLE_INFO[role].name;
+    state.moodShift = 0;
+    updateMood();
     $("meter-name").textContent = ROLE_INFO[role].meter;
     $("gesture").textContent = ROLE_INFO[role].gesture.label;
     $("gesture-walk").textContent = ROLE_INFO[role].gesture.label;
@@ -503,6 +510,7 @@
 
   function choose(c) {
     state.meter = Math.max(0, Math.min(10, state.meter + (c.delta || 0)));
+    swingByDelta(c.delta);
     if (c.trace) leaveTrace(c.trace);
     if (c.emit) gesture(c.emit, true);
     if (c.set) state.vars.add(c.set);
@@ -544,6 +552,7 @@
       if (c.trace) b.appendChild(el("span", "tag", "Để lại dấu vết cho người khác"));
       b.addEventListener("click", () => {
         state.meter = Math.max(0, Math.min(10, state.meter + (c.delta || 0)));
+        swingByDelta(c.delta);
         if (c.trace) leaveTrace(c.trace);
         if (c.next) { state.findOpen.step = c.next; renderFind(); pushView(); }
         else { if (!find.repeat) state.found.add(find.id); closeFind(false); }
@@ -564,7 +573,9 @@
       onRead: (key) => {
         const first = !state.readTonight.has(key);
         remember(key);
-        if (first) { state.readTonight.add(key); state.meter = Math.min(10, state.meter + 1); pushView(); }
+        // finishing a book or bowing at the altar: a bright, moonlike swing even on re-reads
+        swingMood(key === "k_altar" ? 0.2 : 0.35);
+        if (first) { state.readTonight.add(key); state.meter = Math.max(0, Math.min(10, state.meter + goodDelta(1))); pushView(); }
         return first;
       },
       onPhoto: () => { remember("c_anh"); state.meter = Math.min(10, state.meter + 1); },
@@ -579,6 +590,40 @@
     pushView();
     showWalkOrScene();
   }
+
+  // ---------- mind colour ----------
+  // Baseline comes from the hidden meter (for the ghost, less attachment = better). Choices, reading and
+  // sitting swing it for a while, then it eases back. Black -> red -> amber -> yellow -> moon white.
+  function moodBase() {
+    const m = state.meter / 10;
+    return state.role === "ghost" ? 1 - m : m;
+  }
+  function moodValue() { return Math.max(0, Math.min(1, moodBase() + state.moodShift)); }
+  // For the ghost a higher meter (attachment) is worse, so its sign is flipped.
+  const goodDelta = (d) => (state.role === "ghost" ? -d : d);
+  const swingByDelta = (d) => { const g = goodDelta(d || 0); swingMood(g * (g < 0 ? 0.09 : 0.05)); };
+  function swingMood(amount) { state.moodShift = Math.max(-0.4, Math.min(0.45, state.moodShift + amount)); updateMood(); }
+  function moodLabel(g) { return g < 0.12 ? "Sân, u tối" : g < 0.35 ? "Tham, chấp" : g < 0.46 ? "Mê mờ" : g < 0.74 ? "Tín, hoan hỷ" : "Sáng, thấy rõ"; }
+  function updateMood() {
+    const orb = $("mind");
+    if (!state.role) { orb.hidden = true; World.setView({ mood: null }); return; }
+    orb.hidden = false;
+    const g = moodValue();
+    const [r, gg, b] = World.moodRgb(g);
+    orb.style.setProperty("--mind", `rgb(${r},${gg},${b})`);
+    orb.style.setProperty("--mind-dark", `rgb(${Math.round(r * 0.45)},${Math.round(gg * 0.45)},${Math.round(b * 0.45)})`);
+    orb.style.setProperty("--glow", String(Math.max(0, (g - 0.5) / 0.5)));
+    orb.classList.toggle("moon", g >= 0.78);
+    $("mind-name").textContent = moodLabel(g);
+    World.setView({ mood: g });
+  }
+  $("mind").addEventListener("click", () => { $("mind-info").hidden = !$("mind-info").hidden; });
+  $("mind-info-close").addEventListener("click", () => { $("mind-info").hidden = true; });
+  // a swing of mood fades back toward the baseline over about half a minute
+  setInterval(() => {
+    if (!state.role) return;
+    if (Math.abs(state.moodShift) > 0.004) { state.moodShift *= 0.992; updateMood(); } else if (state.moodShift !== 0) { state.moodShift = 0; updateMood(); }
+  }, 200);
 
   // ---------- sit-and-note mini-game ----------
   // No score shown: thoughts drift by, tap one to note it and return to the breath.
@@ -623,7 +668,7 @@
       b.style.left = 6 + Math.random() * 38 + "%";
       b.addEventListener("click", () => {
         if (b.dataset.done) return;
-        b.dataset.done = "1"; returned++;
+        b.dataset.done = "1"; returned++; swingMood(0.05);
         b.classList.add("noted");
         b.textContent = `${t.kind}, ${t.kind}…`;
         note.textContent = "Ghi nhận. Quay về hơi thở.";
