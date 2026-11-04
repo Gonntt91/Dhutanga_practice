@@ -248,3 +248,8 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--lantern); o
 /* Daytime: the world is bright, so the HUD gets a darker scrim and a text shadow to stay readable. */
 .app.day .hud { background: linear-gradient(rgba(14, 24, 16, 0.78), rgba(14, 24, 16, 0)); }
 .app.day .hud .label, .app.day .role-chip { text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7); color: #f1ecdc; }
+
+/* Gentle pulse on the "go to" button when the player has been idle for a while. */
+.primary.nudge { animation: nudge 1.5s ease-in-out infinite; }
+@keyframes nudge { 0%, 100% { box-shadow: 0 0 0 0 rgba(230, 197, 111, 0.55); } 50% { box-shadow: 0 0 0 9px rgba(230, 197, 111, 0); } }
+@media (prefers-reduced-motion: reduce) { .primary.nudge { animation: none; box-shadow: 0 0 0 3px rgba(230, 197, 111, 0.5); } }

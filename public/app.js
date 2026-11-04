@@ -6,6 +6,7 @@
   const MEM_KEY = "dhutanga.memory";   // things remembered across nights (clues, kindnesses)
   const RUNS_KEY = "dhutanga.runs";    // how many nights have been finished
   const FIND_DIST = 34;
+  const IDLE_HINT_MS = 9000; // standing still this long shows the "go this way" hint
   const DARKNESS = {
     "Chiều tàn": 0.42, "Chạng vạng": 0.55, "Đầu hôm": 0.6, "Canh hai": 0.66,
     "Canh ba": 0.7, "Canh tư": 0.64, "Gà gáy": 0.55, "Rạng sáng": 0.45, "Sáng sớm": 0.1, "Sáng": 0.08,
@@ -43,6 +44,8 @@
     found: new Set(),     // finds already examined tonight
     findTarget: null,     // find the player is walking towards
     findOpen: null,       // { find, step } while the card is showing
+    lastTouch: Date.now(),
+    nudging: false,
   };
 
   function loadMem() {
@@ -978,8 +981,21 @@
         if (Math.hypot(p.x - t.x, p.y - (t.y + 8)) <= FIND_DIST) { openFind(t); }
       } else if (distanceToPlace() <= ARRIVE_DIST) openScene();
     }
+    // Stood still for a while with a destination waiting? Nudge toward it (chevrons in the world, pulsing button).
+    const pp = World.getPlayer();
+    const nudge = !!state.role && !state.sceneOpen && !state.findOpen && !state.findTarget && !pp.moving &&
+      !$("walk-bar").hidden && $("map-panel").hidden && $("chat-panel").hidden && Date.now() - state.lastTouch > IDLE_HINT_MS;
+    if (nudge !== state.nudging) {
+      state.nudging = nudge;
+      World.setView({ hint: nudge });
+      $("walk-btn").classList.toggle("nudge", nudge);
+    }
     sendPresence(false);
   }, 200);
+
+  // any touch, click or key counts as "still playing" and hides the hint
+  const touch = () => { state.lastTouch = Date.now(); };
+  ["pointerdown", "keydown"].forEach((ev) => window.addEventListener(ev, touch, true));
   setInterval(renderTraces, 60000);
 
   renderPicker();

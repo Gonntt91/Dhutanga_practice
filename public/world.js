@@ -151,9 +151,9 @@ window.World = (() => {
   // A black owl crosses the sky now and then and hoots once mid-flight.
   const owl = { on: false, x: 0, y: 0, dir: 1, hooted: false, wait: 10 + Math.random() * 8, phase: 0 };
   function updateOwl(dt) {
-    if (view.darkness < 0.5) { owl.on = false; if (owl.wait < 8) owl.wait = 8; return; } // owls only fly at night
+    if (shownDark < 0.5) { owl.on = false; if (owl.wait < 8) owl.wait = 8; return; } // owls only fly at night
     if (!owl.on) {
-      if (!view.role || view.darkness < 0.5) return;
+      if (!view.role || shownDark < 0.5) return;
       owl.wait -= dt;
       if (owl.wait > 0) return;
       owl.on = true; owl.hooted = false;
@@ -213,7 +213,7 @@ window.World = (() => {
       else { b.y -= 3.5 * dt; b.x += Math.sin(b.age * 0.8 + b.seed) * 5 * dt; }
     }
     for (let i = bots.length - 1; i >= 0; i--) if (bots[i].age > bots[i].life) bots.splice(i, 1);
-    const night = view.role && view.darkness >= 0.5;
+    const night = view.role && shownDark >= 0.5;
     if (!night || bots.length >= 2) return;
     botWait -= dt;
     if (botWait > 0) return;
@@ -313,7 +313,7 @@ window.World = (() => {
   // A crow: faster, jagged wings, caws harshly a few times while crossing.
   const crow = { on: false, x: 0, y: 0, dir: 1, called: false, wait: 35 + Math.random() * 25, phase: 0, yRel: 0.15 };
   function updateCrow(dt) {
-    if (view.darkness < 0.5) { crow.on = false; if (crow.wait < 10) crow.wait = 10; return; } // crows too: night only
+    if (shownDark < 0.5) { crow.on = false; if (crow.wait < 10) crow.wait = 10; return; } // crows too: night only
     if (!crow.on) {
       if (!view.role) return;
       crow.wait -= dt;
@@ -370,7 +370,9 @@ window.World = (() => {
   const player = { x: SPAWN.monk.x, y: SPAWN.monk.y, tx: null, ty: null, facing: 1, phase: 0, moving: false };
   const others = new Map();
   const ripples = [];
-  const view = { lookRange: Infinity, mist: 0.4, role: null, pose: null, darkness: 0.75, flags: new Set(), marker: null, nick: "", anchor: 0.55 };
+  const view = { lookRange: Infinity, mist: 0.4, hint: false, role: null, pose: null, darkness: 0.75, flags: new Set(), marker: null, nick: "", anchor: 0.55 };
+  // The shown darkness eases toward the scene's darkness, so dusk and dawn fade in instead of snapping.
+  let shownDark = view.darkness;
   let tapHandler = null;
 
   function init(canvasEl, onTap) {
@@ -474,7 +476,8 @@ window.World = (() => {
   // ---------- update ----------
   function update(dt) {
     time += dt;
-    const dayTarget = Math.max(0, Math.min(1, (0.5 - view.darkness) / 0.25));
+    shownDark += (view.darkness - shownDark) * Math.min(1, dt * 0.8);
+    const dayTarget = Math.max(0, Math.min(1, (0.5 - shownDark) / 0.25));
     if (Math.abs(dayTarget - dayMix) > 0.002) { dayMix += (dayTarget - dayMix) * Math.min(1, dt * 2.2); applyDay(); }
     if (player.tx != null) {
       const dx = player.tx - player.x;
@@ -990,7 +993,7 @@ window.World = (() => {
         case "gate": drawGate(it); break;
         case "shrine": drawShrine(it, lights); break;
         case "sign": drawSign(it); break;
-        case "house": drawHouse(it, lights); if (view.darkness < 0.3) drawSmoke(it); break;
+        case "house": drawHouse(it, lights); if (shownDark < 0.3) drawSmoke(it); break;
         case "ruin": drawRuin(it); break;
         case "char": drawCharacter(it, lights, viewerIsGhost); break;
         case "ghostbot": drawGhost(it.x, it.y, it.phase, it.alpha, lights); break;
@@ -1007,7 +1010,7 @@ window.World = (() => {
     sctx.setTransform(1, 0, 0, 1, 0, 0);
     sctx.globalCompositeOperation = "source-over";
     sctx.clearRect(0, 0, shade.width, shade.height);
-    const dark = viewerIsGhost ? view.darkness * 0.72 : view.darkness;
+    const dark = viewerIsGhost ? shownDark * 0.72 : shownDark;
     sctx.fillStyle = `rgba(7,14,26,${dark})`;
     sctx.fillRect(0, 0, shade.width, shade.height);
     sctx.globalCompositeOperation = "destination-out";
@@ -1024,7 +1027,7 @@ window.World = (() => {
     }
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.drawImage(shade, 0, 0);
-    if (dayMix < 0.5 && view.darkness >= 0.5) {
+    if (dayMix < 0.5 && shownDark >= 0.5) {
       // moonlight: a cool wash plus a pale glow from the upper right so the night is dim but readable
       const cw = canvas.width, ch = canvas.height, m = 1 - dayMix * 2;
       ctx.globalCompositeOperation = "lighter";
@@ -1128,7 +1131,10 @@ window.World = (() => {
       drawBubble(b, it.x, it.y - lift - 8);
     }
 
-    if (view.marker && PLACES[view.marker]) drawMarker(PLACES[view.marker]);
+    if (view.marker && PLACES[view.marker]) {
+      drawMarker(PLACES[view.marker]);
+      if (view.hint) drawHint(PLACES[view.marker]);
+    }
   }
 
   // Place-name text: gold at night; dark brown with a pale outline by day.
@@ -1139,6 +1145,31 @@ window.World = (() => {
       ctx.fillStyle = "#5a3a10";
     } else ctx.fillStyle = `rgba(230,197,111,${a})`;
     ctx.fillText(text, x, y);
+  }
+
+  // After the player has stood still for a while: chevrons flowing from the character toward the next place.
+  function drawHint(target) {
+    const dx = target.x - player.x, dy = target.y - player.y;
+    const dist = Math.hypot(dx, dy);
+    if (dist < 70) return;
+    const ux = dx / dist, uy = dy / dist, ang = Math.atan2(dy, dx);
+    const n = Math.min(6, Math.floor((dist - 40) / 28));
+    const flow = (time * 0.9) % 1;
+    const day = dayMix > 0.5;
+    for (let i = 0; i < n; i++) {
+      const d = 34 + (i + flow) * 28;
+      if (d > dist - 24) break;
+      const fade = Math.min(1, flow + (i === 0 ? 0 : 1)) * (1 - (i + flow) / (n + 0.5)) * 0.95;
+      const cx = player.x + ux * d, cy = player.y + uy * d;
+      ctx.save();
+      ctx.translate(cx, cy); ctx.rotate(ang);
+      ctx.lineCap = "round"; ctx.lineJoin = "round";
+      ctx.beginPath(); ctx.moveTo(-5, -8); ctx.lineTo(4, 0); ctx.lineTo(-5, 8);
+      ctx.lineWidth = day ? 6 : 5; ctx.strokeStyle = day ? `rgba(255,250,230,${Math.min(1, fade * 1.2)})` : `rgba(0,0,0,${fade * 0.45})`; ctx.stroke();
+      ctx.lineWidth = 3.2; ctx.strokeStyle = day ? `rgba(160,90,0,${Math.min(1, fade * 1.2)})` : `rgba(245,210,110,${Math.min(1, fade * 1.15)})`;
+      ctx.stroke();
+      ctx.restore();
+    }
   }
 
   function drawMarker(p) {
