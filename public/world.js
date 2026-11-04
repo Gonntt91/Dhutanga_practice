@@ -151,9 +151,9 @@ window.World = (() => {
   // A black owl crosses the sky now and then and hoots once mid-flight.
   const owl = { on: false, x: 0, y: 0, dir: 1, hooted: false, wait: 10 + Math.random() * 8, phase: 0 };
   function updateOwl(dt) {
-    if (shownDark < 0.5) { owl.on = false; if (owl.wait < 8) owl.wait = 8; return; } // owls only fly at night
+    if (view.darkness < 0.5) { owl.on = false; if (owl.wait < 8) owl.wait = 8; return; } // owls only fly at night
     if (!owl.on) {
-      if (!view.role || shownDark < 0.5) return;
+      if (!view.role || view.darkness < 0.5) return;
       owl.wait -= dt;
       if (owl.wait > 0) return;
       owl.on = true; owl.hooted = false;
@@ -213,7 +213,7 @@ window.World = (() => {
       else { b.y -= 3.5 * dt; b.x += Math.sin(b.age * 0.8 + b.seed) * 5 * dt; }
     }
     for (let i = bots.length - 1; i >= 0; i--) if (bots[i].age > bots[i].life) bots.splice(i, 1);
-    const night = view.role && shownDark >= 0.5;
+    const night = view.role && view.darkness >= 0.5;
     if (!night || bots.length >= 2) return;
     botWait -= dt;
     if (botWait > 0) return;
@@ -313,7 +313,7 @@ window.World = (() => {
   // A crow: faster, jagged wings, caws harshly a few times while crossing.
   const crow = { on: false, x: 0, y: 0, dir: 1, called: false, wait: 35 + Math.random() * 25, phase: 0, yRel: 0.15 };
   function updateCrow(dt) {
-    if (shownDark < 0.5) { crow.on = false; if (crow.wait < 10) crow.wait = 10; return; } // crows too: night only
+    if (view.darkness < 0.5) { crow.on = false; if (crow.wait < 10) crow.wait = 10; return; } // crows too: night only
     if (!crow.on) {
       if (!view.role) return;
       crow.wait -= dt;
@@ -371,8 +371,6 @@ window.World = (() => {
   const others = new Map();
   const ripples = [];
   const view = { lookRange: Infinity, mist: 0.4, role: null, pose: null, darkness: 0.75, flags: new Set(), marker: null, nick: "", anchor: 0.55 };
-  // The shown darkness eases toward the scene's darkness, so dusk and dawn fade in instead of snapping.
-  let shownDark = view.darkness;
   let tapHandler = null;
 
   function init(canvasEl, onTap) {
@@ -476,14 +474,13 @@ window.World = (() => {
   // ---------- update ----------
   function update(dt) {
     time += dt;
-    shownDark += (view.darkness - shownDark) * Math.min(1, dt * 0.8);
-    const dayTarget = Math.max(0, Math.min(1, (0.5 - shownDark) / 0.25));
+    const dayTarget = Math.max(0, Math.min(1, (0.5 - view.darkness) / 0.25));
     if (Math.abs(dayTarget - dayMix) > 0.002) { dayMix += (dayTarget - dayMix) * Math.min(1, dt * 2.2); applyDay(); }
     if (player.tx != null) {
       const dx = player.tx - player.x;
       const dy = player.ty - player.y;
       const d = Math.hypot(dx, dy);
-      const speed = view.role === "ghost" ? 115 : 150;
+      const speed = view.role === "ghost" ? 70 : 88;
       if (d < 2) { player.tx = null; player.moving = false; }
       else {
         const step = Math.min(d, speed * dt);
@@ -993,7 +990,7 @@ window.World = (() => {
         case "gate": drawGate(it); break;
         case "shrine": drawShrine(it, lights); break;
         case "sign": drawSign(it); break;
-        case "house": drawHouse(it, lights); if (shownDark < 0.3) drawSmoke(it); break;
+        case "house": drawHouse(it, lights); if (view.darkness < 0.3) drawSmoke(it); break;
         case "ruin": drawRuin(it); break;
         case "char": drawCharacter(it, lights, viewerIsGhost); break;
         case "ghostbot": drawGhost(it.x, it.y, it.phase, it.alpha, lights); break;
@@ -1010,7 +1007,7 @@ window.World = (() => {
     sctx.setTransform(1, 0, 0, 1, 0, 0);
     sctx.globalCompositeOperation = "source-over";
     sctx.clearRect(0, 0, shade.width, shade.height);
-    const dark = viewerIsGhost ? shownDark * 0.72 : shownDark;
+    const dark = viewerIsGhost ? view.darkness * 0.72 : view.darkness;
     sctx.fillStyle = `rgba(7,14,26,${dark})`;
     sctx.fillRect(0, 0, shade.width, shade.height);
     sctx.globalCompositeOperation = "destination-out";
@@ -1027,7 +1024,7 @@ window.World = (() => {
     }
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.drawImage(shade, 0, 0);
-    if (dayMix < 0.5 && shownDark >= 0.5) {
+    if (dayMix < 0.5 && view.darkness >= 0.5) {
       // moonlight: a cool wash plus a pale glow from the upper right so the night is dim but readable
       const cw = canvas.width, ch = canvas.height, m = 1 - dayMix * 2;
       ctx.globalCompositeOperation = "lighter";
