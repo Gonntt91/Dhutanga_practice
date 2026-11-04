@@ -59,7 +59,7 @@ window.Room = (() => {
   function open(opts) {
     if (!root) build();
     onClose = opts.onClose; onPhoto = opts.onPhoto;
-    flipped = false; bowlsLifted = false; px = py = tpx = tpy = 0; t0 = performance.now(); last = t0;
+    flipped = !!opts.flipped; bowlsLifted = false; px = py = tpx = tpy = 0; t0 = performance.now(); last = t0;
     dust = Array.from({ length: 40 }, () => ({ x: Math.random() * LW, y: 80 + Math.random() * 420, v: 3 + Math.random() * 6, p: Math.random() * 6 }));
     root.hidden = false;
     fit();

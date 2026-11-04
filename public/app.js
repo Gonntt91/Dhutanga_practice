@@ -544,7 +544,7 @@
         state.meter = Math.max(0, Math.min(10, state.meter + (c.delta || 0)));
         if (c.trace) leaveTrace(c.trace);
         if (c.next) { state.findOpen.step = c.next; renderFind(); pushView(); }
-        else { state.found.add(find.id); closeFind(false); }
+        else { if (!find.repeat) state.found.add(find.id); closeFind(false); }
       });
       box.appendChild(b);
     }
@@ -552,8 +552,9 @@
   function openRoom(find) {
     $("find-card").hidden = true;
     Room.open({
+      flipped: loadMem().has("c_anh"), // the photo stays turned over once you have seen it
       onPhoto: () => { remember("c_anh"); state.meter = Math.min(10, state.meter + 1); },
-      onClose: (res) => { if (res.flipped) state.found.add(find.id); closeFind(false); },
+      onClose: () => { if (!find.repeat) state.found.add(find.id); closeFind(false); },
     });
   }
   function closeFind(silent) {
