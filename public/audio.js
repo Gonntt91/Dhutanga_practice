@@ -104,5 +104,30 @@ window.NightAudio = (() => {
     src.start(t);
   }
 
-  return { start, stop, bell, sigh };
+  // Low owl hoot: "hu-hu... huuu", slight vibrato, panned to where the owl is.
+  function owl(pan = 0) {
+    if (!ctx || ctx.state !== "running") return;
+    const t = ctx.currentTime;
+    const out = ctx.createStereoPanner ? ctx.createStereoPanner() : null;
+    if (out) { out.pan.value = Math.max(-1, Math.min(1, pan)); out.connect(master); }
+    [[0, 0.22, 400, 0.05], [0.36, 0.22, 380, 0.05], [1.0, 0.9, 330, 0.06]].forEach(([at, len, f, amp]) => {
+      const osc = ctx.createOscillator();
+      const vib = ctx.createOscillator();
+      const vg = ctx.createGain();
+      const g = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(f * 1.06, t + at);
+      osc.frequency.exponentialRampToValueAtTime(f, t + at + len * 0.5);
+      vib.frequency.value = 7; vg.gain.value = 5;
+      vib.connect(vg).connect(osc.frequency);
+      g.gain.setValueAtTime(0.0001, t + at);
+      g.gain.linearRampToValueAtTime(amp, t + at + 0.06);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + at + len);
+      osc.connect(g).connect(out || master);
+      osc.start(t + at); vib.start(t + at);
+      osc.stop(t + at + len + 0.05); vib.stop(t + at + len + 0.05);
+    });
+  }
+
+  return { start, stop, bell, sigh, owl };
 })();

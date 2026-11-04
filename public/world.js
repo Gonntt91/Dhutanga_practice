@@ -105,6 +105,57 @@ window.World = (() => {
   const fog = Array.from({ length: 7 }, (_, i) => ({ x: Math.random() * W, y: i / 7, rx: 120 + Math.random() * 120, ry: 26 + Math.random() * 20, v: 3 + Math.random() * 5 }));
   const fireflies = Array.from({ length: 14 }, () => ({ x: 30 + Math.random() * 340, y: 700 + Math.random() * 900, p: Math.random() * 6.28, v: 0.4 + Math.random() * 0.6 }));
 
+  // A black owl crosses the sky now and then and hoots once mid-flight.
+  const owl = { on: false, x: 0, y: 0, dir: 1, hooted: false, wait: 10 + Math.random() * 8, phase: 0 };
+  function updateOwl(dt) {
+    if (!owl.on) {
+      if (!view.role) return;
+      owl.wait -= dt;
+      if (owl.wait > 0) return;
+      owl.on = true; owl.hooted = false;
+      owl.dir = Math.random() < 0.5 ? 1 : -1;
+      owl.x = owl.dir > 0 ? -30 : W + 30;
+      owl.yRel = 0.1 + Math.random() * 0.16;
+      return;
+    }
+    owl.x += owl.dir * 46 * dt;
+    owl.phase += dt;
+    if (!owl.hooted && owl.x > W * 0.38 && owl.x < W * 0.62) {
+      owl.hooted = true;
+      window.dispatchEvent(new CustomEvent("owl", { detail: { pan: (owl.x / W) * 2 - 1 } }));
+    }
+    if (owl.x < -40 || owl.x > W + 40) { owl.on = false; owl.wait = 28 + Math.random() * 30; }
+  }
+  function drawOwl() {
+    if (!owl.on) return;
+    const x = owl.x, y = camY + viewH * owl.yRel + Math.sin(owl.phase * 1.7) * 5;
+    const flap = Math.sin(owl.phase * 7);
+    const d = owl.dir;
+    ctx.save();
+    ctx.globalCompositeOperation = "source-over";
+    ctx.translate(x, y);
+    ctx.scale(d, 1);
+    ctx.fillStyle = "#07090a";
+    ctx.strokeStyle = "rgba(170,190,200,0.28)";
+    ctx.lineWidth = 0.8;
+    // wings
+    for (const s of [-1, 1]) {
+      ctx.beginPath();
+      ctx.moveTo(0, -1);
+      ctx.quadraticCurveTo(s * 14, -10 - flap * 9, s * 30, -2 - flap * 14);
+      ctx.quadraticCurveTo(s * 18, 3 - flap * 3, 0, 5);
+      ctx.closePath(); ctx.fill(); ctx.stroke();
+    }
+    // body and head
+    ctx.beginPath(); ctx.ellipse(0, 3, 5, 8, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.arc(0, -7, 4.4, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(-4, -9); ctx.lineTo(-3.4, -13); ctx.lineTo(-1.2, -10.4); ctx.moveTo(4, -9); ctx.lineTo(3.4, -13); ctx.lineTo(1.2, -10.4); ctx.fill();
+    // two pale eyes
+    ctx.fillStyle = "rgba(230,200,120,0.9)";
+    ctx.fillRect(-2.6, -7.6, 1.4, 1.4); ctx.fillRect(1.2, -7.6, 1.4, 1.4);
+    ctx.restore();
+  }
+
   // ---------- runtime state ----------
   let canvas, ctx, shade, sctx;
   let dpr = 1;
@@ -205,6 +256,7 @@ window.World = (() => {
     while (ripples.length && ripples[0].t > 3) ripples.shift();
     for (const f of fog) { f.x += f.v * dt; if (f.x - f.rx > W) f.x = -f.rx; }
     for (const f of fireflies) f.p += dt * f.v;
+    updateOwl(dt);
   }
 
   // ---------- drawing helpers ----------
@@ -560,6 +612,7 @@ window.World = (() => {
 
     // above darkness: warm glows, fireflies, ripples, labels, marker
     ctx.setTransform(k, 0, 0, k, 0, -camY * k);
+    drawOwl();
     ctx.globalCompositeOperation = "lighter";
     for (const l of lights) {
       if (l.r < 50) continue;

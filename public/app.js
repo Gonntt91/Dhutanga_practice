@@ -470,6 +470,12 @@
     btn.setAttribute("aria-label", state.soundOn ? "Tắt âm thanh" : "Bật âm thanh");
   }
 
+  window.addEventListener("owl", (e) => {
+    if (!state.role) return;
+    if (state.soundOn) NightAudio.owl(e.detail.pan);
+    toast("Một con cú đen bay ngang qua nghĩa địa, kêu hai tiếng rồi im.");
+  });
+
   // ---------- boot ----------
   World.init($("world"), (x, y) => {
     if (!state.role) return;
