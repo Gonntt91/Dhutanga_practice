@@ -91,7 +91,7 @@ window.World = (() => {
         decor.push({ kind: "bamboo", x: cx + (r() - 0.5) * 42, y: cy + (r() - 0.5) * 30, h: 62 + r() * 55, lean: (r() - 0.5) * 0.35, seed: r() * 10 });
       }
     }
-    decor.push({ kind: "gao", x: 118, y: 600 });
+    decor.push({ kind: "gao", x: 128, y: 618 });
     for (const [x, y] of [[332, 520], [58, 860], [352, 890], [300, 330], [70, 300], [360, 1250], [30, 1180]]) {
       decor.push({ kind: "tree", x, y, s: 0.7 + r() * 0.5 });
     }
@@ -549,24 +549,66 @@ window.World = (() => {
     }
   }
 
+  // Cây gạo (bông gòn): thân thẳng cao có bạnh rễ, cành mọc ngang theo từng tầng, mùa hoa thì
+  // cành trơ lá và đỏ rực hoa. Vẽ sáng hơn nền để thấy rõ từ xa, kể cả ban đêm.
   function drawGao(d) {
     const { x, y } = d;
-    shadow(x, y, 26);
-    ctx.fillStyle = COLORS.trunk;
+    const sway = Math.sin(time * 0.6) * 1.2;
+    shadow(x, y, 46);
+    // fallen flowers on the ground around the roots
+    const rp = rng(9);
+    for (let i = 0; i < 34; i++) {
+      const a = rp() * Math.PI * 2, dist = 14 + rp() * 52;
+      ellipse(x + Math.cos(a) * dist, y + 4 + Math.sin(a) * dist * 0.32, 2.2, 1.3, rp() < 0.5 ? "#8e2f25" : "#b2432f");
+    }
+    const bark = "#4a3f35", barkDark = "#2d2822", barkLight = "#6a5a4b";
+    // buttress roots
+    ctx.fillStyle = bark;
     ctx.beginPath();
-    ctx.moveTo(x - 9, y); ctx.lineTo(x - 5, y - 95); ctx.lineTo(x + 5, y - 95); ctx.lineTo(x + 9, y); ctx.closePath(); ctx.fill();
-    ctx.strokeStyle = COLORS.trunk;
-    ctx.lineWidth = 4;
-    for (const [bx, by, ex, ey] of [[0, -70, -40, -110], [0, -80, 38, -118], [0, -92, -10, -130]]) {
-      ctx.beginPath(); ctx.moveTo(x + bx, y + by); ctx.lineTo(x + ex, y + ey); ctx.stroke();
+    ctx.moveTo(x - 30, y + 2); ctx.quadraticCurveTo(x - 14, y - 6, x - 9, y - 40);
+    ctx.lineTo(x + 9, y - 40); ctx.quadraticCurveTo(x + 14, y - 6, x + 30, y + 2);
+    ctx.quadraticCurveTo(x + 8, y - 5, x, y + 3); ctx.quadraticCurveTo(x - 8, y - 5, x - 30, y + 2);
+    ctx.fill();
+    // trunk
+    ctx.beginPath();
+    ctx.moveTo(x - 9, y - 38); ctx.lineTo(x - 6.5, y - 150); ctx.lineTo(x + 6.5, y - 150); ctx.lineTo(x + 9, y - 38); ctx.closePath(); ctx.fill();
+    // rim light on the left, shade on the right, thorn bumps
+    ctx.strokeStyle = barkLight; ctx.lineWidth = 1.4;
+    ctx.beginPath(); ctx.moveTo(x - 8, y - 38); ctx.lineTo(x - 6, y - 148); ctx.stroke();
+    ctx.strokeStyle = barkDark; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(x + 5, y - 38); ctx.lineTo(x + 4, y - 148); ctx.stroke();
+    ctx.fillStyle = barkDark;
+    const tb = rng(21);
+    for (let i = 0; i < 16; i++) { const by = y - 46 - tb() * 96; ctx.beginPath(); ctx.arc(x + (tb() - 0.5) * 11, by, 1.1, 0, Math.PI * 2); ctx.fill(); }
+    // tiers of near-horizontal branches
+    const tiers = [
+      { by: -78, span: 70, rise: 14 },
+      { by: -108, span: 88, rise: 18 },
+      { by: -136, span: 60, rise: 16 },
+    ];
+    ctx.lineCap = "round";
+    const fl = rng(5);
+    for (const t of tiers) {
+      for (const side of [-1, 1]) {
+        const ex = x + side * t.span + sway * side, ey = y + t.by - t.rise;
+        ctx.strokeStyle = bark; ctx.lineWidth = 4.2;
+        ctx.beginPath(); ctx.moveTo(x, y + t.by); ctx.quadraticCurveTo(x + side * t.span * 0.55, y + t.by - 2, ex, ey); ctx.stroke();
+        // twigs and flowers along the branch tip
+        ctx.lineWidth = 1.6;
+        for (let k = 0; k < 4; k++) {
+          const u = 0.45 + k * 0.17;
+          const tx = x + side * t.span * u + sway * side * u, ty = y + t.by - t.rise * u * u;
+          const ux = tx + side * (6 + fl() * 5), uy = ty - (8 + fl() * 8);
+          ctx.beginPath(); ctx.moveTo(tx, ty); ctx.lineTo(ux, uy); ctx.stroke();
+          ellipse(ux, uy, 4.4, 3, "#c4432c");
+          ellipse(ux + side * 3, uy - 1.5, 3.2, 2.4, "#e0603a");
+          ellipse(ux - side * 2, uy + 1.5, 2.6, 2, "#9c3022");
+        }
+        ellipse(ex, ey - 2, 4.6, 3.2, "#d6502f");
+      }
     }
-    for (const [cx, cy, rx, ry] of [[-38, -118, 30, 16], [34, -124, 32, 16], [-4, -140, 36, 18]]) ellipse(x + cx, y + cy, rx, ry, COLORS.canopy);
-    const r = rng(5);
-    for (let i = 0; i < 26; i++) {
-      const fx = x - 60 + r() * 120;
-      const fy = y - 150 + r() * 45;
-      ellipse(fx, fy, 2, 2, COLORS.flower);
-    }
+    // crown flowers
+    ellipse(x, y - 154, 5, 3.4, "#d6502f"); ellipse(x - 8, y - 150, 3.6, 2.6, "#b2432f"); ellipse(x + 8, y - 151, 3.6, 2.6, "#e0603a");
   }
 
   function drawTree(d) {
