@@ -219,3 +219,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--lantern); o
 @keyframes drift { from { transform: translateY(0); opacity: 0; } 10% { opacity: 1; } 80% { opacity: 0.9; } to { transform: translateY(-150px); opacity: 0; } }
 .watch-skip { justify-self: end; }
 @media (prefers-reduced-motion: reduce) { .breath { animation: none; } }
+
+/* Daytime: the world is bright, so the HUD gets a darker scrim and a text shadow to stay readable. */
+.app.day .hud { background: linear-gradient(rgba(14, 24, 16, 0.78), rgba(14, 24, 16, 0)); }
+.app.day .hud .label, .app.day .role-chip { text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7); color: #f1ecdc; }

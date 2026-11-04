@@ -46,6 +46,43 @@ window.World = (() => {
     ashDim: "#8d9189",
   };
 
+  // ---------- day / night palette ----------
+  // Night colours are the base. In daytime everything blends toward a bright, saturated palette:
+  // green grass, brown earth path, light stone graves, green leaves, red-tiled roofs.
+  const NIGHT = { ...COLORS };
+  const DAY = {
+    ground: "#6aa84f", groundEdge: "#4f8a3c", path: "#b69b6c", pathInner: "#cbb386",
+    grave: "#b8b3a1", graveFace: "#d2cebd", mound: "#8c6b45", moundTop: "#6fae4a",
+    bamboo: "#7fb653", leaf: "#4f9a3e", trunk: "#6b4f36", canopy: "#3f9a3c", flower: "#d4536a",
+  };
+  // literal night colours used inside draw functions -> their day equivalents
+  const DAY_MAP = {
+    "#1c2720": "#3f8c30", "#212b26": "#8a6b45", "#2b3a31": "#5ea646", "#16201b": "#3f7a2f", "#17201b": "#5fb34a",
+    "#3a3f3a": "#b3ae9d", "#474d47": "#c9c4b2", "#353a35": "#a39e8c", "#2a2e2a": "#b04a35",
+    "#2a2f2b": "#e6d7b0", "#101513": "#3a2f24", "#1e2320": "#b04a35",
+    "#1a201d": "#b9ad92", "#0a0e0d": "#2b2218", "#222a26": "#8b5a3c",
+    "#262b28": "#eadcb8", "#1a1f1c": "#c0553b",
+  };
+  const GRAVE_DAY = [["#c9c4b2", "#e0dccb"], ["#a9b3a0", "#c5cfba"], ["#d3c6a8", "#e6dcc2"], ["#a7adb0", "#c3c9cc"]];
+  let dayMix = 0;
+  const hexCache = new Map();
+  function hexToRgb(h) { return [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)]; }
+  function lerpHex(a, b, t) {
+    const A = hexToRgb(a), B = hexToRgb(b);
+    return "#" + A.map((v, i) => Math.round(v + (B[i] - v) * t).toString(16).padStart(2, "0")).join("");
+  }
+  function pal(hex) {
+    const day = DAY_MAP[hex];
+    if (!day || dayMix < 0.003) return hex;
+    let c = hexCache.get(hex);
+    if (!c) { c = lerpHex(hex, day, dayMix); hexCache.set(hex, c); }
+    return c;
+  }
+  function applyDay() {
+    hexCache.clear();
+    for (const k of Object.keys(DAY)) COLORS[k] = lerpHex(NIGHT[k], DAY[k], dayMix);
+  }
+
   // ---------- seeded decor ----------
   function rng(seed) {
     return () => {
@@ -70,6 +107,7 @@ window.World = (() => {
 
   const decor = [];
   const tufts = [];
+  const grassPatches = [];
   (function buildDecor() {
     const r = rng(11);
     let tries = 0;
@@ -102,7 +140,8 @@ window.World = (() => {
     for (const [x, y] of [[78, 1975], [325, 1962], [52, 2110], [318, 2135], [92, 2290], [340, 2310]]) decor.push({ kind: "house", x, y });
     for (const [x, y] of [[20, 2050], [372, 2060], [140, 2200], [258, 2240], [30, 2380], [380, 2420]]) decor.push({ kind: "tree", x, y, s: 0.8 + r() * 0.4 });
     for (const [cx, cy, n] of [[255, 2060, 5], [120, 2380, 6]]) for (let i = 0; i < n; i++) decor.push({ kind: "bamboo", x: cx + (r() - 0.5) * 36, y: cy + (r() - 0.5) * 24, h: 60 + r() * 45, lean: (r() - 0.5) * 0.3, seed: r() * 10 });
-    for (let i = 0; i < 320; i++) tufts.push({ x: r() * W, y: r() * H, s: 0.6 + r() * 0.9 });
+    for (let i = 0; i < 320; i++) tufts.push({ x: r() * W, y: r() * H, s: 0.6 + r() * 0.9, h: Math.floor(r() * 1000) });
+    for (let i = 0; i < 70; i++) grassPatches.push({ x: r() * W, y: r() * 2500, rx: 30 + r() * 60, ry: 12 + r() * 22, c: r() < 0.5 ? "120,190,70" : "60,130,50" });
   })();
 
   const fog = Array.from({ length: 7 }, (_, i) => ({ x: Math.random() * W, y: i / 7, rx: 120 + Math.random() * 120, ry: 26 + Math.random() * 20, v: 3 + Math.random() * 5 }));
@@ -194,6 +233,24 @@ window.World = (() => {
     botWait = 35 + Math.random() * 50;
   }
   const botAlpha = (b) => Math.max(0, Math.min(1, b.age / 1.6, (b.life - b.age) / 2.2)) * 0.55;
+
+  // Daytime: butterflies wander over the grass instead of fireflies.
+  const BUTTERFLY = ["#f6c335", "#ffffff", "#ff8a3d", "#f29ac0"];
+  function drawButterflies() {
+    const a = Math.min(1, (dayMix - 0.4) / 0.4);
+    fireflies.forEach((f, i) => {
+      if (i % 2) return;
+      const bx = f.x + Math.sin(f.p * 0.9 + i) * 40;
+      const by = f.y + Math.cos(f.p * 0.6) * 24 + Math.sin(f.p * 3) * 3;
+      if (by < camY - 20 || by > camY + viewH + 20) return;
+      const flap = 0.35 + 0.65 * Math.abs(Math.sin(time * 9 + i));
+      ctx.globalAlpha = a;
+      ctx.fillStyle = BUTTERFLY[(i / 2) % 4 | 0];
+      ctx.beginPath(); ctx.ellipse(bx - 2.2 * flap, by, 2.6 * flap, 2.2, -0.5, 0, Math.PI * 2); ctx.ellipse(bx + 2.2 * flap, by, 2.6 * flap, 2.2, 0.5, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#3a2a1a"; ctx.fillRect(bx - 0.4, by - 2, 0.8, 4);
+      ctx.globalAlpha = 1;
+    });
+  }
 
   // Things left lying around that the player can walk to and pick over (set by the app).
   let finds = [];
@@ -377,6 +434,8 @@ window.World = (() => {
   // ---------- update ----------
   function update(dt) {
     time += dt;
+    const dayTarget = Math.max(0, Math.min(1, (0.5 - view.darkness) / 0.25));
+    if (Math.abs(dayTarget - dayMix) > 0.002) { dayMix += (dayTarget - dayMix) * Math.min(1, dt * 2.2); applyDay(); }
     if (player.tx != null) {
       const dx = player.tx - player.x;
       const dy = player.ty - player.y;
@@ -421,19 +480,30 @@ window.World = (() => {
 
   // ---------- drawing helpers ----------
   function ellipse(x, y, rx, ry, color) { ctx.fillStyle = color; ctx.beginPath(); ctx.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2); ctx.fill(); }
-  function shadow(x, y, rx) { ellipse(x, y + 1, rx, rx * 0.35, "rgba(0,0,0,0.35)"); }
+  // Night: a plain dark pool. Day: sun from the upper left, so shadows lean to the lower right.
+  function shadow(x, y, rx) {
+    if (dayMix > 0.05) ellipse(x + rx * 0.55, y + 2, rx * 1.25, rx * 0.42, `rgba(12,40,14,${0.34 * dayMix})`);
+    ellipse(x, y + 1, rx, rx * 0.35, `rgba(0,0,0,${0.35 * (1 - 0.5 * dayMix)})`);
+  }
 
   function drawGround(top, bottom) {
     ctx.fillStyle = COLORS.ground;
     ctx.fillRect(0, top, W, bottom - top);
     // edges darker
     const g = ctx.createLinearGradient(0, 0, W, 0);
-    g.addColorStop(0, "rgba(0,0,0,0.35)");
+    const eg = 0.35 * (1 - 0.7 * dayMix);
+    g.addColorStop(0, `rgba(0,0,0,${eg})`);
     g.addColorStop(0.18, "rgba(0,0,0,0)");
     g.addColorStop(0.82, "rgba(0,0,0,0)");
-    g.addColorStop(1, "rgba(0,0,0,0.35)");
+    g.addColorStop(1, `rgba(0,0,0,${eg})`);
     ctx.fillStyle = g;
     ctx.fillRect(0, top, W, bottom - top);
+    if (dayMix > 0.02) {
+      for (const gp of grassPatches) {
+        if (gp.y < top - 40 || gp.y > bottom + 40) continue;
+        ellipse(gp.x, gp.y, gp.rx, gp.ry, `rgba(${gp.c},${0.22 * dayMix})`);
+      }
+    }
     // path
     ctx.lineJoin = "round";
     ctx.lineCap = "round";
@@ -446,7 +516,7 @@ window.World = (() => {
     ctx.lineWidth = 20;
     ctx.stroke();
     // grass tufts
-    ctx.strokeStyle = "#1c2720";
+    ctx.strokeStyle = pal("#1c2720");
     ctx.lineWidth = 1;
     for (const t of tufts) {
       if (t.y < top - 10 || t.y > bottom + 10) continue;
@@ -456,6 +526,13 @@ window.World = (() => {
       ctx.moveTo(t.x, t.y); ctx.lineTo(t.x, t.y - 7 * t.s);
       ctx.moveTo(t.x + 3 * t.s, t.y); ctx.lineTo(t.x + 1.5 * t.s, t.y - 5 * t.s);
       ctx.stroke();
+      if (dayMix > 0.3 && t.h % 6 === 0) {
+        const fc = ["#f6e05e", "#ffffff", "#f29ac0", "#ff9d4d", "#b79cf0"][t.h % 5];
+        ctx.globalAlpha = Math.min(1, dayMix * 1.4 - 0.3);
+        ellipse(t.x + 2, t.y - 8 * t.s, 1.9, 1.9, fc);
+        ellipse(t.x + 2, t.y - 8 * t.s, 0.7, 0.7, "#e0a020");
+        ctx.globalAlpha = 1;
+      }
     }
   }
 
@@ -463,6 +540,11 @@ window.World = (() => {
     const s = d.s;
     const { x, y } = d;
     shadow(x, y, 11 * s);
+    const keepG = COLORS.grave, keepF = COLORS.graveFace;
+    if (dayMix > 0.01) {
+      const v = GRAVE_DAY[(d.type + Math.floor(d.x)) % GRAVE_DAY.length];
+      COLORS.grave = lerpHex(keepG, v[0], 0.85); COLORS.graveFace = lerpHex(keepF, v[1], 0.85);
+    }
     ctx.fillStyle = COLORS.grave;
     if (d.type === 0) {
       ellipse(x, y - 3 * s, 12 * s, 7 * s, COLORS.mound);
@@ -487,6 +569,20 @@ window.World = (() => {
       ctx.beginPath(); ctx.moveTo(x - 6 * s, y - 16 * s); ctx.lineTo(x, y - 24 * s); ctx.lineTo(x + 6 * s, y - 16 * s); ctx.closePath();
       ctx.fillStyle = COLORS.grave; ctx.fill();
     }
+    COLORS.grave = keepG; COLORS.graveFace = keepF;
+    if (dayMix > 0.25) {
+      // moss at the base, grass tuft, and a few offerings of flowers
+      ellipse(x - 3 * s, y - 1, 7 * s, 2.4 * s, `rgba(70,140,50,${0.55 * dayMix})`);
+      ctx.strokeStyle = `rgba(60,130,40,${dayMix})`; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(x + 7 * s, y); ctx.lineTo(x + 6 * s, y - 5); ctx.moveTo(x + 8 * s, y); ctx.lineTo(x + 9.5 * s, y - 6); ctx.stroke();
+      const h = Math.floor(x * 7 + y * 3) % 5;
+      if (h < 3) {
+        const fc = ["#f6c335", "#ff8a3d", "#f4f1e6"][h];
+        ctx.globalAlpha = dayMix;
+        ellipse(x - 9 * s, y - 2, 2.2, 1.8, fc); ellipse(x - 11 * s, y - 1, 1.8, 1.5, fc); ellipse(x - 7.5 * s, y - 1, 1.6, 1.4, "#ffd6a0");
+        ctx.globalAlpha = 1;
+      }
+    }
     if (d.incense) drawIncense(x + 8 * s, y - 2, lights, 0.5);
   }
 
@@ -496,7 +592,7 @@ window.World = (() => {
     for (let i = -1; i <= 1; i++) {
       ctx.beginPath(); ctx.moveTo(x + i * 1.5, y); ctx.lineTo(x + i * 2, y - 9); ctx.stroke();
       const flick = 0.6 + 0.4 * Math.sin(time * 5 + i * 2 + x);
-      ellipse(x + i * 2, y - 9, 0.9, 0.9, `rgba(240,150,80,${0.6 + 0.4 * flick})`);
+      ellipse(x + i * 2, y - 9, 0.9, 0.9, `rgba(240,150,80,${(0.6 + 0.4 * flick) * (1 - 0.8 * dayMix)})`);
     }
     lights.push({ x, y: y - 9, r: 18, a: 0.45 * strength });
     // thin smoke
@@ -513,8 +609,8 @@ window.World = (() => {
   function drawUnnamed(d, lights) {
     const { x, y } = d;
     shadow(x, y, 14);
-    ellipse(x, y - 3, 14, 7, "#212b26");
-    ctx.strokeStyle = "#2b3a31";
+    ellipse(x, y - 3, 14, 7, pal("#212b26"));
+    ctx.strokeStyle = pal("#2b3a31");
     ctx.lineWidth = 1;
     for (let i = -10; i <= 10; i += 4) {
       ctx.beginPath(); ctx.moveTo(x + i, y - 5); ctx.lineTo(x + i + 1, y - 11 - Math.abs(Math.sin(i)) * 3); ctx.stroke();
@@ -534,7 +630,7 @@ window.World = (() => {
     ctx.strokeStyle = COLORS.bamboo;
     ctx.lineWidth = 2.6;
     ctx.beginPath(); ctx.moveTo(d.x, d.y); ctx.quadraticCurveTo(d.x + d.lean * d.h * 0.4, d.y - d.h * 0.5, topX, topY); ctx.stroke();
-    ctx.strokeStyle = "#16201b";
+    ctx.strokeStyle = pal("#16201b");
     ctx.lineWidth = 1;
     for (let k = 1; k < 5; k++) {
       const t = k / 5;
@@ -615,55 +711,61 @@ window.World = (() => {
   function drawTree(d) {
     const { x, y, s } = d;
     shadow(x, y, 16 * s);
+    if (dayMix > 0.05) {
+      // dappled shade under the crown
+      ellipse(x + 16 * s, y + 6 * s, 30 * s, 11 * s, `rgba(15,50,18,${0.24 * dayMix})`);
+      ellipse(x + 8 * s, y + 3 * s, 20 * s, 8 * s, `rgba(15,50,18,${0.18 * dayMix})`);
+    }
     ctx.fillStyle = COLORS.trunk;
     ctx.fillRect(x - 3 * s, y - 40 * s, 6 * s, 40 * s);
     ellipse(x - 10 * s, y - 48 * s, 18 * s, 13 * s, COLORS.canopy);
     ellipse(x + 10 * s, y - 52 * s, 18 * s, 13 * s, COLORS.canopy);
-    ellipse(x, y - 62 * s, 16 * s, 12 * s, "#17201b");
+    ellipse(x, y - 62 * s, 16 * s, 12 * s, pal("#17201b"));
+    if (dayMix > 0.05) ellipse(x - 5 * s, y - 66 * s, 9 * s, 6 * s, `rgba(190,240,120,${0.38 * dayMix})`);
   }
 
   function drawGate(d) {
     const { x, y } = d;
     for (const side of [-1, 1]) {
       shadow(x + side * 42, y, 9);
-      ctx.fillStyle = "#3a3f3a";
+      ctx.fillStyle = pal("#3a3f3a");
       ctx.fillRect(x + side * 42 - 5, y - 48, 10, 48);
-      ctx.fillStyle = "#474d47";
+      ctx.fillStyle = pal("#474d47");
       ctx.fillRect(x + side * 42 - 6, y - 52, 12, 5);
     }
-    ctx.fillStyle = "#353a35";
+    ctx.fillStyle = pal("#353a35");
     ctx.fillRect(x - 50, y - 60, 100, 9);
     ctx.beginPath();
     ctx.moveTo(x - 58, y - 60); ctx.quadraticCurveTo(x, y - 70, x + 58, y - 60); ctx.lineTo(x + 50, y - 66); ctx.quadraticCurveTo(x, y - 74, x - 50, y - 66); ctx.closePath();
-    ctx.fillStyle = "#2a2e2a"; ctx.fill();
+    ctx.fillStyle = pal("#2a2e2a"); ctx.fill();
   }
 
   function drawShrine(d) {
     const { x, y } = d;
     shadow(x, y, 30);
-    ctx.fillStyle = "#2a2f2b";
+    ctx.fillStyle = pal("#2a2f2b");
     ctx.fillRect(x - 26, y - 34, 52, 34);
-    ctx.fillStyle = "#101513";
+    ctx.fillStyle = pal("#101513");
     ctx.fillRect(x - 8, y - 22, 16, 22);
     ctx.beginPath();
     ctx.moveTo(x - 38, y - 30); ctx.quadraticCurveTo(x - 20, y - 36, x, y - 56); ctx.quadraticCurveTo(x + 20, y - 36, x + 38, y - 30);
     ctx.lineTo(x + 30, y - 36); ctx.lineTo(x, y - 50); ctx.lineTo(x - 30, y - 36); ctx.closePath();
-    ctx.fillStyle = "#1e2320"; ctx.fill();
+    ctx.fillStyle = pal("#1e2320"); ctx.fill();
   }
 
   // Abandoned house at the graveyard's edge: no light, broken roof, empty doorway.
   function drawRuin(d) {
     const { x, y } = d;
     shadow(x, y, 34);
-    ctx.fillStyle = "#1a201d";
+    ctx.fillStyle = pal("#1a201d");
     ctx.fillRect(x - 28, y - 30, 56, 30);
-    ctx.fillStyle = "#0a0e0d";
+    ctx.fillStyle = pal("#0a0e0d");
     ctx.fillRect(x - 7, y - 22, 14, 22);
-    ctx.fillStyle = "#222a26";
+    ctx.fillStyle = pal("#222a26");
     ctx.beginPath();
     ctx.moveTo(x - 34, y - 30); ctx.lineTo(x - 8, y - 48); ctx.lineTo(x + 2, y - 42);
     ctx.lineTo(x + 10, y - 49); ctx.lineTo(x + 34, y - 30); ctx.closePath(); ctx.fill();
-    ctx.strokeStyle = "#0a0e0d"; ctx.lineWidth = 1;
+    ctx.strokeStyle = pal("#0a0e0d"); ctx.lineWidth = 1;
     ctx.beginPath(); ctx.moveTo(x - 2, y - 41); ctx.lineTo(x + 2, y - 34); ctx.lineTo(x - 1, y - 30); ctx.stroke();
   }
 
@@ -680,12 +782,12 @@ window.World = (() => {
   function drawHouse(d, lights) {
     const { x, y } = d;
     shadow(x, y, 32);
-    ctx.fillStyle = "#262b28";
+    ctx.fillStyle = pal("#262b28");
     ctx.fillRect(x - 28, y - 28, 56, 28);
     ctx.beginPath(); ctx.moveTo(x - 34, y - 26); ctx.lineTo(x, y - 48); ctx.lineTo(x + 34, y - 26); ctx.closePath();
-    ctx.fillStyle = "#1a1f1c"; ctx.fill();
+    ctx.fillStyle = pal("#1a1f1c"); ctx.fill();
     ctx.fillStyle = COLORS.lantern;
-    ctx.globalAlpha = 0.75;
+    ctx.globalAlpha = 0.75 - 0.5 * dayMix;
     ctx.fillRect(x - 6, y - 19, 12, 9);
     ctx.globalAlpha = 1;
     lights.push({ x, y: y - 15, r: 60, a: 0.55 });
@@ -812,7 +914,7 @@ window.World = (() => {
     // drifting fog
     for (const f of fog) {
       const fy = camY + f.y * viewH;
-      ellipse(f.x, fy, f.rx * (1 + view.mist * 0.5), f.ry * (1 + view.mist * 0.9), `rgba(200,210,205,${0.03 + view.mist * 0.075})`);
+      ellipse(f.x, fy, f.rx * (1 + view.mist * 0.5), f.ry * (1 + view.mist * 0.9), `rgba(200,210,205,${(0.03 + view.mist * 0.075) * (1 - 0.7 * dayMix)})`);
     }
 
     // darkness with light holes
@@ -836,14 +938,29 @@ window.World = (() => {
     }
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.drawImage(shade, 0, 0);
-    if (view.darkness < 0.3) {
-      // morning light: warm wash so the day does not look like dim night
-      const k2 = 1 - view.darkness / 0.3;
-      ctx.fillStyle = `rgba(255,226,160,${0.10 * k2})`;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    if (dayMix > 0.02) {
+      // sunlight: warm wash, a glow from the upper left and slanting beams through the trees
+      const cw = canvas.width, ch = canvas.height;
+      ctx.fillStyle = `rgba(255,236,180,${0.07 * dayMix})`;
+      ctx.fillRect(0, 0, cw, ch);
+      ctx.globalCompositeOperation = "lighter";
+      const sun = ctx.createRadialGradient(0, 0, 0, 0, 0, cw * 1.1);
+      sun.addColorStop(0, `rgba(255,224,150,${0.30 * dayMix})`);
+      sun.addColorStop(1, "rgba(255,224,150,0)");
+      ctx.fillStyle = sun; ctx.fillRect(0, 0, cw, ch);
+      for (let i = 0; i < 4; i++) {
+        const bx = cw * (0.05 + 0.27 * i) + Math.sin(time * 0.25 + i * 1.7) * 14 * k;
+        const bw = cw * 0.1;
+        const bg = ctx.createLinearGradient(bx, 0, bx - cw * 0.3, ch);
+        bg.addColorStop(0, `rgba(255,240,190,${0.11 * dayMix})`);
+        bg.addColorStop(1, "rgba(255,240,190,0)");
+        ctx.fillStyle = bg;
+        ctx.beginPath(); ctx.moveTo(bx, 0); ctx.lineTo(bx + bw, 0); ctx.lineTo(bx + bw - cw * 0.3, ch); ctx.lineTo(bx - cw * 0.3, ch); ctx.closePath(); ctx.fill();
+      }
+      ctx.globalCompositeOperation = "source-over";
     }
     if (viewerIsGhost) {
-      ctx.fillStyle = "rgba(70,120,115,0.10)";
+      ctx.fillStyle = `rgba(70,120,115,${0.10 * (1 - dayMix)})`;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
 
@@ -856,19 +973,22 @@ window.World = (() => {
     for (const l of lights) {
       if (l.r < 50) continue;
       const g = ctx.createRadialGradient(l.x, l.y, 0, l.x, l.y, l.r * 0.5);
-      g.addColorStop(0, `rgba(230,170,90,${0.10 * l.a})`);
+      g.addColorStop(0, `rgba(230,170,90,${0.10 * l.a * (1 - dayMix)})`);
       g.addColorStop(1, "rgba(230,170,90,0)");
       ctx.fillStyle = g;
       ctx.beginPath(); ctx.arc(l.x, l.y, l.r * 0.5, 0, Math.PI * 2); ctx.fill();
     }
-    for (const f of fireflies) {
-      const fx = f.x + Math.sin(f.p) * 14;
-      const fy = f.y + Math.cos(f.p * 0.7) * 10;
-      if (fy < top || fy > bottom) continue;
-      const a = Math.max(0, Math.sin(f.p * 2.3)) * 0.8;
-      ellipse(fx, fy, 1.3, 1.3, `rgba(200,240,160,${a})`);
+    if (dayMix < 0.6) {
+      for (const f of fireflies) {
+        const fx = f.x + Math.sin(f.p) * 14;
+        const fy = f.y + Math.cos(f.p * 0.7) * 10;
+        if (fy < top || fy > bottom) continue;
+        const a = Math.max(0, Math.sin(f.p * 2.3)) * 0.8 * (1 - dayMix / 0.6);
+        ellipse(fx, fy, 1.3, 1.3, `rgba(200,240,160,${a})`);
+      }
     }
     ctx.globalCompositeOperation = "source-over";
+    if (dayMix > 0.4) drawButterflies();
 
     for (const r of ripples) {
       const color = r.kind === "sigh" ? "159,210,193" : r.kind === "lantern" ? "230,197,111" : "233,226,204";

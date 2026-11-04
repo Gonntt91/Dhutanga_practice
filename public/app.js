@@ -150,6 +150,7 @@
   function pushView() {
     const sc = currentScene();
     NightAudio.setDay(currentDarkness(sc) < 0.3);
+    $("app").classList.toggle("day", currentDarkness(sc) < 0.3);
     World.setView({
       mist: mistLevel(),
       lookRange: state.role ? LOOK_RANGE[state.role] : Infinity,

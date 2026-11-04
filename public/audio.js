@@ -266,7 +266,7 @@ window.NightAudio = (() => {
   function scheduleFar() {
     clearTimeout(farTimer);
     farTimer = setTimeout(() => {
-      if (ctx && ctx.state === "running") (Math.random() < 0.65 ? dog : farOwl)();
+      if (ctx && ctx.state === "running") (day || Math.random() < 0.65 ? dog : farOwl)();
       scheduleFar();
     }, 22000 + Math.random() * 38000);
   }
