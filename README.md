@@ -105,3 +105,11 @@ Nội dung là **tóm lược theo ý kinh bằng lời của game, không phả
 ### Màu tâm
 
 Vòng tròn cạnh tên vai ở góc trên trái thể hiện tâm trạng: đen (sân) → đỏ (tham, chấp) → xám cam (mê mờ) → vàng (tín, hoan hỷ) → trắng như ánh trăng (sáng, thấy rõ). Nhà sư bắt đầu ở màu vàng, hồn ma ở màu đỏ (hồn ma càng buông, màu càng sáng). Lựa chọn xấu làm màu tối đi tạm thời, đọc kinh, đảnh lễ, ngồi quan sát làm màu sáng lên rồi dần trở về mức nền. Người khác thấy màu này như một quầng sáng quanh nhân vật. Ý tưởng mượn từ cách Thanh Tịnh Đạo ví màu máu ở tim của người nặng về tham, sân, si, tín, tuệ. Chưa được thầy Theravāda duyệt.
+
+### Hình ảnh
+
+`public/images/buddha.webp` là hình tượng Đức Phật do người làm game cung cấp (nền trong suốt, đã đổi cỡ 900px). **Cần xác nhận quyền sử dụng hình này trước khi phát hành công khai.** Nếu không dùng được, game tự quay về hình vẽ bằng code trong `public/buddha.js`.
+
+### Khám phá tự do
+
+Bấm *Đi dạo* trong khung truyện, hoặc thu khung truyện rồi chạm xuống đất, để đi tự do. Nút *Nhiệm vụ* cho biết việc đang chờ và đưa nhân vật về đó. Trên *Bản đồ*, chạm một chỗ để chọn rồi *Nhìn sang đó* hoặc *Đi tới đó*. Nhà sư khi tâm xao động sẽ được gợi ý về tịnh thất đọc kinh rồi quay lại.

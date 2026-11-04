@@ -35,6 +35,19 @@
     <canvas id="sky-canvas" class="sky-canvas" width="168" height="64"></canvas>
     <div class="sky-text"><span id="sky-name" class="sky-name"></span><span id="sky-hint" class="sky-hint"></span></div>
   </div>
+  <button id="quest-btn" class="pill quest-btn" type="button" hidden>Nhiệm vụ</button>
+  <section id="quest-panel" class="quest-panel" hidden aria-label="Việc đang chờ">
+    <div class="mind-info-head"><span class="label">Việc đang chờ</span><button id="quest-close" class="text-btn" type="button">Đóng</button></div>
+    <p id="quest-title" class="quest-title"></p>
+    <p id="quest-body" class="hint"></p>
+    <p id="quest-tip" class="quest-tip" hidden></p>
+    <div class="quest-actions">
+      <button id="quest-go" class="primary" type="button">Đưa tôi tới đó</button>
+      <button id="quest-tip-go" class="pill" type="button" hidden>Về tịnh thất đọc kinh</button>
+      <button id="quest-cancel" class="pill" type="button" hidden>Bỏ, quay lại chỗ cũ</button>
+    </div>
+    <p class="hint">Bạn có thể đi dạo và khám phá tự do bất cứ lúc nào. Việc đang chờ vẫn ở đây.</p>
+  </section>
   <div id="toast" class="toast" aria-live="polite"></div>
   <button id="look-back" class="pill look-back" type="button" hidden>Về chỗ</button>
 
@@ -82,6 +95,10 @@
     </div>
     <p id="map-hint" class="hint">Chạm vào một chỗ để nhìn sang đó. Nhân vật vẫn ở yên.</p>
     <canvas id="minimap" class="minimap" aria-label="Bản đồ nghĩa địa"></canvas>
+    <div class="map-actions">
+      <button id="map-look" class="pill" type="button" disabled>Nhìn sang đó</button>
+      <button id="map-go" class="primary" type="button" disabled>Đi tới đó</button>
+    </div>
   </section>
 
   <!-- walking prompt -->
@@ -114,6 +131,7 @@
       <div id="choices" class="choices"></div>
       <div class="sheet-foot">
         <button id="gesture" class="pill" type="button"></button>
+        <button id="explore" class="pill" type="button">Đi dạo</button>
         <button id="leave" class="text-btn" type="button">Đổi vai</button>
       </div>
     </div>

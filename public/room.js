@@ -6,6 +6,10 @@ window.Room = (() => {
   let px = 0, py = 0, tpx = 0, tpy = 0, t0 = 0, scale = 1, ox = 0, oy = 0;
   let flipped = false, bowlsLifted = false, last = 0;
   let drawerOpen = false, hasWife = false, onLore = null;
+  // The supplied picture of the Buddha image (transparent webp). The vector drawing in buddha.js is the fallback.
+  const buddhaImg = new Image(); let buddhaReady = false;
+  buddhaImg.onload = () => { buddhaReady = true; };
+  buddhaImg.src = "images/buddha.webp";
   // The hermitage interior: shelf of books to read, altar, alms bowl, patched robe, sleeping mat.
   let kind = "ruin", books = [], readKeys = new Set(), onRead = null, afterPaper = null;
   const read = new Set(); // letters read during this visit
@@ -233,7 +237,7 @@ window.Room = (() => {
     const box = document.getElementById("room-shrine"), cv2 = document.getElementById("shrine-canvas");
     box.hidden = false; shrineT0 = performance.now(); shrineBowed = false;
     document.getElementById("shrine-bow").textContent = "Đảnh lễ ba lần";
-    document.getElementById("shrine-caption").textContent = "Đức Phật Thích Ca Mâu Ni ngồi kiết già trên tòa cỏ cát tường, tay phải chạm đất, tay trái ngửa trong lòng. Hai bên là đèn treo và ánh nến. Bạn đứng lặng một lát trước khi đảnh lễ.";
+    document.getElementById("shrine-caption").textContent = "Đức Phật Thích Ca Mâu Ni ngồi thiền trên tòa sen vàng, hai tay đặt trong lòng, mắt khép nhìn xuống. Ánh đèn và khói nhang lặng lẽ hai bên. Bạn đứng yên một lát trước khi đảnh lễ.";
     const g2 = cv2.getContext("2d");
     const loop = (now) => {
       const r = cv2.getBoundingClientRect(), dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -249,7 +253,13 @@ window.Room = (() => {
       g2.fillStyle = "#b8862a"; g2.fillRect(W2 / 2 - 230 * sc, baseY + 6 * sc, 460 * sc, 14 * sc);
       Buddha.lampStand(g2, W2 / 2 - 215 * sc, baseY + 6 * sc, sc * 0.9, t, 1);
       Buddha.lampStand(g2, W2 / 2 + 215 * sc, baseY + 6 * sc, sc * 0.9, t, -1);
-      Buddha.draw(g2, W2 / 2, baseY, sc * 0.95, t);
+      if (buddhaReady) {
+        const sz = Math.min(W2 * 0.98, H2 * 0.66);
+        const gl = g2.createRadialGradient(W2 / 2, baseY - sz * 0.45, sz * 0.1, W2 / 2, baseY - sz * 0.45, sz * 0.75);
+        gl.addColorStop(0, `rgba(255,214,120,${0.30 + 0.05 * Math.sin(t * 2)})`); gl.addColorStop(1, "rgba(255,214,120,0)");
+        g2.fillStyle = gl; g2.fillRect(0, 0, W2, H2);
+        g2.drawImage(buddhaImg, W2 / 2 - sz / 2, baseY + 12 * sc - sz * 0.91, sz, sz);
+      } else Buddha.draw(g2, W2 / 2, baseY, sc * 0.95, t);
       // flowers and incense in front
       for (const [fx, fy, fc] of [[-120, 26, "#f2b84a"], [-98, 22, "#f6e6c0"], [-76, 28, "#e8845a"], [96, 24, "#f6e6c0"], [118, 28, "#f2b84a"], [140, 22, "#e8845a"]]) { g2.fillStyle = fc; g2.beginPath(); g2.arc(W2 / 2 + fx * sc, baseY + fy * sc, 9 * sc, 0, 7); g2.fill(); }
       g2.fillStyle = "#5a3a1a"; g2.beginPath(); g2.ellipse(W2 / 2, baseY + 34 * sc, 26 * sc, 8 * sc, 0, 0, 7); g2.fill();
@@ -346,7 +356,8 @@ window.Room = (() => {
     ctx.fillStyle = "#b8862a"; ctx.fillRect(18 + ax, 436 + ay, 138, 8);                    // yellow altar cloth
     ctx.fillStyle = "#98701f"; ctx.fillRect(18 + ax, 444 + ay, 138, 3);
     // the image itself (same drawing as the close-up, smaller)
-    Buddha.draw(ctx, 93 + ax0, 436 + ay, 0.235, time);
+    if (buddhaReady) { const sz = 124; ctx.drawImage(buddhaImg, 93 + ax0 - sz / 2, 440 + ay - sz * 0.9, sz, sz); }
+    else Buddha.draw(ctx, 93 + ax0, 436 + ay, 0.235, time);
     // two candles
     for (const cx2 of [34, 138]) {
       ctx.fillStyle = "#e8dcc0"; ctx.fillRect(cx2 + ax - 3, 416 + ay, 6, 20);

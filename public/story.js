@@ -170,6 +170,7 @@ window.STORY = {
           { label: "Mở mắt quay lại nhìn", delta: -1, next: "m5" },
           { label: "Biết mình đang sợ, để nỗi sợ ở đó, theo dõi hơi thở", delta: 2, next: "m5" },
           { label: "Rung chuông nhỏ một tiếng", delta: 1, next: "m5", emit: "chime" },
+          { needLow: true, detour: "hermitage", label: "Lòng chưa vững. Nhớ lời trong kinh, đi về tịnh thất đọc vài trang rồi quay lại ngồi tiếp" },
         ],
       },
       m5: {
@@ -183,6 +184,7 @@ window.STORY = {
         choices: [
           { label: "Nằm xuống một chút", delta: -2, next: "m6" },
           { label: "Đứng dậy đi kinh hành quanh các ngôi mộ", delta: 1, next: "m6" },
+          { needLow: true, detour: "hermitage", label: "Biết mình đang thiếu vững tin. Đi về tịnh thất đọc kinh, rồi quay lại ngồi tiếp" },
           { label: "Ngồi thẳng lưng, theo dõi hơi thở, ghi nhận từng ý nghĩ đi qua", delta: 0, next: "m5w" },
         ],
       },

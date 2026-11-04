@@ -42,6 +42,9 @@
     completed: loadCompleted(),
     vars: new Set(),      // per-night variables + remembered keys
     found: new Set(),     // finds already examined tonight
+    leftScene: false,       // stepped out of the story to wander; the scene waits where it was
+    detour: null,           // { place } e.g. the monk walking to the hermitage to read
+    lowSince: 0, lastSuggest: 0,
     moodShift: 0,           // temporary swing of the mind colour (decays back to the baseline)
     readTonight: new Set(), // books read tonight (each calms the mind once per night)
     findTarget: null,     // find the player is walking towards
@@ -140,7 +143,8 @@
   }
   const passes = (item, f) =>
     (!item.if || f.has(item.if)) && (!item.unless || !f.has(item.unless)) &&
-    (!item.ifv || state.vars.has(item.ifv)) && (!item.unlessv || !state.vars.has(item.unlessv));
+    (!item.ifv || state.vars.has(item.ifv)) && (!item.unlessv || !state.vars.has(item.unlessv)) &&
+    (!item.needLow || monkLow());
 
   // ---------- sky dial: sun by day, moon by night, plus the name of the hour ----------
   // hour: on a 24h clock continued past midnight (24 = midnight, 30 = 6am next day) so the sky moves smoothly.
@@ -211,6 +215,9 @@
     sky.raf = requestAnimationFrame(step);
   }
 
+  // A monk whose mind is unsettled (craving, anger, confusion) is nudged toward the hermitage books.
+  const monkLow = () => state.role === "monk" && moodValue() < 0.46;
+
   // Darkness comes from the scene's time of day, unless the dev panel forces a value.
   function currentDarkness(sc) {
     if (state.devDark != null) return state.devDark;
@@ -239,7 +246,7 @@
       pose: currentPose(),
       darkness: currentDarkness(sc),
       flags: flags(),
-      marker: sc && !state.sceneOpen ? sc.place : null,
+      marker: state.detour && !state.sceneOpen ? state.detour.place : sc && !state.sceneOpen ? sc.place : null,
       anchor: state.sceneOpen && !$("sheet").classList.contains("collapsed") ? 0.3 : 0.5,
     });
   }
@@ -392,6 +399,7 @@
     state.vars = loadMem();
     state.found = new Set();
     state.readTonight = new Set();
+    state.leftScene = false; state.detour = null; state.lowSince = 0;
     state.findTarget = null;
     closeFind(true);
     refreshFinds();
@@ -435,15 +443,45 @@
     return Math.hypot(p.x - place.x, p.y - place.y);
   }
 
-  function showWalkOrScene() {
-    if (distanceToPlace() <= ARRIVE_DIST) return openScene();
-    state.sceneOpen = false;
+  function showWalkBar() {
     const sc = currentScene();
+    state.sceneOpen = false;
     $("sheet").hidden = true;
     $("walk-bar").hidden = false;
-    $("walk-time").textContent = sc.time;
-    $("walk-text").textContent = `Đi tới ${World.PLACES[sc.place].name}`;
+    if (state.detour) {
+      $("walk-time").textContent = "Đọc kinh cho lòng vững";
+      $("walk-text").textContent = `Đi tới ${World.PLACES[state.detour.place].name}`;
+    } else {
+      $("walk-time").textContent = sc.time;
+      $("walk-text").textContent = `Đi tới ${World.PLACES[sc.place].name}`;
+    }
     pushView();
+  }
+  function showWalkOrScene() {
+    if (!state.detour && !state.leftScene && distanceToPlace() <= ARRIVE_DIST) return openScene();
+    showWalkBar();
+  }
+  // Step out of the story to walk around freely. The scene stays pending.
+  function wander() {
+    if (!state.role || state.findOpen) return;
+    state.leftScene = true;
+    showWalkBar();
+  }
+  const targetPlace = () => (state.detour ? World.PLACES[state.detour.place] : currentScene() ? World.PLACES[currentScene().place] : null);
+
+  function startDetour(placeKey) {
+    state.detour = { place: placeKey };
+    state.leftScene = true;
+    state.findTarget = null;
+    showWalkBar();
+    toast("Thầy đứng dậy, đi về tịnh thất đọc kinh.");
+  }
+  function endDetour(message) {
+    if (!state.detour) return;
+    state.detour = null;
+    state.leftScene = true; // stay free until the player walks back to the pending scene
+    showWalkBar();
+    if (message) toast(message);
   }
 
   function openScene() {
@@ -503,7 +541,7 @@
       b.type = "button";
       if (c.trace) b.appendChild(el("span", "tag", "Để lại dấu vết cho người khác"));
       else if (c.emit) b.appendChild(el("span", "tag", "Người khác sẽ nghe thấy"));
-      b.addEventListener("click", () => choose(c));
+      b.addEventListener("click", () => (c.detour ? startDetour(c.detour) : choose(c)));
       choices.appendChild(b);
     }
   }
@@ -575,6 +613,7 @@
         remember(key);
         // finishing a book or bowing at the altar: a bright, moonlike swing even on re-reads
         swingMood(key === "k_altar" ? 0.2 : 0.35);
+        if (state.detour) endDetour("Đọc xong, lòng thầy vững lại. Quay về chỗ cũ khi nào thầy muốn: nút Nhiệm vụ sẽ chỉ đường.");
         if (first) { state.readTonight.add(key); state.meter = Math.max(0, Math.min(10, state.meter + goodDelta(1))); pushView(); }
         return first;
       },
@@ -621,6 +660,16 @@
   $("mind-info-close").addEventListener("click", () => { $("mind-info").hidden = true; });
   // a swing of mood fades back toward the baseline over about half a minute
   setInterval(() => {
+    if (state.role === "monk" && !state.detour) {
+      const now = Date.now();
+      if (moodValue() < 0.4) {
+        if (!state.lowSince) state.lowSince = now;
+        else if (now - state.lowSince > 9000 && now - state.lastSuggest > 120000) {
+          state.lastSuggest = now;
+          toast("Lòng thầy đang xao động. Tịnh thất có kinh để đọc cho lòng vững lại. Mở Nhiệm vụ để được chỉ đường.");
+        }
+      } else state.lowSince = 0;
+    }
     if (!state.role) return;
     if (Math.abs(state.moodShift) > 0.004) { state.moodShift *= 0.992; updateMood(); } else if (state.moodShift !== 0) { state.moodShift = 0; updateMood(); }
   }, 200);
@@ -833,7 +882,7 @@
     if (res.error) { chatNote("Chưa gửi được, thử lại nhé."); return; }
     chatNote(res.heard === 0 ? "Chưa có ai ở gần để nghe thấy. Lại gần người khác nhé." : "");
   });
-  function syncChatButton() { $("chat-btn").hidden = !state.role; $("zoom-ctl").hidden = !state.role; if (!state.role) openChat(false); }
+  function syncChatButton() { $("quest-btn").hidden = !state.role; if (!state.role) $("quest-panel").hidden = true; $("chat-btn").hidden = !state.role; $("zoom-ctl").hidden = !state.role; if (!state.role) openChat(false); }
   $("zoom-in").addEventListener("click", () => World.zoomBy(1.25));
   $("zoom-out").addEventListener("click", () => World.zoomBy(0.8));
 
@@ -892,6 +941,12 @@
       const fx = f.x * sx, fy = f.y * sy;
       g.beginPath(); g.moveTo(fx, fy - 3.5); g.lineTo(fx + 2.5, fy); g.lineTo(fx, fy + 3.5); g.lineTo(fx - 2.5, fy); g.closePath(); g.fill();
     }
+    // the spot picked on the map (to look at or walk to)
+    if (state.mapPick) {
+      const px2 = state.mapPick.x * sx, py2 = state.mapPick.y * sy;
+      g.strokeStyle = "#e6c56f"; g.lineWidth = 1.6;
+      g.beginPath(); g.arc(px2, py2, 6.5, 0, 7); g.moveTo(px2 - 10, py2); g.lineTo(px2 + 10, py2); g.moveTo(px2, py2 - 10); g.lineTo(px2, py2 + 10); g.stroke();
+    }
     // you
     g.strokeStyle = "#dcd5c5"; g.lineWidth = 1.5;
     g.beginPath(); g.arc(m.player.x * sx, m.player.y * sy, 5, 0, 7); g.stroke();
@@ -901,9 +956,11 @@
   }
   function openMap() {
     $("map-panel").hidden = false;
+    state.mapPick = null;
+    $("map-look").disabled = $("map-go").disabled = true;
     $("map-hint").textContent = state.role === "monk"
-      ? "Chạm vào một chỗ để nhìn sang đó. Thầy ngồi trong bóng tối, chỉ thấy được quanh mình."
-      : "Chạm vào một chỗ để nhìn sang đó. Nhân vật vẫn ở yên.";
+      ? "Chạm vào một chỗ để chọn, rồi nhìn sang đó hoặc đi tới đó. Thầy ngồi trong bóng tối nên chỉ thấy được quanh mình."
+      : "Chạm vào một chỗ để chọn, rồi nhìn sang đó hoặc đi tới đó.";
     requestAnimationFrame(drawMap);
     clearInterval(mapTimer);
     mapTimer = setInterval(drawMap, 400);
@@ -911,11 +968,29 @@
   function closeMap() { $("map-panel").hidden = true; clearInterval(mapTimer); }
   $("map-btn").addEventListener("click", openMap);
   $("map-close").addEventListener("click", closeMap);
+  // Tapping the map only picks a spot. Then "Nhìn sang đó" moves the camera, "Đi tới đó" walks the character there.
   $("minimap").addEventListener("click", (e) => {
     const r = $("minimap").getBoundingClientRect();
     const m = World.getMap();
-    World.lookAt(((e.clientY - r.top) / r.height) * m.H);
+    state.mapPick = { x: ((e.clientX - r.left) / r.width) * m.W, y: ((e.clientY - r.top) / r.height) * m.H };
+    $("map-look").disabled = $("map-go").disabled = false;
+    drawMap();
+  });
+  $("map-look").addEventListener("click", () => {
+    if (!state.mapPick) return;
+    World.lookAt(state.mapPick.y, state.mapPick.x);
     closeMap();
+  });
+  $("map-go").addEventListener("click", () => {
+    const pick = state.mapPick;
+    if (!pick) return;
+    closeMap();
+    if (state.sceneOpen) wander();
+    else if (!state.leftScene) state.leftScene = true;
+    state.findTarget = nearestFind(pick.x, pick.y);
+    if (state.findTarget) World.walkTo(state.findTarget.x, state.findTarget.y + 8);
+    else World.walkTo(pick.x, pick.y);
+    toast("Thầy đi từ từ tới đó. Chạm vào cảnh để dừng hoặc đổi hướng.");
   });
 
   window.addEventListener("owl", (e) => {
@@ -981,6 +1056,15 @@
     btn(fx, "Chó", () => NightAudio.dog());
     btn(fx, "Gà", () => NightAudio.rooster());
     btn(fx, "Nhà hoang", () => Room.open({ onPhoto() {}, onClose() {} }));
+    btn(fx, "Vào tịnh thất", () => openRoom(FINDS.find((f) => f.id === "f_hermit"), "hermit"));
+    btn(fx, "Dịch tới tịnh thất", () => {
+      if (!state.role) return;
+      const p = World.PLACES.hermitage;
+      closeFind(true);
+      state.leftScene = true;
+      World.setPlayer(p.x, p.y + 36);
+      showWalkBar();
+    });
 
     function refreshDev() {
       sel.replaceChildren();
@@ -1003,14 +1087,12 @@
     if (state.sceneOpen) {
       // tapping the world while reading folds the sheet so the scene is visible
       if (!$("sheet").classList.contains("collapsed")) { setCollapsed(true); return; }
-      // sheet already folded: tapping a lying-around thing steps out of the scene to go and look
+      // sheet already folded: tapping the ground steps out of the story to wander (a lying-around thing is walked to)
       const near = nearestFind(x, y);
-      if (!near) return;
-      state.sceneOpen = false;
-      $("sheet").hidden = true;
+      state.leftScene = true;
+      showWalkBar();
       state.findTarget = near;
-      World.walkTo(near.x, near.y + 8);
-      pushView();
+      if (near) World.walkTo(near.x, near.y + 8); else World.walkTo(x, y);
       return;
     }
     const hit = nearestFind(x, y);
@@ -1022,10 +1104,47 @@
     const sc = currentScene();
     if (!sc) return;
     state.findTarget = null;
-    const place = World.PLACES[sc.place];
+    const place = targetPlace();
     World.walkTo(place.x, place.y + 6);
   });
   $("sheet-handle").addEventListener("click", () => setCollapsed(!$("sheet").classList.contains("collapsed")));
+  $("explore").addEventListener("click", () => { wander(); toast("Bạn có thể đi dạo khắp nơi. Nút Nhiệm vụ cho biết việc đang chờ."); });
+
+  // ---------- quest panel: what is waiting, and a way back ----------
+  function renderQuest() {
+    const sc = currentScene();
+    if (!sc) return;
+    const place = World.PLACES[sc.place];
+    $("quest-title").textContent = state.detour ? "Đi tịnh thất đọc kinh" : sc.end ? "Đêm đã xong" : `Đi tới ${place.name}`;
+    const first = (sc.lines || []).find((l) => typeof l === "string") || "";
+    $("quest-body").textContent = state.detour
+      ? `Thầy đang đi về ${World.PLACES[state.detour.place].name} để đọc vài trang kinh. Đọc xong thầy quay lại ${place.name}, nơi câu chuyện đang chờ.`
+      : sc.end ? "Câu chuyện đêm nay đã khép lại." : `${sc.time}. ${first.length > 160 ? first.slice(0, 157) + "…" : first}`;
+    $("quest-go").hidden = !!sc.end;
+    $("quest-go").textContent = state.detour ? "Đưa tôi tới tịnh thất" : "Đưa tôi tới đó";
+    const low = monkLow() && !state.detour;
+    $("quest-tip").hidden = !low;
+    $("quest-tip").textContent = "Lòng thầy đang xao động, thiếu vững tin. Trong tịnh thất có kệ kinh và bàn thờ Đức Phật; đọc vài trang có thể giúp tâm vững lại.";
+    $("quest-tip-go").hidden = !low;
+    $("quest-cancel").hidden = !state.detour;
+  }
+  function openQuest() { renderQuest(); $("quest-panel").hidden = false; }
+  $("quest-btn").addEventListener("click", () => ($("quest-panel").hidden ? openQuest() : ($("quest-panel").hidden = true)));
+  $("quest-close").addEventListener("click", () => ($("quest-panel").hidden = true));
+  $("quest-go").addEventListener("click", () => {
+    const place = targetPlace();
+    if (!place) return;
+    $("quest-panel").hidden = true;
+    if (state.sceneOpen) wander();
+    state.findTarget = null;
+    World.walkTo(place.x, place.y + 6);
+  });
+  $("quest-tip-go").addEventListener("click", () => {
+    $("quest-panel").hidden = true;
+    startDetour("hermitage");
+    const p = World.PLACES.hermitage; World.walkTo(p.x, p.y + 6);
+  });
+  $("quest-cancel").addEventListener("click", () => { $("quest-panel").hidden = true; endDetour("Bỏ chuyến đọc kinh. Thầy quay lại chỗ cũ."); });
   $("sound-toggle").addEventListener("click", () => toggleSound());
   const roleGesture = () => state.role && gesture(ROLE_INFO[state.role].gesture.topic, false);
   $("gesture").addEventListener("click", roleGesture);
@@ -1041,7 +1160,11 @@
       if (t) {
         const p = World.getPlayer();
         if (Math.hypot(p.x - t.x, p.y - (t.y + 8)) <= FIND_DIST) { openFind(t); }
-      } else if (distanceToPlace() <= ARRIVE_DIST) openScene();
+      } else if (!state.detour) {
+        const d = distanceToPlace();
+        if (state.leftScene && d > ARRIVE_DIST + 40) state.leftScene = false; // walked away: arriving again reopens the scene
+        else if (!state.leftScene && d <= ARRIVE_DIST) openScene();
+      }
     }
     // Stood still for a while with a destination waiting? Nudge toward it (chevrons in the world, pulsing button).
     const pp = World.getPlayer();
