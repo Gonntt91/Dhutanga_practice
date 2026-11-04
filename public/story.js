@@ -178,6 +178,7 @@ window.STORY = {
         lines: [
           "Cơn buồn ngủ kéo đến như nước lên. Đầu gục xuống một lần, hai lần. Lần thứ ba, trán suýt chạm đất, thầy giật mình, nhìn quanh xem có ai thấy không. May là chỉ có người chết.",
           "Hạnh ngồi không nằm. Đất ẩm và mát. Nằm xuống một chút thôi cũng chẳng ai biết.",
+          { if: "bowl", text: "Cạnh lối mòn có nồi nước ai để sẵn, chạm vào còn mát. Thầy cúi đầu cảm ơn người chưa gặp." },
         ],
         choices: [
           { label: "Nằm xuống một chút", delta: -2, next: "m6" },
@@ -453,7 +454,7 @@ window.FINDS = [
       choices: [
         { label: "Gỡ nón ra, ôm vào lòng", delta: 1, trace: { kind: "keepsake", variant: 0 } },
       ] } } },
-  { id: "fg_sandal", role: "ghost", x: 272, y: 1236, start: "s0", steps: {
+  { id: "fg_sandal", role: "ghost", minRuns: 1, x: 272, y: 1236, start: "s0", steps: {
     s0: {
       clue: "c_dep",
       lines: ["Một chiếc dép nhỏ, mòn gót. Chiếc kia không biết ở đâu."],
@@ -477,8 +478,9 @@ window.FINDS = [
     choices: [
       { label: "Nhẩm tính: ba bát, giá xôi bây giờ đã khác, chắc phải trả nhiều hơn", delta: 1 },
       { label: "Lẩm bẩm xin lỗi bà", delta: 2 },
+      { label: "Múc nước suối đổ đầy nồi, đặt cạnh đường mòn cho người đi qua", delta: 1, trace: { kind: "bowl", variant: 0 } },
     ] } } },
-  { id: "fv_scarf", role: "villager", x: 96, y: 1558, start: "s0", steps: { s0: {
+  { id: "fv_scarf", role: "villager", minRuns: 1, x: 96, y: 1558, start: "s0", steps: { s0: {
     clue: "c_vo",
     lines: ["Chiếc khăn mỏ quạ vắt trên rào tre. Ông nhận ra màu khăn: của vợ ông.", "Mỗi năm vào ngày nước lớn, bà nấu một mâm xôi, không nói cho ai, rồi đi mất cả buổi chiều. Ông chưa bao giờ hỏi."],
     choices: [
@@ -500,16 +502,7 @@ window.FINDS = [
         { label: "Bước vào", delta: 0, next: "s1" },
         { label: "Đứng ngoài nhìn thôi", delta: 0 },
       ] },
-    s1: {
-      lines: ["Trong nhà chỉ có một cái bàn, ba cái bát úp và một bức ảnh úp mặt xuống. Mạng nhện giăng như màn."],
-      choices: [
-        { label: "Lật bức ảnh lên", delta: 0, next: "s2" },
-        { label: "Để yên, ra ngoài", delta: 0 },
-      ] },
-    s2: {
-      clue: "c_anh",
-      lines: ["Hai người đứng bên cửa: người phụ nữ gánh quang gánh và một bé gái níu vạt áo. Sau ảnh có dòng chữ: “Sáu và Hạnh, trước nước lớn”."],
-      choices: [{ label: "Đặt ảnh lại ngay ngắn, úp xuống như cũ", delta: 1 }] } } },
+    s1: { room: true, lines: [], choices: [] } } },
 ];
 
 window.CLUE_TOTAL = 5;
@@ -520,3 +513,55 @@ window.HANH_REVEAL = [
   "Bà Sáu chờ con gái về. Con gái vẫn về, mỗi năm một lần, nhưng bà đứng ở gốc gạo và chưa bao giờ nhìn ra.",
   "Chỉ cần có ai đó nói cho bà biết.",
 ];
+
+
+// After all three nights are done, the monk can go up to the hermitage at dawn.
+Object.assign(STORY.monk.scenes, {
+  t1: {
+    time: "Sáng", place: "hermitage",
+    lines: [
+      "Đường lên đồi dài hơn thầy nhớ. Tịnh thất hiện ra giữa sương: mái lá, một chuông gió bằng vỏ ốc, và một vị sư già đang quét sân.",
+      "Thầy Minh quét một nhát, lá rơi thêm hai chiếc. Ngài quét thêm. Lá rơi thêm.",
+      "“Thầy Tịnh về rồi à,” ngài không ngẩng lên. “Con thấy cái sân này không? Ta quét ba mươi năm rồi, chưa lần nào sạch.”",
+    ],
+    choices: [
+      { label: "Cúi chào, đỡ lấy cây chổi", delta: 1, next: "t2" },
+      { label: "Hỏi: sao thầy không để lá yên?", delta: 0, next: "t2" },
+    ],
+  },
+  t2: {
+    time: "Sáng", place: "hermitage",
+    lines: [
+      "Thầy Minh cười, rót hai chén trà. “Ta kể con nghe chuyện cái chổi.”",
+      "“Có ông thợ quét lá, quét cả đời cho sân sạch. Lúc nằm xuống, ông tính ra mình đã quét đủ lá để chất thành một quả núi. Nhưng cái ông nhớ nhất không phải quả núi, mà là những buổi sáng được ngồi nghe lá rơi.”",
+      "Ngài nhấp trà. “Còn con? Đêm qua ngồi nghĩa địa, con quét được gì?”",
+    ],
+    choices: [
+      { label: "Con không quét được gì. Con chỉ ngồi", delta: 1, next: "t3" },
+      { label: "Quét được nửa đêm. Nửa kia con ngủ gật", delta: 1, next: "t3" },
+    ],
+  },
+  t3: {
+    time: "Sáng", place: "hermitage",
+    lines: [
+      "Thầy Minh gật đầu như chuyện đáng nghe. “Mà này, mỗi năm đến ngày nước lớn có một bà khách lên đây. Bà không xin gì, chỉ đặt một mâm xôi ở bậc cửa rồi đi, không nói tên.”",
+      { ifv: "c_vo", text: "Thầy Tịnh nhớ chiếc khăn mỏ quạ trên rào tre. Mâm xôi, ngày nước lớn, người vợ lặng lẽ của ông Tư. Mọi mảnh ghép nằm chung một chỗ." },
+      { unlessv: "c_vo", text: "Thầy Tịnh thấy trong ngực có điều gì đó chưa khớp. Ngài không hỏi thêm." },
+      "“Ta không biết bà là ai,” thầy Minh nói. “Ta chỉ giữ mâm xôi đến trưa rồi mang ra nghĩa địa. Không biết có đúng chỗ không.”",
+    ],
+    choices: [
+      { ifv: "c_vo", label: "“Con biết bà ấy là ai. Xin thầy cho con mang mâm xôi ra gốc cây gạo.”", delta: 2, next: "t4" },
+      { unlessv: "c_vo", label: "Xin phép mang mâm xôi ra đặt ở gốc cây gạo", delta: 1, next: "t4" },
+    ],
+  },
+  t4: {
+    time: "Sáng", place: "gao", end: true, epilogue: true,
+    lines: [
+      "Thầy bưng mâm xuống đồi. Xôi gấc đỏ còn ấm, thơm mùi nắng, đúng mùi xôi bà Sáu từng bán.",
+      "Dưới gốc cây gạo, thầy đặt mâm xuống rồi ngồi bên cạnh. Gió lay tán hoa, một cánh hoa rơi đúng vào mâm.",
+      { ifv: "c_vo", text: "“Bà Sáu,” thầy nói khẽ. “Con gái bà vẫn về, mỗi năm một lần. Bà chỉ chưa nhìn thấy thôi.”" },
+      { unlessv: "c_vo", text: "“Có người vẫn mang xôi cho bà,” thầy nói khẽ. “Bà không còn phải chờ trong im lặng.”" },
+      "Sương tan. Một vệt sáng rất mỏng đi ngang mâm xôi, dừng lại một chút, rồi bay lên cùng nắng.",
+    ],
+  },
+});

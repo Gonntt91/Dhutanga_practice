@@ -3,6 +3,7 @@ window.NightAudio = (() => {
   let ctx = null;
   let master = null;
   let cricketTimer = null;
+  let day = false; // daytime: birds instead of crickets
 
   function start() {
     if (ctx) { ctx.resume(); master.gain.value = 0.9; scheduleCrickets(); scheduleFar(); return; }
@@ -63,7 +64,7 @@ window.NightAudio = (() => {
   function scheduleCrickets() {
     clearTimeout(cricketTimer);
     cricketTimer = setTimeout(() => {
-      if (ctx && ctx.state === "running") chirp();
+      if (ctx && ctx.state === "running") (day ? bird : chirp)();
       scheduleCrickets();
     }, 700 + Math.random() * 1800);
   }
@@ -221,6 +222,46 @@ window.NightAudio = (() => {
     });
   }
 
+  // Small bird: a few quick rising/falling whistles.
+  function bird() {
+    const t = ctx.currentTime;
+    const n = 2 + Math.floor(Math.random() * 4);
+    const base = 2400 + Math.random() * 1200;
+    for (let i = 0; i < n; i++) {
+      const s = t + i * 0.13;
+      const osc = ctx.createOscillator(); osc.type = "sine";
+      osc.frequency.setValueAtTime(base, s);
+      osc.frequency.exponentialRampToValueAtTime(base * (i % 2 ? 0.8 : 1.3), s + 0.09);
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0.0001, s);
+      g.gain.linearRampToValueAtTime(0.03, s + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, s + 0.1);
+      osc.connect(g).connect(master); osc.start(s); osc.stop(s + 0.12);
+    }
+  }
+
+  // Rooster: "ò... ó o o ooo" — rising cry, held note, then a falling, wavering finish.
+  function rooster() {
+    if (!ctx || ctx.state !== "running") return;
+    const t = ctx.currentTime;
+    const notes = [[0, 0.28, 520, 760], [0.34, 0.4, 780, 820], [0.8, 0.22, 700, 640], [1.08, 0.7, 650, 360]];
+    notes.forEach(([at, len, f0, f1]) => {
+      const osc = ctx.createOscillator(); osc.type = "sawtooth";
+      osc.frequency.setValueAtTime(f0, t + at);
+      osc.frequency.linearRampToValueAtTime(f1, t + at + len);
+      const vib = ctx.createOscillator(); const vg = ctx.createGain(); vib.frequency.value = 9; vg.gain.value = 14;
+      vib.connect(vg).connect(osc.frequency);
+      const bp = ctx.createBiquadFilter(); bp.type = "bandpass"; bp.frequency.value = 1300; bp.Q.value = 1.1;
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0.0001, t + at);
+      g.gain.linearRampToValueAtTime(0.05, t + at + 0.04);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + at + len);
+      osc.connect(bp).connect(g).connect(master);
+      osc.start(t + at); vib.start(t + at); osc.stop(t + at + len + 0.05); vib.stop(t + at + len + 0.05);
+    });
+  }
+  function setDay(v) { day = !!v; }
+
   let farTimer = null;
   function scheduleFar() {
     clearTimeout(farTimer);
@@ -230,5 +271,5 @@ window.NightAudio = (() => {
     }, 22000 + Math.random() * 38000);
   }
 
-  return { start, stop, bell, sigh, owl, crow, dog, farOwl };
+  return { start, stop, bell, sigh, owl, crow, dog, farOwl, rooster, bird, setDay };
 })();

@@ -87,6 +87,16 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--lantern); o
   transition: transform 0.35s ease;
 }
 .sheet.collapsed .sheet-body { display: none; }
+.room { position: absolute; inset: 0; z-index: 8; background: #070a0a; }
+.room-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+.room-close { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 12px); right: 14px; background: var(--panel); }
+.room-caption {
+  position: absolute; left: 0; right: 0; bottom: 0; margin: 0; min-height: 96px;
+  padding: 18px max(20px, env(safe-area-inset-right, 0px)) calc(env(safe-area-inset-bottom, 0px) + 20px) max(20px, env(safe-area-inset-left, 0px));
+  background: linear-gradient(rgba(7, 11, 10, 0), rgba(7, 11, 10, 0.94) 35%);
+  font: 16px/1.6 var(--font-body); color: var(--ash);
+}
+.room-caption.pulse { animation: fadein 0.7s ease both; }
 .find-card { z-index: 4; padding-top: 14px; }
 .find-label { margin-bottom: 8px; color: var(--ash-dim); }
 .sheet-handle {

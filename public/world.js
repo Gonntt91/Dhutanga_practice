@@ -10,6 +10,7 @@ window.World = (() => {
     bamboo: { x: 95, y: 1490, name: "Bụi tre" },
     graves: { x: 222, y: 1065, name: "Giữa các ngôi mộ" },
     gao: { x: 150, y: 625, name: "Gốc cây gạo" },
+    hermitage: { x: 205, y: 310, name: "Tịnh thất" },
   };
   const UNNAMED = { x: 262, y: 1032 };
   const SPAWN = {
@@ -666,6 +667,16 @@ window.World = (() => {
     ctx.beginPath(); ctx.moveTo(x - 2, y - 41); ctx.lineTo(x + 2, y - 34); ctx.lineTo(x - 1, y - 30); ctx.stroke();
   }
 
+  // Cooking smoke curling up from a roof in daytime.
+  function drawSmoke(d) {
+    for (let i = 0; i < 6; i++) {
+      const u = ((time * 0.12 + i / 6 + d.x * 0.01) % 1);
+      const sx = d.x + 14 + Math.sin(u * 5 + d.y) * 6 * u;
+      const sy = d.y - 48 - u * 46;
+      ellipse(sx, sy, 3 + u * 7, 2.4 + u * 5, `rgba(200,200,190,${0.16 * (1 - u)})`);
+    }
+  }
+
   function drawHouse(d, lights) {
     const { x, y } = d;
     shadow(x, y, 32);
@@ -791,7 +802,7 @@ window.World = (() => {
         case "tree": drawTree(it); break;
         case "gate": drawGate(it); break;
         case "shrine": drawShrine(it); break;
-        case "house": drawHouse(it, lights); break;
+        case "house": drawHouse(it, lights); if (view.darkness < 0.3) drawSmoke(it); break;
         case "ruin": drawRuin(it); break;
         case "char": drawCharacter(it, lights, viewerIsGhost); break;
         case "ghostbot": drawGhost(it.x, it.y, it.phase, it.alpha, lights); break;
@@ -825,6 +836,12 @@ window.World = (() => {
     }
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.drawImage(shade, 0, 0);
+    if (view.darkness < 0.3) {
+      // morning light: warm wash so the day does not look like dim night
+      const k2 = 1 - view.darkness / 0.3;
+      ctx.fillStyle = `rgba(255,226,160,${0.10 * k2})`;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
     if (viewerIsGhost) {
       ctx.fillStyle = "rgba(70,120,115,0.10)";
       ctx.fillRect(0, 0, canvas.width, canvas.height);

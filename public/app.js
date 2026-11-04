@@ -8,7 +8,7 @@
   const FIND_DIST = 34;
   const DARKNESS = {
     "Chiều tàn": 0.42, "Chạng vạng": 0.6, "Đầu hôm": 0.72, "Canh hai": 0.84,
-    "Canh ba": 0.9, "Canh tư": 0.82, "Gà gáy": 0.68, "Rạng sáng": 0.45, "Sáng sớm": 0.1,
+    "Canh ba": 0.9, "Canh tư": 0.82, "Gà gáy": 0.68, "Rạng sáng": 0.45, "Sáng sớm": 0.1, "Sáng": 0.08,
   };
 
   // How far from the character each role can look around (world units). The monk sits in the
@@ -143,6 +143,7 @@
 
   function pushView() {
     const sc = currentScene();
+    NightAudio.setDay(!!sc && (DARKNESS[sc.time] ?? 0.8) < 0.3);
     World.setView({
       mist: mistLevel(),
       lookRange: state.role ? LOOK_RANGE[state.role] : Infinity,
@@ -366,6 +367,12 @@
     choices.replaceChildren();
     $("sheet-body").scrollTop = 0;
 
+    NightAudio.setDay((DARKNESS[scene.time] ?? 0.8) < 0.3);
+    if ((scene.time === "Sáng sớm" || scene.time === "Gà gáy") && state.roosterFor !== state.sceneId && state.soundOn) {
+      state.roosterFor = state.sceneId;
+      setTimeout(() => NightAudio.rooster(), 900);
+    }
+    if (scene.end && scene.epilogue) return renderEpilogue(scene);
     if (scene.end) return renderEnding(scene);
     if (scene.watch) return renderWatch(scene);
 
@@ -401,7 +408,7 @@
   }
 
   // ---------- finds: things lying around the graveyard ----------
-  const visibleFinds = () => FINDS.filter((f) => (f.role === state.role || f.role === "any") && !state.found.has(f.id));
+  const visibleFinds = () => FINDS.filter((f) => (f.role === state.role || f.role === "any") && !state.found.has(f.id) && (f.minRuns || 0) <= runCount());
   function refreshFinds() { World.setFinds(state.role ? visibleFinds().map((f) => ({ id: f.id, role: f.role, x: f.x, y: f.y })) : []); }
   function nearestFind(x, y) {
     let best = null, bd = 34;
@@ -420,6 +427,7 @@
   function renderFind() {
     const { find, step } = state.findOpen;
     const st = find.steps[step];
+    if (st.room) return openRoom(find);
     if (st.clue) remember(st.clue);
     const lines = $("find-lines"); lines.replaceChildren();
     st.lines.forEach((t, i) => { const p = el("p", null, t); p.style.animationDelay = i * 0.3 + "s"; lines.appendChild(p); });
@@ -436,6 +444,13 @@
       });
       box.appendChild(b);
     }
+  }
+  function openRoom(find) {
+    $("find-card").hidden = true;
+    Room.open({
+      onPhoto: () => { remember("c_anh"); state.meter = Math.min(10, state.meter + 1); },
+      onClose: (res) => { if (res.flipped) state.found.add(find.id); closeFind(false); },
+    });
   }
   function closeFind(silent) {
     state.findOpen = null;
@@ -507,6 +522,24 @@
     skip.addEventListener("click", finish);
   }
 
+  function renderEpilogue(scene) {
+    const f = flags();
+    const lines = $("lines");
+    let i = 0;
+    for (const line of scene.lines) {
+      const item = typeof line === "string" ? { text: line } : line;
+      if (!passes(item, f)) continue;
+      const p = el("p", i === scene.lines.length - 1 ? "ending" : null, item.text);
+      p.style.animationDelay = i++ * 0.4 + "s";
+      lines.appendChild(p);
+    }
+    remember("epilogue_done");
+    const again = el("button", "choice", "Chọn một vai khác");
+    again.type = "button";
+    again.addEventListener("click", leaveRole);
+    $("choices").appendChild(again);
+  }
+
   function renderEnding(scene) {
     const ending = scene.endings.find((e) => state.meter <= e.max) || scene.endings[scene.endings.length - 1];
     const lines = $("lines");
@@ -534,6 +567,17 @@
       lines.appendChild(el("p", "left-hint", n === 0
         ? "Quanh nghĩa địa còn nhiều thứ bị bỏ quên, những đốm sáng nhỏ trên đất. Hãy kéo màn hình để nhìn quanh. Có một câu chuyện nằm trong đó."
         : `Bạn đã nhặt được ${n} trong ${CLUE_TOTAL} mảnh về cô bé Hạnh. Còn những mảnh nằm đâu đó trong nghĩa địa, ở chỗ mỗi vai mới thấy.`));
+    }
+    if (state.role === "monk" && roles.every((r) => state.completed[r])) {
+      const up = el("button", "choice", "Đi lên đồi, về tịnh thất");
+      up.type = "button";
+      up.addEventListener("click", () => {
+        state.sceneId = "t1";
+        $("whispers").replaceChildren();
+        showWalkOrScene();
+        sendPresence(true);
+      });
+      $("choices").appendChild(up);
     }
     const again = el("button", "choice", "Chọn một vai khác");
     again.type = "button";
