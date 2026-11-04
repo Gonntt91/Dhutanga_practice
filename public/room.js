@@ -6,6 +6,8 @@ window.Room = (() => {
   let px = 0, py = 0, tpx = 0, tpy = 0, t0 = 0, scale = 1, ox = 0, oy = 0;
   let flipped = false, bowlsLifted = false, last = 0;
   let drawerOpen = false, hasWife = false, onLore = null;
+  // The hermitage interior: shelf of books to read, altar, alms bowl, patched robe, sleeping mat.
+  let kind = "ruin", books = [], readKeys = new Set(), onRead = null, afterPaper = null;
   const read = new Set(); // letters read during this visit
   let dust = [];
 
@@ -25,6 +27,22 @@ window.Room = (() => {
     { id: "letter1", x: 176, y: 506, w: 46, h: 26, depth: 1.1 },
     { id: "letter2", x: 230, y: 508, w: 50, h: 24, depth: 1.1 },
   ];
+  const BOOK_SLOTS = [[240, 205], [292, 205], [240, 285], [292, 285], [240, 365], [292, 365]];
+  const BOOK_COLORS = [["#7a3b2a", "#caa96a"], ["#2f4a46", "#cdbf8c"], ["#4a3a22", "#d2b46a"], ["#5a2f3d", "#d8c08a"], ["#33402b", "#c9bd84"], ["#3c3a2a", "#d0b068"]];
+  const HOBJ = [
+    { id: "altar", x: 22, y: 322, w: 116, h: 138, depth: 0.9 },
+    { id: "robe", x: 150, y: 150, w: 72, h: 120, depth: 0.6 },
+    { id: "bowl", x: 152, y: 466, w: 84, h: 46, depth: 1.1 },
+    { id: "mat", x: 80, y: 580, w: 240, h: 96, depth: 1.2 },
+    ...BOOK_SLOTS.map(([x, y], i) => ({ id: "book:" + i, x, y, w: 44, h: 58, depth: 0.9 })),
+  ];
+  const HTEXT = {
+    robe: "Chiếc y nâu phơi trên sào, vá chằng vá đụp bằng đủ thứ vải. Đúng nghĩa y phấn tảo: y may từ những mảnh vải người ta đã bỏ đi.",
+    bowl: "Cái bát đen trên giá gỗ là bát khất thực. Thầy Minh ăn từ bát này đã ba mươi năm, và bát chưa bao giờ đầy quá ba phần.",
+    mat: "Một tấm chiếu cói và cái gối gỗ cứng. Không có giường. Thầy Minh nói ngài ngồi nhiều hơn nằm, và nằm thì cũng chẳng ngủ được lâu.",
+    altarFirst: "Một tượng Phật nhỏ bằng gỗ và một ngọn đèn dầu, không hoa quả cầu kỳ. Bạn chắp tay đảnh lễ, thấy lòng lặng đi một chút.",
+    altarAgain: "Bạn chắp tay đảnh lễ thêm một lần. Ngọn đèn vẫn nhỏ và đều.",
+  };
   const LETTERS = {
     letter1: {
       title: "Thư chưa gửi",
@@ -72,7 +90,11 @@ window.Room = (() => {
     closeBtn = document.getElementById("room-close");
     ctx = cv.getContext("2d");
     closeBtn.addEventListener("click", close);
-    document.getElementById("letter-close").addEventListener("click", () => { document.getElementById("room-letter").hidden = true; });
+    document.getElementById("letter-close").addEventListener("click", () => {
+      document.getElementById("room-letter").hidden = true;
+      document.querySelector("#room-letter .paper").classList.remove("book");
+      if (afterPaper) { const f = afterPaper; afterPaper = null; f(); }
+    });
     const move = (e) => {
       const r = cv.getBoundingClientRect();
       tpx = ((e.clientX - r.left) / r.width - 0.5) * 2;
@@ -100,12 +122,16 @@ window.Room = (() => {
     if (!root) build();
     onClose = opts.onClose; onPhoto = opts.onPhoto; onLore = opts.onLore || null;
     hasWife = !!opts.hasWife; drawerOpen = false; read.clear();
+    kind = opts.kind || "ruin"; books = opts.books || []; readKeys = new Set(opts.readKeys || []); onRead = opts.onRead || null; afterPaper = null;
     document.getElementById("room-letter").hidden = true;
     flipped = !!opts.flipped; bowlsLifted = false; px = py = tpx = tpy = 0; t0 = performance.now(); last = t0;
     dust = Array.from({ length: 40 }, () => ({ x: Math.random() * LW, y: 80 + Math.random() * 420, v: 3 + Math.random() * 6, p: Math.random() * 6 }));
     root.hidden = false;
     fit();
-    say(TEXT.hint);
+    if (kind === "hermit") {
+      const n = books.filter((b) => readKeys.has(b.id)).length;
+      say(`Tịnh thất ấm mùi dầu đèn và gỗ cũ. Kệ sách bên phải có ${books.length} cuốn, bạn đã đọc ${n}. Chạm vào một cuốn để đọc.`);
+    } else say(TEXT.hint);
     raf = requestAnimationFrame(frame);
   }
   function close() {
@@ -123,7 +149,7 @@ window.Room = (() => {
     const r = cv.getBoundingClientRect();
     const dpr = cv.width / r.width;
     const lx = ((e.clientX - r.left) * dpr - ox) / scale, ly = ((e.clientY - r.top) * dpr - oy) / scale;
-    for (const o of [...OBJ, ...(drawerOpen ? DRAWER_OBJ : [])].reverse()) {
+    for (const o of (kind === "hermit" ? [...HOBJ] : [...OBJ, ...(drawerOpen ? DRAWER_OBJ : [])]).reverse()) {
       const [sx, sy] = shift(o.depth);
       if (lx >= o.x + sx && lx <= o.x + o.w + sx && ly >= o.y + sy && ly <= o.y + o.h + sy) { examine(o.id); return; }
     }
@@ -144,7 +170,37 @@ window.Room = (() => {
     if (onLore && !read.has(id)) onLore(L.lore);
     read.add(id);
   }
+  function showBook(b) {
+    document.querySelector("#room-letter .paper").classList.add("book");
+    document.getElementById("letter-title").textContent = b.title;
+    const body = document.getElementById("letter-body");
+    body.replaceChildren();
+    const src = document.createElement("p"); src.className = "stain"; src.textContent = b.source; body.appendChild(src);
+    for (const t of b.body) { const p = document.createElement("p"); p.textContent = t; body.appendChild(p); }
+    const hint = document.createElement("p"); hint.className = "stain"; hint.textContent = b.hint; body.appendChild(hint);
+    const note = document.createElement("p"); note.className = "stain";
+    note.textContent = "Đây là bản tóm lược theo ý kinh, không phải bản dịch, và chưa được vị thầy Theravāda duyệt.";
+    body.appendChild(note);
+    document.getElementById("room-letter").hidden = false;
+    document.getElementById("room-letter").scrollTop = 0;
+    const first = onRead ? onRead(b.id) : false;
+    readKeys.add(b.id);
+    afterPaper = () => {
+      const n = books.filter((x) => readKeys.has(x.id)).length;
+      say(first ? `Đọc xong, lòng bạn lắng xuống. (Đã đọc ${n}/${books.length} cuốn.)` : "Bạn đọc lại thong thả. Có một câu lần trước đọc lướt qua, lần này mới dừng lại.");
+    };
+  }
+  function examineHermit(id) {
+    if (id.startsWith("book:")) { const b = books[Number(id.slice(5))]; if (b) showBook(b); return; }
+    if (id === "altar") {
+      const first = onRead ? onRead("k_altar") : false;
+      say(first ? HTEXT.altarFirst : HTEXT.altarAgain);
+      return;
+    }
+    say(HTEXT[id]);
+  }
   function examine(id) {
+    if (kind === "hermit") return examineHermit(id);
     if (id === "drawer") {
       if (!drawerOpen) { drawerOpen = true; say(TEXT.drawerOpen); } else say(TEXT.drawerOpen);
       return;
@@ -168,6 +224,87 @@ window.Room = (() => {
     ctx.closePath(); ctx.fill();
   }
 
+  function drawHermit(time, dt) {
+    // wall, thatch ceiling, floor
+    rect(-30, -120, LW + 60, 600, "#2a2016", 0.3);
+    ctx.strokeStyle = "rgba(0,0,0,0.35)"; ctx.lineWidth = 1;
+    const [wsx] = shift(0.3);
+    for (let x = -20; x < LW + 30; x += 38) { ctx.beginPath(); ctx.moveTo(x + wsx, -120); ctx.lineTo(x + wsx, 470); ctx.stroke(); }
+    rect(-30, -120, LW + 60, 150, "#3b2f1a", 0.2);
+    ctx.strokeStyle = "rgba(20,14,6,0.55)";
+    for (let x = -20; x < LW + 30; x += 11) { const [sx] = shift(0.2); ctx.beginPath(); ctx.moveTo(x + sx, -120); ctx.lineTo(x + sx - 6, 30); ctx.stroke(); }
+    poly([[-60, 470], [LW + 60, 470], [LW + 140, LH + 20], [-140, LH + 20]], "#3a2c1e", 0.8);
+    const [fx] = shift(0.8);
+    ctx.strokeStyle = "rgba(0,0,0,0.38)"; ctx.lineWidth = 1.2;
+    for (let i = -4; i <= 8; i++) { ctx.beginPath(); ctx.moveTo(LW / 2 + (i - 2) * 46 + fx, 470); ctx.lineTo(LW / 2 + (i - 2) * 110 + fx, LH + 20); ctx.stroke(); }
+
+    // patched robe on a pole
+    const [rx, ry] = shift(0.6);
+    ctx.fillStyle = "#4a3a22"; ctx.fillRect(120 + rx, 150 + ry, 132, 4);
+    ctx.fillStyle = "#8a5a2a";
+    ctx.beginPath(); ctx.moveTo(150 + rx, 154 + ry); ctx.lineTo(222 + rx, 154 + ry); ctx.lineTo(214 + rx, 270 + ry); ctx.lineTo(158 + rx, 270 + ry); ctx.closePath(); ctx.fill();
+    [["#9b6c33", 158, 170, 24, 20], ["#76491f", 188, 196, 26, 22], ["#a2753a", 164, 224, 22, 26], ["#6b4220", 196, 238, 20, 20]].forEach(([c, x, y, w, h]) => { ctx.fillStyle = c; ctx.fillRect(x + rx, y + ry, w, h); });
+
+    // bookshelf with six books
+    const [bx, by] = shift(0.9);
+    ctx.fillStyle = "#2b2014"; ctx.fillRect(228 + bx, 186 + by, 128, 262);
+    ctx.fillStyle = "#1a1209"; ctx.fillRect(232 + bx, 190 + by, 120, 254);
+    ctx.fillStyle = "#4a3a22";
+    for (const sy of [262, 342, 422]) ctx.fillRect(228 + bx, sy + by, 128, 6);
+    BOOK_SLOTS.forEach(([x, y], i) => {
+      const [c, edge] = BOOK_COLORS[i];
+      ctx.fillStyle = c; ctx.fillRect(x + 2 + bx, y + 6 + by, 40, 52);
+      ctx.fillStyle = edge; ctx.fillRect(x + 6 + bx, y + 14 + by, 32, 3); ctx.fillRect(x + 6 + bx, y + 22 + by, 22, 2);
+      ctx.fillStyle = "rgba(0,0,0,0.3)"; ctx.fillRect(x + 36 + bx, y + 6 + by, 6, 52);
+      if (books[i] && readKeys.has(books[i].id)) { ctx.fillStyle = "#e6c56f"; ctx.beginPath(); ctx.arc(x + 22 + bx, y + 48 + by, 3, 0, 7); ctx.fill(); }
+    });
+
+    // altar with a small wooden Buddha and an oil lamp
+    const [ax, ay] = shift(0.9);
+    ctx.fillStyle = "#33261a"; ctx.fillRect(24 + ax, 440 + ay, 112, 10); ctx.fillRect(34 + ax, 450 + ay, 8, 70); ctx.fillRect(118 + ax, 450 + ay, 8, 70);
+    ctx.fillStyle = "#b08a3e"; ctx.beginPath(); ctx.ellipse(70 + ax, 436 + ay, 30, 7, 0, 0, 7); ctx.fill();
+    ctx.fillStyle = "#c79b43";
+    ctx.beginPath(); ctx.moveTo(48 + ax, 434 + ay); ctx.quadraticCurveTo(52 + ax, 396 + ay, 70 + ax, 388 + ay); ctx.quadraticCurveTo(88 + ax, 396 + ay, 92 + ax, 434 + ay); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.arc(70 + ax, 378 + ay, 10, 0, 7); ctx.fill(); ctx.beginPath(); ctx.arc(70 + ax, 366 + ay, 4, 0, 7); ctx.fill();
+    ctx.fillStyle = "#5a3a1a"; ctx.beginPath(); ctx.ellipse(112 + ax, 436 + ay, 11, 4, 0, 0, 7); ctx.fill();
+    const flick = 0.75 + 0.25 * Math.sin(time * 9) + 0.1 * Math.sin(time * 23);
+    ctx.fillStyle = `rgba(255,200,90,${0.9 * flick})`; ctx.beginPath(); ctx.ellipse(112 + ax, 426 + ay, 2.6, 6.5 * flick, 0, 0, 7); ctx.fill();
+
+    // alms bowl on a small stand
+    const [obx, oby] = shift(1.1);
+    ctx.fillStyle = "#3a2c1e"; ctx.fillRect(166 + obx, 496 + oby, 54, 6); ctx.fillRect(172 + obx, 502 + oby, 6, 24); ctx.fillRect(208 + obx, 502 + oby, 6, 24);
+    ctx.fillStyle = "#14110e"; ctx.beginPath(); ctx.ellipse(193 + obx, 490 + oby, 28, 12, 0, 0, Math.PI); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(193 + obx, 488 + oby, 28, 6, 0, 0, 7); ctx.fillStyle = "#26211b"; ctx.fill();
+    ctx.strokeStyle = "rgba(255,230,170,0.35)"; ctx.lineWidth = 1; ctx.beginPath(); ctx.ellipse(193 + obx, 488 + oby, 28, 6, 0, Math.PI * 1.05, Math.PI * 1.45); ctx.stroke();
+
+    // sleeping mat and a wooden pillow
+    const [mx, my] = shift(1.2);
+    poly([[96, 596], [304, 596], [318, 672], [82, 672]], "#8a7448", 1.2);
+    ctx.strokeStyle = "rgba(60,45,20,0.5)"; ctx.lineWidth = 1;
+    for (let k = 0; k < 9; k++) { ctx.beginPath(); ctx.moveTo(96 + k * 26 + mx - k * 1.6, 596 + my); ctx.lineTo(82 + k * 29 + mx, 672 + my); ctx.stroke(); }
+    ctx.fillStyle = "#4a3624"; ctx.fillRect(112 + mx, 606 + my, 44, 12);
+
+    // lamp light, drifting motes, glow on things you can touch
+    ctx.globalCompositeOperation = "lighter";
+    const [lx, ly] = shift(0.9);
+    const lg = ctx.createRadialGradient(112 + lx, 426 + ly, 4, 112 + lx, 426 + ly, 260);
+    lg.addColorStop(0, `rgba(255,190,90,${0.30 * flick})`); lg.addColorStop(1, "rgba(255,190,90,0)");
+    ctx.fillStyle = lg; ctx.fillRect(-60, 100, LW + 120, 640);
+    for (const d of dust) {
+      d.p += dt; d.y -= d.v * dt * 0.3; d.x += Math.sin(d.p) * 3 * dt;
+      if (d.y < 100) { d.y = 560; d.x = Math.random() * LW; }
+      const [dx, dy] = shift(0.9);
+      ctx.fillStyle = `rgba(255,225,170,${0.12 + 0.18 * Math.sin(d.p * 2) ** 2})`; ctx.fillRect(d.x + dx, d.y + dy, 1.5, 1.5);
+    }
+    const pulse = 0.5 + 0.5 * Math.sin(time * 2.4);
+    ctx.strokeStyle = `rgba(230,197,111,${0.10 + 0.14 * pulse})`; ctx.lineWidth = 1;
+    for (const o of HOBJ) { const [sx, sy] = shift(o.depth); ctx.strokeRect(o.x + sx, o.y + sy, o.w, o.h); }
+    ctx.globalCompositeOperation = "source-over";
+    const v = ctx.createRadialGradient(LW / 2, LH * 0.5, 130, LW / 2, LH * 0.5, 470);
+    v.addColorStop(0, "rgba(0,0,0,0)"); v.addColorStop(1, "rgba(0,0,0,0.6)");
+    ctx.fillStyle = v; ctx.fillRect(-60, -40, LW + 120, LH + 80);
+  }
+
   function frame(now) {
     const dt = Math.min(0.05, (now - last) / 1000); last = now;
     px += (tpx - px) * Math.min(1, dt * 4); py += (tpy - py) * Math.min(1, dt * 4);
@@ -176,6 +313,7 @@ window.Room = (() => {
     ctx.fillStyle = "#070a0a"; ctx.fillRect(0, 0, cv.width, cv.height);
     ctx.setTransform(scale, 0, 0, scale, ox, oy);
 
+    if (kind === "hermit") { drawHermit(time, dt); raf = requestAnimationFrame(frame); return; }
     // back wall + planks
     rect(-30, -120, LW + 60, 580, "#1b211f", 0.3);
     ctx.strokeStyle = "rgba(0,0,0,0.35)"; ctx.lineWidth = 1;

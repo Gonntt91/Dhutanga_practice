@@ -42,6 +42,7 @@
     completed: loadCompleted(),
     vars: new Set(),      // per-night variables + remembered keys
     found: new Set(),     // finds already examined tonight
+    readTonight: new Set(), // books read tonight (each calms the mind once per night)
     findTarget: null,     // find the player is walking towards
     findOpen: null,       // { find, step } while the card is showing
     lastTouch: Date.now(),
@@ -385,6 +386,7 @@
     state.liveFlags.clear();
     state.vars = loadMem();
     state.found = new Set();
+    state.readTonight = new Set();
     state.findTarget = null;
     closeFind(true);
     refreshFinds();
@@ -531,7 +533,7 @@
   function renderFind() {
     const { find, step } = state.findOpen;
     const st = find.steps[step];
-    if (st.room) return openRoom(find);
+    if (st.room) return openRoom(find, st.room === true ? "ruin" : st.room);
     if (st.clue) remember(st.clue);
     const lines = $("find-lines"); lines.replaceChildren();
     st.lines.forEach((t, i) => { const p = el("p", null, t); p.style.animationDelay = i * 0.3 + "s"; lines.appendChild(p); });
@@ -549,12 +551,22 @@
       box.appendChild(b);
     }
   }
-  function openRoom(find) {
+  function openRoom(find, kind = "ruin") {
     $("find-card").hidden = true;
     Room.open({
       flipped: loadMem().has("c_anh"), // the photo stays turned over once you have seen it
       hasWife: loadMem().has("c_vo"),  // the sealed envelope can only be opened once you know who wrote it
       onLore: (key) => remember(key),
+      kind,
+      books: kind === "hermit" ? HERMIT_BOOKS : [],
+      readKeys: [...loadMem()].filter((k) => k.startsWith("k_")),
+      // reading calms the mind once per night; what you read is remembered for good
+      onRead: (key) => {
+        const first = !state.readTonight.has(key);
+        remember(key);
+        if (first) { state.readTonight.add(key); state.meter = Math.min(10, state.meter + 1); pushView(); }
+        return first;
+      },
       onPhoto: () => { remember("c_anh"); state.meter = Math.min(10, state.meter + 1); },
       onClose: () => { if (!find.repeat) state.found.add(find.id); closeFind(false); },
     });

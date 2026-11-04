@@ -503,8 +503,12 @@ window.FINDS = [
         { label: "Đứng chắp tay một lát rồi đi", delta: 1 },
       ] },
     s1: {
-      lines: ["Không ai ra mở. Từ trong vọng ra tiếng một người già, chậm rãi: “Đêm còn dài, cứ ngồi cho trọn. Sáng ta mở cửa.”"],
-      choices: [{ label: "Cúi đầu, lùi ra", delta: 1 }] } } },
+      lines: ["Từ phía sau vọng ra tiếng một người già, chậm rãi: “Cửa không cài then, con cứ vào. Kệ sách ở bên phải, đèn ở hiên. Đọc xong nhớ để sách về chỗ cũ.”"],
+      choices: [
+        { label: "Đẩy cửa bước vào", delta: 0, next: "s2" },
+        { label: "Cúi đầu, lùi ra", delta: 0 },
+      ] },
+    s2: { room: "hermit", lines: [], choices: [] } } },
   { id: "f_ruin", role: "any", repeat: true, x: 335, y: 1308, start: "s0", steps: {
     s0: {
       lines: ["Nhà hoang bên rìa nghĩa địa. Cửa không còn cánh, mái dột. Trong nhà tối hơn ngoài sân."],
@@ -580,3 +584,75 @@ Object.assign(STORY.monk.scenes, {
     ],
   },
 });
+
+
+// Books on the hermitage shelf. These are SUMMARIES in the game's own words, following the sense of
+// each text, not translations. They have not been reviewed by a Theravada teacher yet.
+// Each book: reading it calms the reader once per night; what was read is remembered across nights.
+window.HERMIT_BOOKS = [
+  {
+    id: "k_dhammacakka", title: "Chuyển Pháp Luân", source: "Tương Ưng Bộ, SN 56.11 (Dhammacakkappavattana)",
+    body: [
+      "Đây là bài pháp đầu tiên. Đức Phật giảng cho năm vị tu sĩ từng cùng Ngài khổ hạnh, ở Vườn Nai Isipatana.",
+      "Ngài nói người xuất gia nên tránh hai cực đoan: mải mê hưởng thụ dục lạc, thấp kém và vô ích; và hành xác khổ hạnh, đau đớn cũng vô ích. Giữa hai bên có con đường Trung đạo, đưa đến thấy biết, an tịnh và giác ngộ.",
+      "Con đường ấy là Bát chánh đạo: chánh kiến, chánh tư duy, chánh ngữ, chánh nghiệp, chánh mạng, chánh tinh tấn, chánh niệm, chánh định.",
+      "Rồi Ngài nói Bốn Sự Thật cao quý: có khổ; khổ có nguyên nhân là khát ái; khổ có thể chấm dứt; và có con đường đưa đến chấm dứt khổ. Mỗi sự thật có một việc phải làm: khổ cần được hiểu rõ, nguyên nhân cần được buông bỏ, sự chấm dứt cần được chứng ngộ, con đường cần được tu tập.",
+      "Khi bài pháp kết thúc, tôn giả Koṇḍañña thấy được điều này: cái gì có sinh khởi, cái ấy đều có hoại diệt.",
+    ],
+    hint: "Gợi ý của game: đêm nay thầy Tịnh không hành xác, cũng không tìm khoái lạc. Ngồi giữa nghĩa địa là một lát cắt rất nhỏ của con đường ở giữa.",
+  },
+  {
+    id: "k_anatta", title: "Vô Ngã Tướng", source: "Tương Ưng Bộ, SN 22.59 (Anattalakkhaṇa)",
+    body: [
+      "Vài ngày sau bài pháp đầu, Đức Phật giảng cho cùng năm vị ấy về năm uẩn: sắc, thọ, tưởng, hành, thức.",
+      "Ngài hỏi: nếu thân này là tự ngã thì nó đâu phải chịu bệnh tật và già yếu, và ta có thể bảo nó “hãy như thế này, đừng như thế kia”. Nhưng vì nó không theo ý ta muốn, nên nó không phải là tự ngã. Thọ, tưởng, hành, thức cũng như vậy.",
+      "Ngài hỏi tiếp từng bước: cái gì vô thường thì khổ hay lạc? Khổ. Cái gì vô thường, khổ, đổi thay, có nên nhìn rằng “cái này là của tôi, tôi là cái này, đây là tự ngã của tôi” không? Không nên.",
+      "Thấy như vậy, người nghe nhàm chán đối với năm uẩn. Nhàm chán thì lìa tham, lìa tham thì giải thoát, và khi giải thoát thì biết rằng mình đã giải thoát.",
+      "Nghe xong, tâm của năm vị tỳ-kheo không còn bám chấp và được giải thoát khỏi các lậu hoặc.",
+    ],
+    hint: "Gợi ý của game: khi nỗi sợ hay cơn buồn ngủ kéo đến giữa đêm, thử hỏi: cái này đang đến rồi đi, vậy nó có phải là mình không?",
+  },
+  {
+    id: "k_satipatthana", title: "Tứ Niệm Xứ", source: "Trung Bộ, MN 10 (Satipaṭṭhāna Sutta); Trường Bộ, DN 22",
+    body: [
+      "Đức Phật dạy ở xứ Kuru: đây là con đường độc nhất để thanh lọc chúng sinh, vượt qua sầu bi, chấm dứt khổ ưu, đạt chánh đạo và chứng Niết-bàn. Đó là bốn niệm xứ.",
+      "Bốn nơi để đặt sự chú tâm: thân, thọ, tâm, pháp. Ở mỗi nơi, hành giả sống nhiệt tâm, tỉnh giác, chánh niệm, nhiếp phục tham và ưu đối với đời.",
+      "Quán thân gồm theo dõi hơi thở vào ra, biết rõ oai nghi đang đi, đứng, nằm, ngồi, tỉnh giác trong từng hành động, quán các phần của thân, quán bốn yếu tố đất nước lửa gió, và quán thi thể bỏ ở nghĩa địa qua chín giai đoạn để thấy thân này cũng có bản chất như vậy.",
+      "Quán thọ: khi một cảm thọ lạc, khổ, hay không lạc không khổ khởi lên, biết rõ mình đang có cảm thọ ấy. Quán tâm: tâm có tham thì biết tâm có tham, không tham thì biết không tham, có sân, có si, co rút, tản mạn, đều biết như vậy.",
+      "Quán pháp gồm năm triền cái, năm uẩn, sáu căn và sáu trần, bảy giác chi và Bốn Sự Thật cao quý.",
+      "Kinh nói người thực hành đúng cách có thể thấy kết quả trong bảy năm, và có người chỉ trong bảy ngày.",
+    ],
+    hint: "Gợi ý của game: phần quán thi thể ở nghĩa địa là một lý do các thầy đầu đà chọn những nơi như chỗ thầy Tịnh đang ngồi.",
+  },
+  {
+    id: "k_metta", title: "Kinh Từ Bi", source: "Kinh Tập, Sn 1.8 (Karaṇīya Mettā Sutta)",
+    body: [
+      "Người khéo léo muốn đạt cảnh an tịnh nên sống như thế này: có năng lực, ngay thẳng, chính trực, dễ nói, hiền hòa, không kiêu mạn, biết đủ, ít việc, sống giản dị, các căn an tịnh, không xấc xược, không dính mắc gia đình.",
+      "Mong tất cả chúng sinh được an vui, được yên ổn, tâm được hạnh phúc. Dù yếu hay mạnh, dài hay ngắn, lớn hay nhỏ, thấy được hay không thấy được, ở gần hay ở xa, đã sinh hay sắp sinh, mong tất cả đều được hạnh phúc.",
+      "Đừng lừa dối nhau, đừng khinh miệt nhau, đừng vì giận hay ác ý mà mong người khác đau khổ.",
+      "Như người mẹ lấy thân mình che chở đứa con duy nhất, hãy tu tập tâm từ vô lượng đối với mọi loài.",
+      "Hãy rải tâm từ ra khắp thế gian, trên, dưới, bốn phương, không giới hạn, không oán hận, không thù địch. Đứng, đi, ngồi hay nằm, chừng nào còn tỉnh thức, hãy giữ niệm ấy.",
+    ],
+    hint: "Gợi ý của game: đây là bài mà thầy Tịnh tụng cho những người nằm dưới đất, và cho cả người đã đuổi thầy sáng nay.",
+  },
+  {
+    id: "k_kalama", title: "Kinh Kālāma", source: "Tăng Chi Bộ, AN 3.65 (Kālāma Sutta)",
+    body: [
+      "Dân Kālāma ở Kesaputta hỏi Đức Phật: nhiều vị thầy đến, vị nào cũng nói pháp mình đúng, pháp người khác sai. Chúng con biết tin ai?",
+      "Ngài đáp: đừng tin chỉ vì nghe kể lại, vì truyền thống, vì tin đồn, vì có trong kinh sách, vì suy luận, vì thấy có lý, vì vị thầy ấy trông đáng tin, hay vì “thầy của chúng ta nói vậy”.",
+      "Hãy tự biết: những điều này là bất thiện, bị người trí chê, làm theo thì đưa đến hại và khổ, thì hãy từ bỏ. Còn điều gì là thiện, được người trí khen, làm theo đưa đến lợi ích và an lạc, thì hãy thành tựu và sống trong đó.",
+      "Ngài chỉ ra tham, sân, si làm hại người sống với chúng. Không tham, không sân, không si nuôi dưỡng người sống với chúng.",
+    ],
+    hint: "Gợi ý của game: ông Tư vội tin lời đồn rằng thầy là sư giả. Kinh này khuyên nhìn vào việc làm, không phải lời đồn.",
+  },
+  {
+    id: "k_dhutanga", title: "Mười Ba Hạnh Đầu Đà", source: "Luận Thanh Tịnh Đạo (Visuddhimagga), chương 2 (Dhutaṅga)",
+    body: [
+      "Đầu đà là những hạnh tu giản dị mà một vị tỳ-kheo tự nguyện nhận thêm để mài bớt tham muốn và dính mắc. Chúng không phải giới bắt buộc, mà là một lựa chọn.",
+      "Luận kể mười ba hạnh: mặc y may bằng vải bỏ đi; chỉ giữ ba y; đi khất thực; khất thực lần lượt từng nhà, không chọn; ngồi ăn một chỗ, một lần; chỉ ăn trong bát; không ăn thêm sau khi đã dừng; ở trong rừng; ở dưới gốc cây; ở ngoài trời; ở nghĩa địa; ở nơi nào được chỉ cho; và ngồi không nằm.",
+      "Hạnh ở nghĩa địa và hạnh ngồi không nằm chính là hai hạnh thầy Tịnh giữ đêm nay.",
+      "Luận cũng dặn: giữ hạnh đầu đà không phải để khoe với người, cũng không để hơn thua. Nó chỉ có ý nghĩa khi giúp bớt tham muốn và biết đủ.",
+    ],
+    hint: "Gợi ý của game: không ai buộc thầy ngồi giữa nghĩa địa. Thầy chọn.",
+  },
+];

@@ -95,3 +95,9 @@ Thêm loại dấu vết mới thì sửa ở hai chỗ: `TRACE_TEXT` trong `sto
 ### Chế độ phát triển
 
 Mở `http://localhost:3000/?dev` sẽ có nút **DEV** ở góc dưới trái: ép giờ trong ngày (sáng sớm, chiều tàn, canh ba...), đổi vai, nhảy tới một cảnh bất kỳ, mở khóa hết vai và manh mối, hiện hết vật bị bỏ quên, gọi thử cú, quạ, chó, gà và cảnh nhà hoang. Không có `?dev` thì panel không xuất hiện.
+
+### Tịnh thất và kinh
+
+Gõ cửa tịnh thất (đốm sáng ở sân) rồi bước vào: kệ sách có 6 cuốn (`HERMIT_BOOKS` trong `story.js`): Chuyển Pháp Luân, Vô Ngã Tướng, Tứ Niệm Xứ, Kinh Từ Bi, Kinh Kālāma, Mười Ba Hạnh Đầu Đà. Đọc mỗi cuốn làm lòng lắng xuống một lần mỗi đêm, và game nhớ cuốn nào đã đọc.
+
+Nội dung là **tóm lược theo ý kinh bằng lời của game, không phải bản dịch**, vì các bản dịch hiện đại có bản quyền. **Chưa được vị thầy Theravāda duyệt**, cần duyệt trước khi phát hành rộng.
