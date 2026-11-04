@@ -55,6 +55,9 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--lantern); o
 .hud > * { pointer-events: auto; }
 .hud-left { display: grid; gap: 4px; min-width: 0; }
 .hud-right { display: flex; gap: 6px; flex-shrink: 0; }
+.look-back { position: absolute; z-index: 4; left: 50%; top: calc(env(safe-area-inset-top, 0px) + 58px); transform: translateX(-50%); background: var(--panel); }
+.map-panel { display: flex; flex-direction: column; }
+.minimap { flex: 1; min-height: 0; width: 100%; max-width: 220px; align-self: center; touch-action: none; cursor: pointer; border: 1px solid var(--line); border-radius: 10px; background: #0a100f; }
 .role-chip { font: 600 19px/1.1 var(--font-display); }
 
 .toast {

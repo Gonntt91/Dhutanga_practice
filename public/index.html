@@ -20,12 +20,24 @@
       <div id="role-chip" class="role-chip" hidden></div>
     </div>
     <div class="hud-right">
+      <button id="map-btn" class="pill" type="button">Bản đồ</button>
       <button id="traces-btn" class="pill" type="button">Dấu vết <span id="traces-count" class="count">0</span></button>
       <button id="sound-toggle" class="pill" type="button" aria-pressed="false" aria-label="Bật âm thanh">Âm thanh</button>
     </div>
   </header>
 
   <div id="toast" class="toast" aria-live="polite"></div>
+  <button id="look-back" class="pill look-back" type="button" hidden>Về chỗ</button>
+
+  <!-- map panel -->
+  <section id="map-panel" class="panel map-panel" hidden aria-label="Bản đồ nghĩa địa">
+    <div class="panel-head">
+      <h2 class="label">Bản đồ</h2>
+      <button id="map-close" class="text-btn" type="button">Đóng</button>
+    </div>
+    <p id="map-hint" class="hint">Chạm vào một chỗ để nhìn sang đó. Nhân vật vẫn ở yên.</p>
+    <canvas id="minimap" class="minimap" aria-label="Bản đồ nghĩa địa"></canvas>
+  </section>
 
   <!-- walking prompt -->
   <div id="walk-bar" class="walk-bar" hidden>

@@ -8,6 +8,10 @@
     "Canh ba": 0.9, "Canh tư": 0.82, "Gà gáy": 0.68, "Rạng sáng": 0.45,
   };
 
+  // How far from the character each role can look around (world units). The monk sits in the
+  // dark and only sees what is close; the ghost drifts everywhere.
+  const LOOK_RANGE = { monk: 420, villager: 700, ghost: Infinity };
+
   const $ = (id) => document.getElementById(id);
   const el = (tag, cls, text) => {
     const node = document.createElement(tag);
@@ -121,6 +125,7 @@
     const sc = currentScene();
     World.setView({
       mist: mistLevel(),
+      lookRange: state.role ? LOOK_RANGE[state.role] : Infinity,
       role: state.role,
       pose: currentPose(),
       darkness: sc ? DARKNESS[sc.time] ?? 0.8 : 0.78,
@@ -469,6 +474,80 @@
     btn.setAttribute("aria-pressed", String(state.soundOn));
     btn.setAttribute("aria-label", state.soundOn ? "Tắt âm thanh" : "Bật âm thanh");
   }
+
+  // ---------- look around & map ----------
+  window.addEventListener("lookchange", (e) => { $("look-back").hidden = !e.detail.on; });
+  $("look-back").addEventListener("click", () => World.resetLook());
+
+  const ROLE_DOT = { monk: "#d08a4d", ghost: "#9fd2c1", villager: "#e6c56f" };
+  let mapTimer = null;
+  function drawMap() {
+    const cv = $("minimap");
+    const r = cv.getBoundingClientRect();
+    if (!r.width) return;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    if (cv.width !== Math.round(r.width * dpr) || cv.height !== Math.round(r.height * dpr)) {
+      cv.width = Math.round(r.width * dpr); cv.height = Math.round(r.height * dpr);
+    }
+    const m = World.getMap();
+    const g = cv.getContext("2d");
+    g.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const w = r.width, h = r.height;
+    const sx = w / m.W, sy = h / m.H;
+    g.clearRect(0, 0, w, h);
+    g.fillStyle = "#0a100f"; g.fillRect(0, 0, w, h);
+    // path
+    g.strokeStyle = "rgba(160,150,130,0.35)"; g.lineWidth = 5; g.lineJoin = "round"; g.lineCap = "round";
+    g.beginPath(); m.path.forEach(([x, y], i) => (i ? g.lineTo(x * sx, y * sy) : g.moveTo(x * sx, y * sy))); g.stroke();
+    // limited sight: dim what this role cannot see from where they stand
+    const inRange = (y) => Math.abs(y - m.player.y) <= m.range + 140;
+    if (isFinite(m.range)) {
+      const y0 = (m.player.y - m.range - 140) * sy, y1 = (m.player.y + m.range + 140) * sy;
+      g.fillStyle = "rgba(4,7,8,0.72)";
+      g.fillRect(0, 0, w, Math.max(0, y0)); g.fillRect(0, Math.min(h, y1), w, h);
+    }
+    // places
+    g.font = '500 10px "Be Vietnam Pro", system-ui, sans-serif';
+    g.textAlign = "left"; g.textBaseline = "middle";
+    for (const p of Object.values(m.PLACES)) {
+      g.fillStyle = "rgba(230,197,111,0.85)";
+      g.beginPath(); g.arc(p.x * sx, p.y * sy, 3, 0, 7); g.fill();
+      g.fillStyle = "rgba(220,213,197,0.8)";
+      const right = p.x * sx < w * 0.55;
+      g.textAlign = right ? "left" : "right";
+      g.fillText(p.name, p.x * sx + (right ? 8 : -8), p.y * sy);
+    }
+    // others (only when within sight)
+    for (const o of m.others) {
+      if (!inRange(o.y)) continue;
+      g.fillStyle = ROLE_DOT[o.role] || "#dcd5c5";
+      g.beginPath(); g.arc(o.x * sx, o.y * sy, 3.2, 0, 7); g.fill();
+    }
+    // you
+    g.strokeStyle = "#dcd5c5"; g.lineWidth = 1.5;
+    g.beginPath(); g.arc(m.player.x * sx, m.player.y * sy, 5, 0, 7); g.stroke();
+    // current view window
+    g.strokeStyle = "rgba(220,213,197,0.45)"; g.lineWidth = 1; g.setLineDash([4, 3]);
+    g.strokeRect(1, m.camY * sy, w - 2, m.viewH * sy); g.setLineDash([]);
+  }
+  function openMap() {
+    $("map-panel").hidden = false;
+    $("map-hint").textContent = state.role === "monk"
+      ? "Chạm vào một chỗ để nhìn sang đó. Thầy ngồi trong bóng tối, chỉ thấy được quanh mình."
+      : "Chạm vào một chỗ để nhìn sang đó. Nhân vật vẫn ở yên.";
+    requestAnimationFrame(drawMap);
+    clearInterval(mapTimer);
+    mapTimer = setInterval(drawMap, 400);
+  }
+  function closeMap() { $("map-panel").hidden = true; clearInterval(mapTimer); }
+  $("map-btn").addEventListener("click", openMap);
+  $("map-close").addEventListener("click", closeMap);
+  $("minimap").addEventListener("click", (e) => {
+    const r = $("minimap").getBoundingClientRect();
+    const m = World.getMap();
+    World.lookAt(((e.clientY - r.top) / r.height) * m.H);
+    closeMap();
+  });
 
   window.addEventListener("owl", (e) => {
     if (!state.role) return;

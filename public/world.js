@@ -251,7 +251,7 @@ window.World = (() => {
   const player = { x: SPAWN.monk.x, y: SPAWN.monk.y, tx: null, ty: null, facing: 1, phase: 0, moving: false };
   const others = new Map();
   const ripples = [];
-  const view = { mist: 0.4, role: null, pose: null, darkness: 0.75, flags: new Set(), marker: null, nick: "", anchor: 0.55 };
+  const view = { lookRange: Infinity, mist: 0.4, role: null, pose: null, darkness: 0.75, flags: new Set(), marker: null, nick: "", anchor: 0.55 };
   let tapHandler = null;
 
   function init(canvasEl, onTap) {
@@ -262,12 +262,35 @@ window.World = (() => {
     tapHandler = onTap;
     resize();
     window.addEventListener("resize", resize);
+    // A short press is a tap; dragging vertically pans the camera so you can look around
+    // without moving the character.
+    let press = null;
     canvas.addEventListener("pointerdown", (e) => {
+      press = { x: e.clientX, y: e.clientY, lastY: e.clientY, dragged: false, id: e.pointerId };
+      try { canvas.setPointerCapture(e.pointerId); } catch {}
+    });
+    canvas.addEventListener("pointermove", (e) => {
+      if (!press || e.pointerId !== press.id) return;
+      if (!press.dragged && Math.hypot(e.clientX - press.x, e.clientY - press.y) > 8) press.dragged = true;
+      if (!press.dragged) return;
+      const dy = (e.clientY - press.lastY) / scale;
+      press.lastY = e.clientY;
+      look.on = true; look.idle = 0;
+      look.target = clampLook(camY - dy);
+      camY = look.target;
+    });
+    const release = (e) => {
+      if (!press || e.pointerId !== press.id) return;
+      const p = press; press = null;
+      look.idle = 0;
+      if (p.dragged || e.type === "pointercancel") return;
       const rect = canvas.getBoundingClientRect();
       const wx = (e.clientX - rect.left) / scale;
       const wy = (e.clientY - rect.top) / scale + camY;
       if (tapHandler) tapHandler(wx, wy);
-    });
+    };
+    canvas.addEventListener("pointerup", release);
+    canvas.addEventListener("pointercancel", release);
     requestAnimationFrame(frame);
   }
 
@@ -284,7 +307,7 @@ window.World = (() => {
 
   // ---------- public controls ----------
   function setView(patch) { Object.assign(view, patch); }
-  function setPlayer(x, y) { player.x = x; player.y = y; player.tx = null; player.moving = false; camY = clampCam(y - viewH * view.anchor); }
+  function setPlayer(x, y) { look.on = false; player.x = x; player.y = y; player.tx = null; player.moving = false; camY = clampCam(y - viewH * view.anchor); }
   function walkTo(x, y) {
     player.tx = Math.max(12, Math.min(W - 12, x));
     player.ty = Math.max(60, Math.min(H - 20, y));
@@ -309,6 +332,26 @@ window.World = (() => {
 
   function clampCam(y) { return Math.max(-viewH * 0.1, Math.min(H + 450 - viewH, y)); }
 
+  // Free look: camera detached from the character. Limited by view.lookRange (per role).
+  const look = { on: false, target: 0, idle: 0, announced: false };
+  const LOOK_IDLE_RETURN = 12; // seconds without touching before the camera drifts home
+  function homeCam() { return clampCam(player.y - viewH * view.anchor); }
+  function clampLook(y) {
+    const c = homeCam();
+    return clampCam(Math.max(c - view.lookRange, Math.min(c + view.lookRange, y)));
+  }
+  function lookAt(worldY) { look.on = true; look.idle = 0; look.target = clampLook(worldY - viewH * 0.5); }
+  function resetLook() { look.on = false; }
+  function isLooking() { return look.on; }
+  function getMap() {
+    const pts = [];
+    for (const o of others.values()) pts.push({ x: o.rx, y: o.ry, role: o.role });
+    return {
+      W, H, PLACES, path: PATH, others: pts, camY, viewH,
+      player: { x: player.x, y: player.y }, range: view.lookRange, view: view.role,
+    };
+  }
+
   // ---------- update ----------
   function update(dt) {
     time += dt;
@@ -327,7 +370,16 @@ window.World = (() => {
         player.phase += dt * 9;
       }
     }
-    camY += (clampCam(player.y - viewH * view.anchor) - camY) * Math.min(1, dt * 3);
+    if (look.on) {
+      look.idle += dt;
+      if (look.idle > LOOK_IDLE_RETURN) look.on = false;
+      else { look.target = clampLook(look.target); camY += (look.target - camY) * Math.min(1, dt * 5); }
+    }
+    if (!look.on) camY += (homeCam() - camY) * Math.min(1, dt * 3);
+    if (look.on !== look.announced) {
+      look.announced = look.on;
+      window.dispatchEvent(new CustomEvent("lookchange", { detail: { on: look.on } }));
+    }
     for (const o of others.values()) {
       const dx = o.x - o.rx;
       const dy = o.y - o.ry;
@@ -767,5 +819,5 @@ window.World = (() => {
     return role && window.ROLE_INFO ? ROLE_INFO[role].name : "";
   }
 
-  return { W, H, PLACES, SPAWN, init, setView, setPlayer, walkTo, stop, getPlayer, setOthers, ripple };
+  return { lookAt, resetLook, isLooking, getMap, W, H, PLACES, SPAWN, init, setView, setPlayer, walkTo, stop, getPlayer, setOthers, ripple };
 })();
