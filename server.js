@@ -58,8 +58,10 @@ function cleanText(value, max) {
     .slice(0, max);
 }
 
+// Each peer has a secret pid (only its own browser knows it) and a public sid shown to everyone else.
+// Other players only ever see sids, so nobody can post as someone else.
 function publicPeers() {
-  return [...peers.entries()].map(([pid, p]) => ({ pid, ...p.presence }));
+  return [...peers.values()].map((p) => ({ pid: p.sid, ...p.presence }));
 }
 
 function send(res, event, data) {
@@ -106,14 +108,17 @@ function handleEvents(req, res, url) {
   res.write("retry: 3000\n\n");
 
   const existing = peers.get(pid);
+  const sid = existing?.sid ?? crypto.randomBytes(6).toString("hex");
   peers.set(pid, {
+    sid,
+    lastChat: 0,
     res,
     presence: existing?.presence ?? { role: null, scene: null, nick: "", x: 0.5, y: 0.95, pose: null },
     lastEmit: 0,
     lastTrace: 0,
   });
 
-  send(res, "init", { pid, peers: publicPeers(), traces: traces.slice(-60) });
+  send(res, "init", { pid, sid, peers: publicPeers(), traces: traces.slice(-60) });
   broadcast("peers", publicPeers());
 
   const heartbeat = setInterval(() => res.write(": keepalive\n\n"), 20000);
@@ -151,8 +156,64 @@ async function handleEmit(req, res) {
   const now = Date.now();
   if (now - peer.lastEmit < 4000) return json(res, 429, { error: "too fast" });
   peer.lastEmit = now;
-  broadcast("moment", { topic: body.topic, from: body.pid, x: peer.presence.x, y: peer.presence.y, role: peer.presence.role });
+  broadcast("moment", { topic: body.topic, from: peer.sid, x: peer.presence.x, y: peer.presence.y, role: peer.presence.role });
   json(res, 200, { ok: true });
+}
+
+// ---------- chat ----------
+// Nearby chat only: a message reaches players within CHAT_RANGE world units of the speaker.
+// Nothing is stored. A light filter blocks links, phone numbers and a few slurs.
+const CHAT_RANGE = 260;
+const CHAT_MAX = 80;
+const BLOCKED_TOKENS = new Set(["dm", "dmm", "dcm", "dcmm", "dkm", "vcl", "vkl", "clgt", "cmm", "ditme", "ditmemay", "fuck", "shit", "bitch", "nigger", "nigga", "cunt"]);
+
+const BLOCKED_STEMS = ["ditme", "ditm", "ditcon", "dume", "dumay", "dcmm", "fuck", "nigger", "nigga", "bitch", "cunt"];
+
+function foldText(text) {
+  return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d").replace(/Đ/g, "d").toLowerCase();
+}
+function chatRejected(text) {
+  if (/https?:|www\.|\.(com|net|org|vn|io|xyz|gg|me)\b|@\w|t\.me/i.test(text)) return "links";
+  if (/\d{8,}/.test(text.replace(/[\s.\-]/g, ""))) return "numbers";
+  if (/(.)\1{7,}/.test(text)) return "spam";
+  const folded = foldText(text);
+  const raw = folded.split(/[^a-z]+/).filter(Boolean);
+  // glue runs of single letters back together so "d.m" or "v c l" cannot dodge the list
+  const tokens = [];
+  let run = "";
+  for (const t of raw) {
+    if (t.length === 1) run += t;
+    else { if (run) { tokens.push(run); run = ""; } tokens.push(t); }
+  }
+  if (run) tokens.push(run);
+  if (tokens.some((t) => BLOCKED_TOKENS.has(t))) return "language";
+  const letters = folded.replace(/[^a-z]/g, "");
+  if (BLOCKED_STEMS.some((w) => letters.includes(w))) return "language";
+  return null;
+}
+
+async function handleChat(req, res) {
+  const body = await readJson(req);
+  const peer = peers.get(body.pid);
+  if (!peer) return json(res, 404, { error: "not connected" });
+  if (!peer.presence.role) return json(res, 400, { error: "pick a role first" });
+  const text = cleanText(body.text, CHAT_MAX).replace(/\s+/g, " ");
+  if (!text) return json(res, 400, { error: "empty" });
+  const now = Date.now();
+  if (now - peer.lastChat < 1500) return json(res, 429, { error: "too fast" });
+  const why = chatRejected(text);
+  if (why) return json(res, 400, { error: "blocked", reason: why });
+  peer.lastChat = now;
+  const msg = { id: crypto.randomUUID(), from: peer.sid, role: peer.presence.role, nick: peer.presence.nick, text, at: now };
+  const sx = peer.presence.x * 400, sy = peer.presence.y * 2000;
+  let heard = 0;
+  for (const p of peers.values()) {
+    const near = p === peer || Math.hypot(p.presence.x * 400 - sx, p.presence.y * 2000 - sy) <= CHAT_RANGE;
+    if (!near) continue;
+    if (p !== peer) heard++;
+    send(p.res, "chat", msg);
+  }
+  json(res, 200, { ok: true, heard });
 }
 
 async function handleTrace(req, res) {
@@ -213,6 +274,7 @@ const server = http.createServer(async (req, res) => {
     if (req.method === "POST" && url.pathname === "/api/presence") return await handlePresence(req, res);
     if (req.method === "POST" && url.pathname === "/api/emit") return await handleEmit(req, res);
     if (req.method === "POST" && url.pathname === "/api/trace") return await handleTrace(req, res);
+    if (req.method === "POST" && url.pathname === "/api/chat") return await handleChat(req, res);
     if (req.method === "GET") return serveStatic(req, res, url);
     res.writeHead(405);
     res.end();

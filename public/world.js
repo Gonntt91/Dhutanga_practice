@@ -10,7 +10,7 @@ window.World = (() => {
     bamboo: { x: 95, y: 1490, name: "Bụi tre" },
     graves: { x: 222, y: 1065, name: "Giữa các ngôi mộ" },
     gao: { x: 150, y: 625, name: "Gốc cây gạo" },
-    hermitage: { x: 205, y: 310, name: "Tịnh thất" },
+    hermitage: { x: 205, y: 300, name: "Tịnh thất" },
   };
   const UNNAMED = { x: 262, y: 1032 };
   const SPAWN = {
@@ -136,7 +136,8 @@ window.World = (() => {
     }
     decor.push({ kind: "gate", x: 200, y: 1795 });
     decor.push({ kind: "ruin", x: 335, y: 1300 });
-    decor.push({ kind: "shrine", x: 205, y: 235 });
+    decor.push({ kind: "shrine", x: 205, y: 262 });
+    decor.push({ kind: "sign", x: 206, y: 585 });
     for (const [x, y] of [[78, 1975], [325, 1962], [52, 2110], [318, 2135], [92, 2290], [340, 2310]]) decor.push({ kind: "house", x, y });
     for (const [x, y] of [[20, 2050], [372, 2060], [140, 2200], [258, 2240], [30, 2380], [380, 2420]]) decor.push({ kind: "tree", x, y, s: 0.8 + r() * 0.4 });
     for (const [cx, cy, n] of [[255, 2060, 5], [120, 2380, 6]]) for (let i = 0; i < n; i++) decor.push({ kind: "bamboo", x: cx + (r() - 0.5) * 36, y: cy + (r() - 0.5) * 24, h: 60 + r() * 45, lean: (r() - 0.5) * 0.3, seed: r() * 10 });
@@ -251,6 +252,43 @@ window.World = (() => {
       ctx.fillStyle = "#3a2a1a"; ctx.fillRect(bx - 0.4, by - 2, 0.8, 4);
       ctx.globalAlpha = 1;
     });
+  }
+
+  // Speech bubbles above heads (nearby chat). key: "me" or a player's public id.
+  const bubbles = new Map();
+  function say(key, text, role) { bubbles.set(key, { text, role, t: 0, life: Math.min(10, 4.5 + text.length * 0.07) }); }
+  function updateBubbles(dt) { for (const [k, b] of bubbles) { b.t += dt; if (b.t > b.life) bubbles.delete(k); } }
+  function wrapText(text, maxW) {
+    const words = text.split(" "), lines = []; let cur = "";
+    for (const w of words) {
+      const test = cur ? cur + " " + w : w;
+      if (cur && ctx.measureText(test).width > maxW) { lines.push(cur); cur = w; } else cur = test;
+    }
+    if (cur) lines.push(cur);
+    return lines.slice(0, 4);
+  }
+  function drawBubble(b, x, y) {
+    ctx.font = '500 9.5px "Be Vietnam Pro", system-ui, sans-serif';
+    ctx.textAlign = "center";
+    const lines = wrapText(b.text, 112);
+    const w = Math.max(...lines.map((l) => ctx.measureText(l).width)) + 12, h = lines.length * 12 + 8;
+    const bx = Math.max(6, Math.min(W - 6 - w, x - w / 2)), by = y - h - 6;
+    const a = Math.min(1, b.t / 0.25, (b.life - b.t) / 0.8);
+    const rc = b.role === "monk" ? "208,138,77" : b.role === "villager" ? "230,197,111" : "120,215,190";
+    ctx.globalAlpha = Math.max(0, a);
+    ctx.fillStyle = dayMix > 0.5 ? "rgba(255,252,240,0.96)" : "rgba(12,20,18,0.92)";
+    ctx.strokeStyle = `rgba(${rc},0.9)`; ctx.lineWidth = 1;
+    const r = 6;
+    ctx.beginPath();
+    ctx.moveTo(bx + r, by); ctx.lineTo(bx + w - r, by); ctx.quadraticCurveTo(bx + w, by, bx + w, by + r);
+    ctx.lineTo(bx + w, by + h - r); ctx.quadraticCurveTo(bx + w, by + h, bx + w - r, by + h);
+    ctx.lineTo(Math.min(bx + w - r, x + 4), by + h); ctx.lineTo(x, by + h + 5); ctx.lineTo(Math.max(bx + r, x - 4), by + h);
+    ctx.lineTo(bx + r, by + h); ctx.quadraticCurveTo(bx, by + h, bx, by + h - r);
+    ctx.lineTo(bx, by + r); ctx.quadraticCurveTo(bx, by, bx + r, by); ctx.closePath();
+    ctx.fill(); ctx.stroke();
+    ctx.fillStyle = dayMix > 0.5 ? "#20301c" : "#ece6d6";
+    lines.forEach((l, i) => ctx.fillText(l, bx + w / 2, by + 12 + i * 12));
+    ctx.globalAlpha = 1;
   }
 
   // Things left lying around that the player can walk to and pick over (set by the app).
@@ -481,6 +519,7 @@ window.World = (() => {
     updateOwl(dt);
     updateCrow(dt);
     updateBots(dt);
+    updateBubbles(dt);
   }
 
   // ---------- drawing helpers ----------
@@ -745,17 +784,61 @@ window.World = (() => {
     ctx.fillStyle = pal("#2a2e2a"); ctx.fill();
   }
 
-  function drawShrine(d) {
+  // Tịnh thất: a small forest hermitage on stilts — thatched roof, plank floor, a bell on a post,
+  // and a hanging lantern that glows at night so it can be spotted from the path.
+  function drawShrine(d, lights) {
     const { x, y } = d;
-    shadow(x, y, 30);
-    ctx.fillStyle = pal("#2a2f2b");
-    ctx.fillRect(x - 26, y - 34, 52, 34);
-    ctx.fillStyle = pal("#101513");
-    ctx.fillRect(x - 8, y - 22, 16, 22);
+    const c = (n, dy) => lerpHex(n, dy, dayMix);
+    shadow(x, y, 44);
+    // sweeping yard
+    ellipse(x, y + 4, 52, 12, c("#1b1914", "#c9b48a"));
+    // stilts and floor
+    ctx.fillStyle = c("#1d1913", "#6e4a2a");
+    for (const px of [-30, -10, 10, 30]) ctx.fillRect(x + px - 2, y - 24, 4, 24);
+    ctx.fillStyle = c("#2a241c", "#b58a58");
+    ctx.fillRect(x - 36, y - 28, 72, 6);
+    // back wall and doorway
+    ctx.fillStyle = c("#241f19", "#c9a26a");
+    ctx.fillRect(x - 30, y - 56, 60, 28);
+    ctx.fillStyle = c("#0b0a08", "#2b1c10");
+    ctx.fillRect(x - 8, y - 52, 16, 24);
+    // thatched hip roof
     ctx.beginPath();
-    ctx.moveTo(x - 38, y - 30); ctx.quadraticCurveTo(x - 20, y - 36, x, y - 56); ctx.quadraticCurveTo(x + 20, y - 36, x + 38, y - 30);
-    ctx.lineTo(x + 30, y - 36); ctx.lineTo(x, y - 50); ctx.lineTo(x - 30, y - 36); ctx.closePath();
-    ctx.fillStyle = pal("#1e2320"); ctx.fill();
+    ctx.moveTo(x - 48, y - 50); ctx.lineTo(x - 14, y - 84); ctx.lineTo(x + 14, y - 84); ctx.lineTo(x + 48, y - 50); ctx.closePath();
+    ctx.fillStyle = c("#3a3220", "#c19a52"); ctx.fill();
+    ctx.strokeStyle = c("#241f14", "#8a6a32"); ctx.lineWidth = 1;
+    for (let k = -4; k <= 4; k++) { ctx.beginPath(); ctx.moveTo(x + k * 3.4, y - 84); ctx.lineTo(x + k * 10.5, y - 50); ctx.stroke(); }
+    ctx.fillStyle = c("#2b261a", "#a98240"); ctx.fillRect(x - 50, y - 52, 100, 4); // eave
+    // bell on a post
+    const sway = Math.sin(time * 1.4) * 2;
+    ctx.fillStyle = c("#1d1913", "#6e4a2a"); ctx.fillRect(x + 54, y - 46, 3, 46);
+    ctx.fillRect(x + 42, y - 46, 15, 3);
+    ctx.fillStyle = c("#7a6a3a", "#d8b24a");
+    ctx.beginPath(); ctx.moveTo(x + 46 + sway, y - 43); ctx.quadraticCurveTo(x + 41 + sway, y - 33, x + 43 + sway, y - 29); ctx.lineTo(x + 51 + sway, y - 29); ctx.quadraticCurveTo(x + 52 + sway, y - 36, x + 47 + sway, y - 43); ctx.fill();
+    // hanging lantern
+    const lx = x - 22, ly = y - 38 + Math.sin(time * 1.1) * 0.8;
+    ctx.strokeStyle = c("#3a3220", "#6e4a2a"); ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(lx, y - 50); ctx.lineTo(lx, ly - 5); ctx.stroke();
+    ctx.fillStyle = c(COLORS.lantern, "#f0b04a"); ctx.fillRect(lx - 3, ly - 5, 6, 9);
+    if (lights) lights.push({ x: lx, y: ly, r: 95, a: 0.8 });
+    // broom leaning on the post
+    ctx.strokeStyle = c("#3c3326", "#7a5a30"); ctx.lineWidth = 1.6;
+    ctx.beginPath(); ctx.moveTo(x + 36, y - 6); ctx.lineTo(x + 31, y - 26); ctx.stroke();
+    ctx.fillStyle = c("#2f2a1c", "#b89a52"); ctx.beginPath(); ctx.moveTo(x + 30, y - 26); ctx.lineTo(x + 28, y - 30); ctx.lineTo(x + 36, y - 30); ctx.closePath(); ctx.fill();
+  }
+
+  // Wooden signpost on the path to the hermitage.
+  function drawSign(d) {
+    const { x, y } = d;
+    const c = (n, dy) => lerpHex(n, dy, dayMix);
+    shadow(x, y, 8);
+    ctx.fillStyle = c("#2b241b", "#7a5532"); ctx.fillRect(x - 1.5, y - 34, 3, 34);
+    ctx.fillStyle = c("#6b5d43", "#d9c38e");
+    ctx.beginPath(); ctx.moveTo(x - 26, y - 34); ctx.lineTo(x + 24, y - 34); ctx.lineTo(x + 30, y - 41); ctx.lineTo(x + 24, y - 48); ctx.lineTo(x - 26, y - 48); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = c("#1b1710", "#4a3418");
+    ctx.font = '600 7.5px "Be Vietnam Pro", system-ui, sans-serif'; ctx.textAlign = "center";
+    ctx.fillText("Tịnh thất", x, y - 38.5);
+    ctx.beginPath(); ctx.moveTo(x + 18, y - 44); ctx.lineTo(x + 22, y - 41); ctx.lineTo(x + 18, y - 38); ctx.closePath(); ctx.fill();
   }
 
   // Abandoned house at the graveyard's edge: no light, broken roof, empty doorway.
@@ -908,7 +991,8 @@ window.World = (() => {
         case "gao": drawGao(it); break;
         case "tree": drawTree(it); break;
         case "gate": drawGate(it); break;
-        case "shrine": drawShrine(it); break;
+        case "shrine": drawShrine(it, lights); break;
+        case "sign": drawSign(it); break;
         case "house": drawHouse(it, lights); if (shownDark < 0.3) drawSmoke(it); break;
         case "ruin": drawRuin(it); break;
         case "char": drawCharacter(it, lights, viewerIsGhost); break;
@@ -1039,6 +1123,13 @@ window.World = (() => {
       else ctx.fillStyle = it.isMe ? "rgba(220,213,197,0.95)" : "rgba(220,213,197,0.75)";
       ctx.fillText(it.label, it.x, it.y - lift);
     }
+    for (const it of items) {
+      if (it.kind !== "char") continue;
+      const b = bubbles.get(it.isMe ? "me" : it.pid);
+      if (!b) continue;
+      const lift = it.role === "ghost" ? 46 : it.pose === "sit" ? 36 : 44;
+      drawBubble(b, it.x, it.y - lift - 8);
+    }
 
     if (view.marker && PLACES[view.marker]) drawMarker(PLACES[view.marker]);
   }
@@ -1078,5 +1169,5 @@ window.World = (() => {
     return role && window.ROLE_INFO ? ROLE_INFO[role].name : "";
   }
 
-  return { setFinds, lookAt, resetLook, isLooking, getMap, W, H, PLACES, SPAWN, init, setView, setPlayer, walkTo, stop, getPlayer, setOthers, ripple };
+  return { say, setFinds, lookAt, resetLook, isLooking, getMap, W, H, PLACES, SPAWN, init, setView, setPlayer, walkTo, stop, getPlayer, setOthers, ripple };
 })();

@@ -25,6 +25,7 @@
 
   const state = {
     pid: makeId(),
+    sid: "",     // our public id (what other players see), assigned by the server
     connected: false,
     role: null,
     sceneId: null,
@@ -99,6 +100,7 @@
     es.addEventListener("init", (e) => {
       const data = JSON.parse(e.data);
       state.connected = true;
+      state.sid = data.sid || "";
       state.peers = data.peers;
       state.traces = data.traces;
       sendPresence(true);
@@ -116,6 +118,7 @@
       pushView();
     });
     es.addEventListener("moment", (e) => onMoment(JSON.parse(e.data)));
+    es.addEventListener("chat", (e) => onChat(JSON.parse(e.data)));
     es.onerror = () => {
       state.connected = false;
       $("presence-count").textContent = "Mất kết nối, đang thử lại…";
@@ -240,7 +243,7 @@
   let peersPrimed = false;
   function announceNewcomers() {
     for (const p of state.peers) {
-      if (p.pid === state.pid || !p.role) continue;
+      if (p.pid === state.sid || !p.role) continue;
       if (peersPrimed && knownRoles.get(p.pid) !== p.role && state.role) {
         const info = ROLE_INFO[p.role];
         const who = p.nick ? `${p.nick} (${info.name.toLowerCase()})` : `Một ${info.name.toLowerCase()}`;
@@ -254,7 +257,7 @@
 
   function onPeers() {
     announceNewcomers();
-    const others = state.peers.filter((p) => p.pid !== state.pid && p.role);
+    const others = state.peers.filter((p) => p.pid !== state.sid && p.role);
     World.setOthers(others);
     const total = state.peers.length - 1;
     const counts = { monk: 0, ghost: 0, villager: 0 };
@@ -286,10 +289,10 @@
   function onMoment(m) {
     World.ripple(m.x ?? 0.5, m.y ?? 0.5, m.topic);
     if (state.soundOn) {
-      if (m.topic === "chime") NightAudio.bell(m.from === state.pid ? 1 : 0.7);
+      if (m.topic === "chime") NightAudio.bell(m.from === state.sid ? 1 : 0.7);
       if (m.topic === "sigh") NightAudio.sigh();
     }
-    if (m.from === state.pid) return;
+    if (m.from === state.sid) return;
     state.liveFlags.add(m.topic);
     pushView();
     toast(MOMENT_TEXT[m.topic]);
@@ -351,6 +354,7 @@
     $("sheet").hidden = true;
     $("walk-bar").hidden = true;
     $("role-chip").hidden = true;
+    syncChatButton();
     delete $("app").dataset.role;
     const list = $("role-list");
     list.replaceChildren();
@@ -384,6 +388,7 @@
     $("whispers").replaceChildren();
     if (!state.soundOn) toggleSound(true);
     $("picker").hidden = true;
+    syncChatButton();
     $("app").dataset.role = role;
     $("role-chip").hidden = false;
     $("role-chip").textContent = ROLE_INFO[role].name;
@@ -709,6 +714,67 @@
     btn.setAttribute("aria-pressed", String(state.soundOn));
     btn.setAttribute("aria-label", state.soundOn ? "Tắt âm thanh" : "Bật âm thanh");
   }
+
+  // ---------- nearby chat ----------
+  const chat = { open: false, muted: false, unread: 0, log: [], lastSent: 0 };
+  const chatWho = (m) => (m.from === state.sid ? "Bạn" : m.nick || ROLE_INFO[m.role]?.name || "Ai đó");
+
+  function renderChat() {
+    const ol = $("chat-log");
+    ol.replaceChildren();
+    for (const m of chat.log.slice(-40)) {
+      const li = el("li", m.sys ? "sys" : m.from === state.sid ? "me" : null);
+      if (m.sys) li.textContent = m.text;
+      else {
+        li.dataset.role = m.role || "";
+        li.appendChild(el("span", "who", chatWho(m)));
+        li.appendChild(document.createTextNode(m.text));
+      }
+      ol.appendChild(li);
+    }
+    ol.scrollTop = ol.scrollHeight;
+  }
+  function chatNote(text) { $("chat-note").textContent = text || ""; }
+
+  function onChat(m) {
+    if (!state.role) return;
+    if (chat.muted && m.from !== state.sid) return;
+    chat.log.push(m);
+    if (chat.log.length > 100) chat.log.shift();
+    World.say(m.from === state.sid ? "me" : m.from, m.text, m.role);
+    if (chat.open) renderChat();
+    else if (m.from !== state.sid) { chat.unread++; updateChatBadge(); toast(`${chatWho(m)}: ${m.text}`); }
+  }
+  function updateChatBadge() {
+    $("chat-badge").hidden = chat.unread === 0;
+    $("chat-badge").textContent = String(chat.unread);
+  }
+  function openChat(open) {
+    chat.open = open;
+    $("chat-panel").hidden = !open;
+    if (open) { chat.unread = 0; updateChatBadge(); renderChat(); setTimeout(() => $("chat-input").focus(), 50); }
+  }
+  $("chat-btn").addEventListener("click", () => openChat(!chat.open));
+  $("chat-close").addEventListener("click", () => openChat(false));
+  $("chat-mute").addEventListener("click", () => {
+    chat.muted = !chat.muted;
+    $("chat-mute").setAttribute("aria-pressed", String(chat.muted));
+    $("chat-mute").textContent = chat.muted ? "Bật chat" : "Tắt chat";
+    chatNote(chat.muted ? "Bạn đang không nhận tin nhắn của người khác." : "");
+  });
+  $("chat-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const text = $("chat-input").value.replace(/\s+/g, " ").trim();
+    if (!text || !state.role) return;
+    if (Date.now() - chat.lastSent < 1500) { chatNote("Chậm một chút nhé."); return; }
+    chat.lastSent = Date.now();
+    $("chat-input").value = "";
+    const res = await post("/api/chat", { text });
+    if (res.error === "blocked") { chatNote(res.reason === "links" ? "Không gửi được đường dẫn." : res.reason === "numbers" ? "Không gửi được dãy số dài." : "Tin nhắn này không gửi được."); return; }
+    if (res.error) { chatNote("Chưa gửi được, thử lại nhé."); return; }
+    chatNote(res.heard === 0 ? "Chưa có ai ở gần để nghe thấy. Lại gần người khác nhé." : "");
+  });
+  function syncChatButton() { $("chat-btn").hidden = !state.role; if (!state.role) openChat(false); }
 
   // ---------- look around & map ----------
   window.addEventListener("lookchange", (e) => { $("look-back").hidden = !e.detail.on; });

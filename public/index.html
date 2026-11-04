@@ -33,6 +33,24 @@
   <div id="toast" class="toast" aria-live="polite"></div>
   <button id="look-back" class="pill look-back" type="button" hidden>Về chỗ</button>
 
+  <!-- nearby chat -->
+  <button id="chat-btn" class="pill chat-btn" type="button" hidden>Trò chuyện <span id="chat-badge" class="count" hidden>0</span></button>
+  <section id="chat-panel" class="chat-panel" hidden aria-label="Trò chuyện với người ở gần">
+    <div class="chat-head">
+      <span class="label">Chỉ người ở gần nghe thấy</span>
+      <span class="chat-head-actions">
+        <button id="chat-mute" class="text-btn" type="button" aria-pressed="false">Tắt chat</button>
+        <button id="chat-close" class="text-btn" type="button">Đóng</button>
+      </span>
+    </div>
+    <ol id="chat-log" class="chat-log" aria-live="polite"></ol>
+    <p id="chat-note" class="chat-note"></p>
+    <form id="chat-form" class="chat-form" autocomplete="off">
+      <input id="chat-input" maxlength="80" placeholder="Chào một tiếng…" enterkeyhint="send">
+      <button class="primary chat-send" type="submit">Gửi</button>
+    </form>
+  </section>
+
   <!-- map panel -->
   <section id="map-panel" class="panel map-panel" hidden aria-label="Bản đồ nghĩa địa">
     <div class="panel-head">

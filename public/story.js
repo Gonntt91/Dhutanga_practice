@@ -495,6 +495,16 @@ window.FINDS = [
     ] } } },
 
   // ---- everyone ----
+  { id: "f_hermit", role: "any", x: 205, y: 296, start: "s0", steps: {
+    s0: {
+      lines: ["Một tịnh thất nhỏ trên đồi, mái lá, sân đất quét sạch đến lạ. Cửa khép, một ngọn đèn dầu treo hiên, và tiếng chổi quét rất khẽ từ phía sau."],
+      choices: [
+        { label: "Gõ cửa nhẹ", delta: 0, next: "s1" },
+        { label: "Đứng chắp tay một lát rồi đi", delta: 1 },
+      ] },
+    s1: {
+      lines: ["Không ai ra mở. Từ trong vọng ra tiếng một người già, chậm rãi: “Đêm còn dài, cứ ngồi cho trọn. Sáng ta mở cửa.”"],
+      choices: [{ label: "Cúi đầu, lùi ra", delta: 1 }] } } },
   { id: "f_ruin", role: "any", x: 335, y: 1308, start: "s0", steps: {
     s0: {
       lines: ["Nhà hoang bên rìa nghĩa địa. Cửa không còn cánh, mái dột. Trong nhà tối hơn ngoài sân."],
