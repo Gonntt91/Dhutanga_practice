@@ -3,9 +3,12 @@
   const RECENT_MS = 12 * 60 * 60 * 1000; // "đêm nay" = last 12 hours
   const ARRIVE_DIST = 46;
   const STORE_KEY = "dhutanga.completed";
+  const MEM_KEY = "dhutanga.memory";   // things remembered across nights (clues, kindnesses)
+  const RUNS_KEY = "dhutanga.runs";    // how many nights have been finished
+  const FIND_DIST = 34;
   const DARKNESS = {
     "Chiều tàn": 0.42, "Chạng vạng": 0.6, "Đầu hôm": 0.72, "Canh hai": 0.84,
-    "Canh ba": 0.9, "Canh tư": 0.82, "Gà gáy": 0.68, "Rạng sáng": 0.45,
+    "Canh ba": 0.9, "Canh tư": 0.82, "Gà gáy": 0.68, "Rạng sáng": 0.45, "Sáng sớm": 0.1,
   };
 
   // How far from the character each role can look around (world units). The monk sits in the
@@ -35,7 +38,22 @@
     lastGesture: 0,
     lastSent: { t: 0, x: -1, y: -1, key: "" },
     completed: loadCompleted(),
+    vars: new Set(),      // per-night variables + remembered keys
+    found: new Set(),     // finds already examined tonight
+    findTarget: null,     // find the player is walking towards
+    findOpen: null,       // { find, step } while the card is showing
   };
+
+  function loadMem() {
+    try { return new Set(JSON.parse(localStorage.getItem(MEM_KEY) || "[]")); } catch { return new Set(); }
+  }
+  function remember(key) {
+    state.vars.add(key);
+    const mem = loadMem(); mem.add(key);
+    try { localStorage.setItem(MEM_KEY, JSON.stringify([...mem])); } catch {}
+  }
+  const clueCount = () => [...loadMem()].filter((k) => k.startsWith("c_")).length;
+  const runCount = () => { try { return Number(localStorage.getItem(RUNS_KEY)) || 0; } catch { return 0; } };
 
   function makeId() {
     try { return crypto.randomUUID(); } catch { return "p" + Math.random().toString(36).slice(2) + Date.now().toString(36); }
@@ -111,7 +129,9 @@
     for (const t of state.traces) if (now - t.at < RECENT_MS) set.add(t.kind);
     return set;
   }
-  const passes = (item, f) => (!item.if || f.has(item.if)) && (!item.unless || !f.has(item.unless));
+  const passes = (item, f) =>
+    (!item.if || f.has(item.if)) && (!item.unless || !f.has(item.unless)) &&
+    (!item.ifv || state.vars.has(item.ifv)) && (!item.unlessv || !state.vars.has(item.unlessv));
 
   // Mist replaces the visible meter: heavier when the character is troubled, thinner as it clears.
   // Monk and villager: higher meter = calmer. Ghost: lower "Chấp" = lighter.
@@ -226,6 +246,10 @@
 
   // ---------- picker ----------
   function renderPicker() {
+    const runs = runCount();
+    const note = $("night-note");
+    note.hidden = runs === 0;
+    if (runs) note.textContent = `Đây là đêm thứ ${runs + 1} bạn ở lại nghĩa địa. Có những điều của đêm trước vẫn còn ở đó.`;
     $("picker").hidden = false;
     $("sheet").hidden = true;
     $("walk-bar").hidden = true;
@@ -255,6 +279,11 @@
     state.sceneOpen = false;
     state.meter = STORY[role].meterStart;
     state.liveFlags.clear();
+    state.vars = loadMem();
+    state.found = new Set();
+    state.findTarget = null;
+    closeFind(true);
+    refreshFinds();
     $("whispers").replaceChildren();
     if (!state.soundOn) toggleSound(true);
     $("picker").hidden = true;
@@ -273,6 +302,8 @@
 
   function leaveRole() {
     stopWatch();
+    closeFind(true);
+    World.setFinds([]);
     state.role = null;
     state.sceneId = null;
     state.sceneOpen = false;
@@ -361,10 +392,58 @@
     state.meter = Math.max(0, Math.min(10, state.meter + (c.delta || 0)));
     if (c.trace) leaveTrace(c.trace);
     if (c.emit) gesture(c.emit, true);
+    if (c.set) state.vars.add(c.set);
+    if (c.remember) remember(c.remember);
     state.sceneId = c.next;
     $("whispers").replaceChildren();
     showWalkOrScene();
     sendPresence(true);
+  }
+
+  // ---------- finds: things lying around the graveyard ----------
+  const visibleFinds = () => FINDS.filter((f) => (f.role === state.role || f.role === "any") && !state.found.has(f.id));
+  function refreshFinds() { World.setFinds(state.role ? visibleFinds().map((f) => ({ id: f.id, role: f.role, x: f.x, y: f.y })) : []); }
+  function nearestFind(x, y) {
+    let best = null, bd = 34;
+    for (const f of visibleFinds()) { const d = Math.hypot(f.x - x, f.y - y); if (d < bd) { bd = d; best = f; } }
+    return best;
+  }
+  function openFind(f) {
+    state.findTarget = null;
+    World.stop();
+    state.findOpen = { find: f, step: f.start };
+    $("walk-bar").hidden = true;
+    $("find-card").hidden = false;
+    renderFind();
+    pushView();
+  }
+  function renderFind() {
+    const { find, step } = state.findOpen;
+    const st = find.steps[step];
+    if (st.clue) remember(st.clue);
+    const lines = $("find-lines"); lines.replaceChildren();
+    st.lines.forEach((t, i) => { const p = el("p", null, t); p.style.animationDelay = i * 0.3 + "s"; lines.appendChild(p); });
+    const box = $("find-choices"); box.replaceChildren();
+    for (const c of st.choices) {
+      const b = el("button", "choice", c.label);
+      b.type = "button";
+      if (c.trace) b.appendChild(el("span", "tag", "Để lại dấu vết cho người khác"));
+      b.addEventListener("click", () => {
+        state.meter = Math.max(0, Math.min(10, state.meter + (c.delta || 0)));
+        if (c.trace) leaveTrace(c.trace);
+        if (c.next) { state.findOpen.step = c.next; renderFind(); pushView(); }
+        else { state.found.add(find.id); closeFind(false); }
+      });
+      box.appendChild(b);
+    }
+  }
+  function closeFind(silent) {
+    state.findOpen = null;
+    $("find-card").hidden = true;
+    if (silent) return;
+    refreshFinds();
+    pushView();
+    showWalkOrScene();
   }
 
   // ---------- sit-and-note mini-game ----------
@@ -435,14 +514,26 @@
     if (ending.trace) leaveTrace(ending.trace);
     state.completed[state.role] = true;
     saveCompleted();
+    try { localStorage.setItem(RUNS_KEY, String(runCount() + 1)); } catch {}
     const roles = ["monk", "ghost", "villager"];
     if (roles.every((r) => state.completed[r])) {
       const box = el("div", "true-ending");
       TRUE_ENDING.forEach((t) => box.appendChild(el("p", null, t)));
       lines.appendChild(box);
+      if (clueCount() >= CLUE_TOTAL) {
+        const hb = el("div", "true-ending");
+        HANH_REVEAL.forEach((t) => hb.appendChild(el("p", null, t)));
+        lines.appendChild(hb);
+      }
     } else {
       const left = roles.filter((r) => !state.completed[r]).map((r) => ROLE_INFO[r].name.toLowerCase());
       lines.appendChild(el("p", "left-hint", `Còn ${left.join(" và ")} chưa đi qua đêm này. Mỗi đôi mắt thấy một phần khác.`));
+    }
+    const n = clueCount();
+    if (n < CLUE_TOTAL) {
+      lines.appendChild(el("p", "left-hint", n === 0
+        ? "Quanh nghĩa địa còn nhiều thứ bị bỏ quên, những đốm sáng nhỏ trên đất. Hãy kéo màn hình để nhìn quanh. Có một câu chuyện nằm trong đó."
+        : `Bạn đã nhặt được ${n} trong ${CLUE_TOTAL} mảnh về cô bé Hạnh. Còn những mảnh nằm đâu đó trong nghĩa địa, ở chỗ mỗi vai mới thấy.`));
     }
     const again = el("button", "choice", "Chọn một vai khác");
     again.type = "button";
@@ -523,6 +614,13 @@
       g.fillStyle = ROLE_DOT[o.role] || "#dcd5c5";
       g.beginPath(); g.arc(o.x * sx, o.y * sy, 3.2, 0, 7); g.fill();
     }
+    // things left lying around (only those within sight)
+    g.fillStyle = "rgba(220,213,197,0.75)";
+    for (const f of m.finds) {
+      if (!inRange(f.y)) continue;
+      const fx = f.x * sx, fy = f.y * sy;
+      g.beginPath(); g.moveTo(fx, fy - 3.5); g.lineTo(fx + 2.5, fy); g.lineTo(fx, fy + 3.5); g.lineTo(fx - 2.5, fy); g.closePath(); g.fill();
+    }
     // you
     g.strokeStyle = "#dcd5c5"; g.lineWidth = 1.5;
     g.beginPath(); g.arc(m.player.x * sx, m.player.y * sy, 5, 0, 7); g.stroke();
@@ -562,17 +660,29 @@
   // ---------- boot ----------
   World.init($("world"), (x, y) => {
     if (!state.role) return;
+    if (state.findOpen) return;
     if (state.sceneOpen) {
       // tapping the world while reading folds the sheet so the scene is visible
-      setCollapsed(true);
+      if (!$("sheet").classList.contains("collapsed")) { setCollapsed(true); return; }
+      // sheet already folded: tapping a lying-around thing steps out of the scene to go and look
+      const near = nearestFind(x, y);
+      if (!near) return;
+      state.sceneOpen = false;
+      $("sheet").hidden = true;
+      state.findTarget = near;
+      World.walkTo(near.x, near.y + 8);
+      pushView();
       return;
     }
-    World.walkTo(x, y);
+    const hit = nearestFind(x, y);
+    state.findTarget = hit;
+    if (hit) World.walkTo(hit.x, hit.y + 8); else World.walkTo(x, y);
   });
 
   $("walk-btn").addEventListener("click", () => {
     const sc = currentScene();
     if (!sc) return;
+    state.findTarget = null;
     const place = World.PLACES[sc.place];
     World.walkTo(place.x, place.y + 6);
   });
@@ -587,7 +697,13 @@
 
   // arrival + presence loop
   setInterval(() => {
-    if (state.role && !state.sceneOpen && distanceToPlace() <= ARRIVE_DIST) openScene();
+    if (state.role && !state.sceneOpen && !state.findOpen) {
+      const t = state.findTarget;
+      if (t) {
+        const p = World.getPlayer();
+        if (Math.hypot(p.x - t.x, p.y - (t.y + 8)) <= FIND_DIST) { openFind(t); }
+      } else if (distanceToPlace() <= ARRIVE_DIST) openScene();
+    }
     sendPresence(false);
   }, 200);
   setInterval(renderTraces, 60000);

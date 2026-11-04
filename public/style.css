@@ -87,6 +87,8 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--lantern); o
   transition: transform 0.35s ease;
 }
 .sheet.collapsed .sheet-body { display: none; }
+.find-card { z-index: 4; padding-top: 14px; }
+.find-label { margin-bottom: 8px; color: var(--ash-dim); }
 .sheet-handle {
   display: grid; gap: 8px; width: 100%; background: none; border: 0; text-align: left;
   padding: 8px max(16px, env(safe-area-inset-right, 0px)) 10px max(16px, env(safe-area-inset-left, 0px));

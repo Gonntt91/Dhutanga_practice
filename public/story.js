@@ -27,6 +27,15 @@ window.TRACE_TEXT = {
   vigil: [
     "ngồi trọn đêm, không nằm xuống",
   ],
+  keepsake: [
+    "để một món đồ cũ ra chỗ có thể thấy",
+  ],
+  lamp: [
+    "đặt một ngọn đèn nhỏ ở chân bụi tre",
+  ],
+  bowl: [
+    "để lại một bát nước và nắm cơm bên đường mòn",
+  ],
 };
 
 window.ROLE_INFO = {
@@ -55,16 +64,65 @@ window.ROLE_INFO = {
 
 window.STORY = {
   monk: {
-    start: "m1",
+    start: "a0",
     meterStart: 5,
     scenes: {
+      a0: {
+        time: "Sáng sớm",
+        place: "village",
+        lines: [
+          "Trời chưa sáng hẳn, sương còn đọng trên mái ngói. Thầy ôm bát ra ngõ, chân đất, mắt nhìn xuống. Khất thực là không xin, không nói, chỉ đứng yên trước cửa. Ai cho thì nhận, ai không cho thì đi tiếp.",
+          "Ngõ có bảy nhà. Cái bụng thầy đi trước thầy nửa bước.",
+        ],
+        choices: [
+          { unlessv: "v_h1", label: "Dừng trước nhà có tiếng trẻ con", delta: 0, next: "a1", set: "v_h1" },
+          { unlessv: "v_h2", label: "Dừng trước nhà có con chó vàng ngồi chình ình ở cổng", delta: 0, next: "a2", set: "v_h2" },
+          { label: "Đi tới nhà cuối ngõ, nhà thứ bảy", delta: 0, next: "a3" },
+        ],
+      },
+      a1: {
+        time: "Sáng sớm",
+        place: "village",
+        lines: [
+          "Một đứa bé chạy ra, tay nắm chặt cục xôi to hơn cả bàn tay nó. Nó đặt vào bát bằng hai tay, nghiêm trang như đang làm đại lễ.",
+          "Trong nhà, tiếng mẹ nó vọng ra: “Đừng có làm rơi! Đó là phần ăn sáng của con đó!”",
+          "Đứa bé nhìn cục xôi, nhìn thầy, rồi nhìn lại cục xôi. Thầy cố nhịn cười.",
+        ],
+        choices: [
+          { label: "Cúi đầu cảm ơn, đi tiếp", delta: 1, next: "a0" },
+        ],
+      },
+      a2: {
+        time: "Sáng sớm",
+        place: "village",
+        lines: [
+          "Con chó vàng ngồi chặn đúng giữa cổng, nhìn thầy, nhìn bát, rồi nhìn thầy lần nữa. Nó có vẻ nghĩ đây là một cuộc thương lượng.",
+          "Chủ nhà không thấy đâu. Thầy đứng yên ba phút. Con chó cũng đứng yên ba phút. Không ai nhường ai.",
+        ],
+        choices: [
+          { label: "Mỉm cười, đi tiếp. Thầy không có gì để thương lượng", delta: 1, next: "a0" },
+          { label: "Đứng thêm một lát, xem ai thắng", delta: 0, next: "a0" },
+        ],
+      },
+      a3: {
+        time: "Sáng sớm",
+        place: "village",
+        lines: [
+          { ifv: "v_alms", text: "Nhà thứ bảy. Người đàn ông vẫn đứng ngoài ngõ, nhưng hôm nay ông không chặn. Ông nhìn cái bát rất lâu rồi quay vào nhà. Chưa phải là cho, nhưng cũng chưa phải là đuổi." },
+          { unlessv: "v_alms", text: "Nhà thứ bảy. Một người đàn ông đứng chắn ngõ, tay chống nạnh: “Đi chỗ khác. Thời này sư giả nhiều lắm.”" },
+          "Thầy không cãi, không giải thích. Thầy cúi đầu, quay đi.",
+        ],
+        choices: [
+          { label: "Đi tiếp. Bát nhẹ, nhưng bước chân không nặng", delta: 1, next: "m1" },
+          { label: "Đi tiếp, nhưng câu nói ấy đi theo", delta: -1, next: "m1" },
+        ],
+      },
       m1: {
         time: "Chiều tàn",
         place: "gate",
         lines: [
-          "Bát còn nửa vắt cơm nguội. Sáng nay đi khất thực qua bảy nhà. Hai nhà đặt cơm, bốn nhà đóng cửa, một nhà thả chó ra chào. Con chó thì không có ý xấu, nó chỉ muốn làm quen.",
-          "Nhà thứ bảy, một người đàn ông đứng chắn ngõ: “Đi chỗ khác. Thời này sư giả nhiều lắm.”",
-          "Mặt trời xuống sau rặng tre. Câu nói ấy vẫn còn đâu đó trong ngực.",
+          "Cả ngày thầy đi, trong bát chỉ còn nửa vắt cơm nguội.",
+          "Mặt trời xuống sau rặng tre. Câu nói ở nhà thứ bảy vẫn còn đâu đó trong ngực.",
         ],
         choices: [
           { label: "Nghĩ lại câu nói ấy, thấy nóng mặt", delta: -1, next: "m2" },
@@ -91,9 +149,11 @@ window.STORY = {
         lines: [
           "Trước khi ngồi, thầy mở bát. Nửa vắt cơm đã khô cứng.",
           "Bên cạnh có một ngôi mộ thấp, không bia, cỏ mọc kín.",
+          { if: "keepsake", text: "Sát mộ có chiếc nón lá cũ, mới lúc nãy chưa thấy. Ai đó vừa để nó ra chỗ này." },
+          { if: "lamp", text: "Phía bụi tre có ngọn đèn nhỏ ai vừa đặt, ánh sáng ấm đủ để thấy đường." },
         ],
         choices: [
-          { label: "Đặt cơm lên ngôi mộ không tên, khấn thí thực", delta: 1, next: "m4", trace: { kind: "offering", variant: 0 } },
+          { label: "Đặt cơm lên ngôi mộ không tên, khấn thí thực", delta: 1, next: "m4", trace: { kind: "offering", variant: 0 }, remember: "m_offered" },
           { label: "Giữ lại cho sáng mai", delta: 0, next: "m4" },
         ],
       },
@@ -187,6 +247,7 @@ window.STORY = {
           "Bà đứng ở chỗ đất này đã lâu lắm, lâu đến mức không còn đếm ngày.",
           "Người ta đi ngang mà không nhìn. Có ai đó cắm nhang ở mộ bên cạnh, mộ của bà thì không.",
           "Bà nhớ mẹt xôi, nhớ cái nón, nhớ con bé Hạnh đứng chờ ở cửa.",
+          { ifv: "m_offered", text: "Trên mộ bên cạnh còn vệt cơm khô của đêm trước. Bà nhìn nó rất lâu." },
         ],
         choices: [
           { label: "Gọi tên con gái", delta: 1, next: "g2" },
@@ -199,6 +260,7 @@ window.STORY = {
         lines: [
           "Một người áo nâu sồng bước vào, chân đất, tay ôm bát. Ông ta không cắm nhang, không khấn, cứ thế ngồi xuống giữa các ngôi mộ.",
           { if: "chime", text: "Một tiếng chuông nhỏ vang lên. Đã lâu lắm rồi không ai rung chuông ở đây." },
+          { if: "lamp", text: "Chân bụi tre có ngọn đèn nhỏ ai vừa đặt. Ánh sáng ấm, bà không dám lại gần." },
           "Bà thấy khó chịu. Đây là chỗ của bà.",
         ],
         choices: [
@@ -309,6 +371,7 @@ window.STORY = {
         lines: [
           { if: "offering", text: "Ông thấy nửa vắt cơm đặt trên ngôi mộ thấp không bia. Đó là mộ bà Sáu bán xôi, chết năm nước lớn. Hồi nhỏ ông hay ăn chịu xôi của bà, chưa trả hết." },
           { unless: "offering", text: "Ông sư không ăn gì cả. Từ trưa tới giờ ông ta chưa ăn." },
+          { if: "keepsake", text: "Cạnh mộ có chiếc nón lá cũ. Ông thấy quen quen, mà không nhớ đã thấy ở đâu." },
           "Ông Tư đã bò lại gần hơn từ lúc nào, giờ ngồi ôm gối sau một ngôi mộ. Không hiểu sao chân không đi về được.",
         ],
         choices: [
@@ -324,7 +387,7 @@ window.STORY = {
           "Gà gáy ở xóm. Ông sư đứng dậy.",
         ],
         choices: [
-          { label: "Về nhà nấu cơm, mang ra cổng đặt vào bát ông sư", delta: 2, next: "end", trace: { kind: "alms", variant: 0 } },
+          { label: "Về nhà nấu cơm, mang ra cổng đặt vào bát ông sư", delta: 2, next: "end", trace: { kind: "alms", variant: 0 }, remember: "v_alms" },
           { label: "Thắp một nén nhang ở ngôi mộ không tên", delta: 1, next: "end", trace: { kind: "incense", variant: 0 } },
           { label: "Về ngủ, không kể với ai", delta: -1, next: "end" },
         ],
@@ -348,4 +411,112 @@ window.TRUE_ENDING = [
   "Tiếng lá mà thầy Tịnh tưởng là bước chân, là bà Sáu đang làm ồn vì sợ mất chỗ. Vệt sáng mà ông Tư thấy, là bà đi ngang. Nửa vắt cơm trên ngôi mộ không tên là của bà, và món nợ xôi là của ông.",
   "Một đêm, ba người, không ai thấy hết.",
   "Linh tại ngã, bất linh tại ngã.",
+];
+
+
+// Things lying around the graveyard. role: who sees it ("any" = everyone). Tapping one walks
+// the player there and opens a short card. A step may reveal a clue (kept across nights),
+// and a choice may change the meter, leave a trace for others, or go to another step.
+window.FINDS = [
+  // ---- monk ----
+  { id: "fm_unnamed", role: "monk", x: 262, y: 1042, start: "s0", steps: { s0: {
+    lines: ["Ngôi mộ thấp không bia, cỏ mọc kín. Không ai nhớ tên người nằm đây, nhưng đất ở đây vẫn ẩm và mềm như mọi nơi."],
+    choices: [
+      { label: "Thắp một nén nhang, khấn thí thực", delta: 1, trace: { kind: "incense", variant: 0 } },
+      { label: "Đứng lặng một lát rồi đi", delta: 0 },
+    ] } } },
+  { id: "fm_bowl", role: "monk", x: 118, y: 955, start: "s0", steps: { s0: {
+    clue: "c_bat",
+    lines: ["Một cái bát sứ sứt miệng nằm nghiêng trong cỏ. Đáy bát có khắc nét chữ run run: “Sáu, cho Hạnh”."],
+    choices: [
+      { label: "Lau sạch, đặt ngay ngắn bên mộ", delta: 1 },
+      { label: "Để nguyên chỗ cũ", delta: 0 },
+    ] } } },
+  { id: "fm_incense", role: "monk", x: 292, y: 828, start: "s0", steps: { s0: {
+    lines: ["Một bó nhang đã cháy hết cắm trước bia vôi, tro còn nguyên hình từng nén. Hôm nay là ngày giỗ của ai đó, và người ấy đã đến rồi đi."],
+    choices: [
+      { label: "Tụng một đoạn kinh Từ cho người nằm đây", delta: 1, trace: { kind: "chant", variant: 0 } },
+      { label: "Chắp tay rồi đi", delta: 0 },
+    ] } } },
+
+  // ---- ghost ----
+  { id: "fg_hat", role: "ghost", x: 150, y: 692, start: "s0", steps: {
+    s0: {
+      clue: "c_non",
+      lines: ["Chiếc nón lá mục nằm dưới gốc gạo. Quai nón buộc bằng một nút thắt lạ, đúng kiểu bà vẫn thắt cho con gái."],
+      choices: [
+        { label: "Đội nón lên, như ngày xưa", delta: 1, next: "s1" },
+        { label: "Lặng lẽ đặt nón ra chỗ có thể thấy", delta: 0, trace: { kind: "keepsake", variant: 0 } },
+      ] },
+    s1: {
+      lines: ["Trong lòng nón có thêu một chữ H bằng chỉ đỏ đã phai. Bà nhớ là bà thêu, và nhớ là bà thêu cho ai."],
+      choices: [
+        { label: "Gỡ nón ra, ôm vào lòng", delta: 1, trace: { kind: "keepsake", variant: 0 } },
+      ] } } },
+  { id: "fg_sandal", role: "ghost", x: 272, y: 1236, start: "s0", steps: {
+    s0: {
+      clue: "c_dep",
+      lines: ["Một chiếc dép nhỏ, mòn gót. Chiếc kia không biết ở đâu."],
+      choices: [
+        { label: "Tìm chiếc còn lại", delta: 1, next: "s1" },
+        { label: "Đặt dép lên mộ, rồi đứng yên", delta: -1 },
+      ] },
+    s1: {
+      lines: ["Không có. Nhưng bà nhớ: con bé đi một chiếc dép vào ngày nước lớn, chạy theo bà đến tận cửa. Chắc có ai đó đã nhặt chiếc kia về."],
+      choices: [{ label: "Đặt chiếc này lại chỗ cũ", delta: -1 }] } } },
+  { id: "fg_tray", role: "ghost", x: 132, y: 1122, start: "s0", steps: { s0: {
+    lines: ["Cái mẹt tre mục, nan gãy. Bà nhớ mùi xôi gấc đỏ, nhớ nắng sớm trên mẹt, nhớ tiếng người mua xôi mặc cả mà vẫn cười."],
+    choices: [
+      { label: "Hít thật sâu mùi ngày cũ", delta: 1 },
+      { label: "Quay đi, đừng nhớ nữa", delta: -1 },
+    ] } } },
+
+  // ---- villager ----
+  { id: "fv_pot", role: "villager", x: 262, y: 1362, start: "s0", steps: { s0: {
+    lines: ["Cái nồi đồng nhỏ bị bỏ quên, đáy còn dính cháy xôi. Ông nhận ra nồi của bà Sáu. Ông còn nợ bà ba bát xôi."],
+    choices: [
+      { label: "Nhẩm tính: ba bát, giá xôi bây giờ đã khác, chắc phải trả nhiều hơn", delta: 1 },
+      { label: "Lẩm bẩm xin lỗi bà", delta: 2 },
+    ] } } },
+  { id: "fv_scarf", role: "villager", x: 96, y: 1558, start: "s0", steps: { s0: {
+    clue: "c_vo",
+    lines: ["Chiếc khăn mỏ quạ vắt trên rào tre. Ông nhận ra màu khăn: của vợ ông.", "Mỗi năm vào ngày nước lớn, bà nấu một mâm xôi, không nói cho ai, rồi đi mất cả buổi chiều. Ông chưa bao giờ hỏi."],
+    choices: [
+      { label: "Lần này ông thấy muốn hỏi", delta: 2 },
+      { label: "Gỡ khăn, giấu vào áo, giả như chưa thấy", delta: 0 },
+    ] } } },
+  { id: "fv_lamp", role: "villager", x: 232, y: 1592, start: "s0", steps: { s0: {
+    lines: ["Chân bụi tre có một chỗ đất bằng, vừa đủ để đặt đèn."],
+    choices: [
+      { label: "Đặt ngọn đèn nhỏ lại đó cho người đi ngang", delta: 1, trace: { kind: "lamp", variant: 0 } },
+      { label: "Giữ đèn, tắt đi cho đỡ sợ", delta: 0 },
+    ] } } },
+
+  // ---- everyone ----
+  { id: "f_ruin", role: "any", x: 335, y: 1308, start: "s0", steps: {
+    s0: {
+      lines: ["Nhà hoang bên rìa nghĩa địa. Cửa không còn cánh, mái dột. Trong nhà tối hơn ngoài sân."],
+      choices: [
+        { label: "Bước vào", delta: 0, next: "s1" },
+        { label: "Đứng ngoài nhìn thôi", delta: 0 },
+      ] },
+    s1: {
+      lines: ["Trong nhà chỉ có một cái bàn, ba cái bát úp và một bức ảnh úp mặt xuống. Mạng nhện giăng như màn."],
+      choices: [
+        { label: "Lật bức ảnh lên", delta: 0, next: "s2" },
+        { label: "Để yên, ra ngoài", delta: 0 },
+      ] },
+    s2: {
+      clue: "c_anh",
+      lines: ["Hai người đứng bên cửa: người phụ nữ gánh quang gánh và một bé gái níu vạt áo. Sau ảnh có dòng chữ: “Sáu và Hạnh, trước nước lớn”."],
+      choices: [{ label: "Đặt ảnh lại ngay ngắn, úp xuống như cũ", delta: 1 }] } } },
+];
+
+window.CLUE_TOTAL = 5;
+
+window.HANH_REVEAL = [
+  "Bạn đã nhặt đủ những thứ bị bỏ quên: cái nón thêu chữ H, chiếc dép nhỏ một bên, cái bát khắc “Sáu, cho Hạnh”, bức ảnh trước ngày nước lớn, và chiếc khăn mỏ quạ trên rào tre.",
+  "Cô bé Hạnh năm ấy đứng chờ ở cửa không hề mất. Cả xóm đã nuôi em lớn, mỗi nhà một bát cơm. Em lớn lên, làm vợ người khó tính nhất xóm, và mỗi năm vào ngày nước lớn, em nấu một mâm xôi mà không nói với ai.",
+  "Bà Sáu chờ con gái về. Con gái vẫn về, mỗi năm một lần, nhưng bà đứng ở gốc gạo và chưa bao giờ nhìn ra.",
+  "Chỉ cần có ai đó nói cho bà biết.",
 ];

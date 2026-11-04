@@ -82,3 +82,12 @@ Thêm loại dấu vết mới thì sửa ở hai chỗ: `TRACE_TEXT` trong `sto
 - Phòng riêng theo mã, để một nhóm bạn chơi cùng một đêm.
 - Deploy lên Render / Fly / VPS. SSE chạy ổn sau Nginx nếu tắt buffering (`proxy_buffering off`).
 - Nhờ một vị thầy duyệt lời văn về hạnh đầu đà.
+
+
+## Thêm trên branch `experiment/qls-ideas`
+
+- **Nhìn quanh và bản đồ:** kéo màn hình để nhìn chỗ khác, nút *Bản đồ* để chạm xem một vùng. Tầm nhìn khác nhau theo vai (`LOOK_RANGE` trong `app.js`).
+- **Vật bị bỏ quên** (`FINDS` trong `story.js`): đốm sáng nhỏ trên đất, chạm để đi tới và mở một thẻ ngắn. Một số mảnh là manh mối về cô bé Hạnh, giữ lại qua các đêm (`localStorage`). Ghép đủ 5 mảnh thì mở thêm đoạn kết.
+- **Ký ức qua các đêm:** lựa chọn có `remember: "khóa"` được nhớ lại, và dòng truyện có `ifv` / `unlessv` đọc lại nó ở đêm sau.
+- **Buổi sáng khất thực** (nhà sư), **nhà hoang** ở rìa nghĩa địa, ma ngẫu nhiên ban đêm, cú, quạ, chó sủa xa.
+- Dấu vết mới giữa người chơi: `keepsake` (món đồ cũ), `lamp` (đèn nhỏ), `bowl`. Thêm loại mới thì sửa `TRACE_TEXT` và `TRACE_KINDS`.

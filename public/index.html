@@ -74,11 +74,21 @@
     </div>
   </section>
 
+  <!-- find card: a small side scene when the player examines something lying around -->
+  <section id="find-card" class="sheet find-card" hidden aria-live="polite">
+    <div class="sheet-body">
+      <div class="label find-label">Một thứ bị bỏ quên</div>
+      <div id="find-lines" class="lines"></div>
+      <div id="find-choices" class="choices"></div>
+    </div>
+  </section>
+
   <!-- role picker -->
   <section id="picker" class="picker">
     <div class="picker-inner">
       <h1 class="display">Đêm nay, bạn là ai?</h1>
       <p class="lede">Một đêm ở nghĩa địa đầu làng, nhìn qua ba đôi mắt. Người khác đang chơi cùng lúc sẽ hiện lên trong cảnh, và việc họ làm có thể đổi điều bạn thấy.</p>
+      <p id="night-note" class="hint" hidden></p>
       <label class="label" for="nick">Tên hiển thị (không bắt buộc)</label>
       <input id="nick" maxlength="24" autocomplete="off" placeholder="Một người lạ">
       <div id="role-list" class="roles"></div>

@@ -5,6 +5,7 @@ window.World = (() => {
   const H = 2000;
 
   const PLACES = {
+    village: { x: 200, y: 2040, name: "Ngõ làng" },
     gate: { x: 200, y: 1850, name: "Cổng nghĩa địa" },
     bamboo: { x: 95, y: 1490, name: "Bụi tre" },
     graves: { x: 222, y: 1065, name: "Giữa các ngôi mộ" },
@@ -12,7 +13,7 @@ window.World = (() => {
   };
   const UNNAMED = { x: 262, y: 1032 };
   const SPAWN = {
-    monk: { x: 205, y: 1950 },
+    monk: { x: 200, y: 2200 },
     ghost: { x: 160, y: 650 },
     villager: { x: 172, y: 1965 },
   };
@@ -95,6 +96,7 @@ window.World = (() => {
       decor.push({ kind: "tree", x, y, s: 0.7 + r() * 0.5 });
     }
     decor.push({ kind: "gate", x: 200, y: 1795 });
+    decor.push({ kind: "ruin", x: 335, y: 1300 });
     decor.push({ kind: "shrine", x: 205, y: 235 });
     for (const [x, y] of [[78, 1975], [325, 1962], [52, 2110], [318, 2135], [92, 2290], [340, 2310]]) decor.push({ kind: "house", x, y });
     for (const [x, y] of [[20, 2050], [372, 2060], [140, 2200], [258, 2240], [30, 2380], [380, 2420]]) decor.push({ kind: "tree", x, y, s: 0.8 + r() * 0.4 });
@@ -109,7 +111,7 @@ window.World = (() => {
   const owl = { on: false, x: 0, y: 0, dir: 1, hooted: false, wait: 10 + Math.random() * 8, phase: 0 };
   function updateOwl(dt) {
     if (!owl.on) {
-      if (!view.role) return;
+      if (!view.role || view.darkness < 0.5) return;
       owl.wait -= dt;
       if (owl.wait > 0) return;
       owl.on = true; owl.hooted = false;
@@ -191,6 +193,25 @@ window.World = (() => {
     botWait = 35 + Math.random() * 50;
   }
   const botAlpha = (b) => Math.max(0, Math.min(1, b.age / 1.6, (b.life - b.age) / 2.2)) * 0.55;
+
+  // Things left lying around that the player can walk to and pick over (set by the app).
+  let finds = [];
+  function setFinds(list) { finds = list; }
+  const FIND_TINT = { monk: "208,138,77", ghost: "159,210,193", villager: "230,197,111", any: "200,205,205" };
+  function drawFinds() {
+    for (const f of finds) {
+      if (f.y < camY - 30 || f.y > camY + viewH + 30) continue;
+      const pulse = 0.5 + 0.5 * Math.sin(time * 2.2 + f.x);
+      const c = FIND_TINT[f.role] || FIND_TINT.any;
+      const g = ctx.createRadialGradient(f.x, f.y - 4, 0, f.x, f.y - 4, 15);
+      g.addColorStop(0, `rgba(${c},${0.55 + 0.3 * pulse})`);
+      g.addColorStop(1, `rgba(${c},0)`);
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.arc(f.x, f.y - 4, 15, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = `rgba(${c},0.95)`;
+      ctx.beginPath(); ctx.moveTo(f.x, f.y - 8); ctx.lineTo(f.x + 3, f.y - 4); ctx.lineTo(f.x, f.y); ctx.lineTo(f.x - 3, f.y - 4); ctx.closePath(); ctx.fill();
+    }
+  }
 
   // A crow: faster, jagged wings, caws harshly a few times while crossing.
   const crow = { on: false, x: 0, y: 0, dir: 1, called: false, wait: 35 + Math.random() * 25, phase: 0, yRel: 0.15 };
@@ -310,7 +331,7 @@ window.World = (() => {
   function setPlayer(x, y) { look.on = false; player.x = x; player.y = y; player.tx = null; player.moving = false; camY = clampCam(y - viewH * view.anchor); }
   function walkTo(x, y) {
     player.tx = Math.max(12, Math.min(W - 12, x));
-    player.ty = Math.max(60, Math.min(H - 20, y));
+    player.ty = Math.max(60, Math.min(2340, y));
   }
   function stop() { player.tx = null; player.moving = false; }
   function getPlayer() { return { x: player.x, y: player.y, moving: player.moving, nx: player.x / W, ny: player.y / H }; }
@@ -347,7 +368,7 @@ window.World = (() => {
     const pts = [];
     for (const o of others.values()) pts.push({ x: o.rx, y: o.ry, role: o.role });
     return {
-      W, H, PLACES, path: PATH, others: pts, camY, viewH,
+      W, H, PLACES, path: PATH, others: pts, finds: finds.map((f) => ({ x: f.x, y: f.y })), camY, viewH,
       player: { x: player.x, y: player.y }, range: view.lookRange, view: view.role,
     };
   }
@@ -587,6 +608,22 @@ window.World = (() => {
     ctx.fillStyle = "#1e2320"; ctx.fill();
   }
 
+  // Abandoned house at the graveyard's edge: no light, broken roof, empty doorway.
+  function drawRuin(d) {
+    const { x, y } = d;
+    shadow(x, y, 34);
+    ctx.fillStyle = "#1a201d";
+    ctx.fillRect(x - 28, y - 30, 56, 30);
+    ctx.fillStyle = "#0a0e0d";
+    ctx.fillRect(x - 7, y - 22, 14, 22);
+    ctx.fillStyle = "#222a26";
+    ctx.beginPath();
+    ctx.moveTo(x - 34, y - 30); ctx.lineTo(x - 8, y - 48); ctx.lineTo(x + 2, y - 42);
+    ctx.lineTo(x + 10, y - 49); ctx.lineTo(x + 34, y - 30); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = "#0a0e0d"; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(x - 2, y - 41); ctx.lineTo(x + 2, y - 34); ctx.lineTo(x - 1, y - 30); ctx.stroke();
+  }
+
   function drawHouse(d, lights) {
     const { x, y } = d;
     shadow(x, y, 32);
@@ -713,6 +750,7 @@ window.World = (() => {
         case "gate": drawGate(it); break;
         case "shrine": drawShrine(it); break;
         case "house": drawHouse(it, lights); break;
+        case "ruin": drawRuin(it); break;
         case "char": drawCharacter(it, lights, viewerIsGhost); break;
         case "ghostbot": drawGhost(it.x, it.y, it.phase, it.alpha, lights); break;
       }
@@ -752,6 +790,7 @@ window.World = (() => {
 
     // above darkness: warm glows, fireflies, ripples, labels, marker
     ctx.setTransform(k, 0, 0, k, 0, -camY * k);
+    drawFinds();
     drawOwl();
     drawCrow();
     ctx.globalCompositeOperation = "lighter";
@@ -819,5 +858,5 @@ window.World = (() => {
     return role && window.ROLE_INFO ? ROLE_INFO[role].name : "";
   }
 
-  return { lookAt, resetLook, isLooking, getMap, W, H, PLACES, SPAWN, init, setView, setPlayer, walkTo, stop, getPlayer, setOthers, ripple };
+  return { setFinds, lookAt, resetLook, isLooking, getMap, W, H, PLACES, SPAWN, init, setView, setPlayer, walkTo, stop, getPlayer, setOthers, ripple };
 })();
