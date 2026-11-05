@@ -9,19 +9,19 @@ test("hooks are deterministic per runId and role-specific", () => {
   const r = R();
   for (const role of ["monk", "villager", "ghost"]) {
     assert.equal(r.hookFor(role, "run-abc"), r.hookFor(role, "run-abc"));
-    assert.ok(r.HOOKS[role].length >= 6);
+    assert.ok(r.HOOKS[role].length >= 3);
     const seen = new Set();
     for (let i = 0; i < 60; i++) seen.add(r.hookFor(role, "run" + i));
     assert.ok(seen.size > 1);
-    for (const s of seen) assert.ok(r.HOOKS[role].includes(s));
+    for (const s of seen) assert.ok(r.HOOKS[role].some((h) => h.text === s));
   }
-  assert.equal(r.HOOKS.monk.filter((h) => r.HOOKS.ghost.includes(h)).length, 0);
+  assert.equal(r.HOOKS.monk.filter((h) => r.HOOKS.ghost.some((g) => g.text === h.text)).length, 0);
   assert.equal(typeof r.hookFor("nope", "x"), "string");
 });
 
 test("no pressure wording or 'Bạn' in hooks and stories", () => {
   const r = R();
-  const all = [...Object.values(r.HOOKS).flat(), ...Object.values(r.AWAY_STORIES).flat().flat()];
+  const all = [...Object.values(r.HOOKS).flat().flatMap((h) => [h.text, ...h.payoff]), ...Object.values(r.AWAY_STORIES).flat().flat()];
   for (const s of all) { assert.ok(!/đừng bỏ lỡ|Bạn/i.test(s), s); }
 });
 

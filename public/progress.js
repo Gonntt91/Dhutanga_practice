@@ -33,6 +33,9 @@ window.Progress = (() => {
       const next = create({ role, story, spawn, day: Math.max(1, num(cp.day, 1)) + 1 });
       // what the character was doing while the player was away is shown once on return, then cleared
       if (cp.away && typeof cp.away === "object") next.returnFrom = cp.away;
+      // the promise made at the end of this night is kept for the next one only
+      const np = cp.nextPromise;
+      if (np && typeof np.id === "string" && np.day === cp.day) next.promise = { id: np.id, day: np.day };
       return { mode: "newnight", cp: next };
     }
     const b = bounds || { minX: -Infinity, maxX: Infinity, minY: -Infinity, maxY: Infinity };

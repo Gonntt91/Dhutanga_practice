@@ -90,13 +90,13 @@ window.Mind = (() => {
   const BAD = [["tham", "Tham"], ["san", "Sân"], ["si", "Si"]];
 
   // ---------- saved state ----------
-  function fresh() { return { carita: null, stats: null, cards: {}, quest: { step: "start", hit: false }, q: {}, items: [], deva: { pity: 0, last: 0, seen: 0 }, milestones: {}, msCounts: {} }; }
+  function fresh() { return { carita: null, stats: null, cards: {}, quest: { step: "start", hit: false }, q: {}, items: [], deva: { pity: 0, last: 0, seen: 0 }, milestones: {}, msCounts: {}, village: { deeds: {} } }; }
   function load() {
     try { const s = JSON.parse(Save.get(KEY) || "null"); if (s && s.cards) return { ...fresh(), ...s }; } catch {}
     return fresh();
   }
   // Older saves lack the milestone maps.
-  const ensure = () => { if (!S.q) S.q = {}; if (!S.milestones) S.milestones = {}; if (!S.msCounts) S.msCounts = {}; };
+  const ensure = () => { if (!S.q) S.q = {}; if (!S.milestones) S.milestones = {}; if (!S.msCounts) S.msCounts = {}; if (!S.village) S.village = {}; if (!S.village.deeds) S.village.deeds = {}; };
   let S = load();
   ensure();
   const save = () => Save.set(KEY, JSON.stringify(S));
@@ -479,7 +479,7 @@ window.Mind = (() => {
         label: "Nhà ông Tư",
         lines: ["Ông Tư ngượng ngùng nhận nắm rau.", "“Con Vàng nhà tôi dữ quá, xin lỗi nhé.”", "Con chó ngửi tay bạn, vẫy đuôi."],
         choices: [{ label: "Tiếp", fn: () => {
-          S.quest.step = "monk"; dropItem("rau_ma"); save(); closeSheet();
+          S.quest.step = "monk"; dropItem("rau_ma"); deed("tu_herbs"); save(); closeSheet();
           award("khong_san", "Người này đem rau sang cho chính nhà có con chó vừa cắn mình.", afterGift);
         } }],
       });
@@ -490,12 +490,14 @@ window.Mind = (() => {
         label: "Giếng làng",
         lines: ["Bà cụ cười móm mém, nhận nắm rau.", "“Lành thay, con.”"],
         choices: [{ label: "Tiếp", fn: () => {
-          S.quest.step = "monk"; dropItem("rau_ma"); save(); closeSheet();
+          S.quest.step = "monk"; dropItem("rau_ma"); deed("granny_herbs"); save(); closeSheet();
           award("khong_tham", "Người này hái rau rồi đem cho bà cụ, không giữ lại.", afterGift);
         } }],
       });
     }
   }
+  // village memory: the day comes from the app; a deed is remembered from the next night on
+  const deed = (id) => { try { window.Village && Village.record(id, api && api.day ? api.day() : 1); } catch (e) { console.error(e); } };
   function afterGift() { cooldownUntil = Date.now() + 2500; api.toast("Trời tối dần. Giữa nghĩa địa có một vị sư đang ngồi."); api.refresh(); }
 
   function atMonk() {
@@ -562,7 +564,7 @@ window.Mind = (() => {
   function sitDone(noted, lost) {
     grow("niem", 4 * rand(0.8, 1.2)); grow("dinh", 2 * rand(0.8, 1.2)); grow("si", -1.5);
     api.swingMood(0.35);
-    S.quest.step = "deva"; save();
+    S.quest.step = "deva"; deed("sat_with_monk"); save();
     showSheet({
       label: "Ngồi với sư",
       lines: [`Người này đã quay về hơi thở ${noted} lần.`, "Quả cầu đầy nước. Buổi ngồi xong. Còn niệm thì vẫn cần luyện mỗi ngày."],
@@ -957,6 +959,8 @@ window.Mind = (() => {
     cardSections, cardGrid,
     cardStep: (id, prevN) => MS().rules.cardStep(CARDS[id], prevN),
     milestoneState: () => { ensure(); return { got: S.milestones, counts: S.msCounts, save }; },
+    villageState: () => { ensure(); const v = S.village; return { deeds: v.deeds, get said() { return v.said || null; }, set said(x) { v.said = x; }, save }; },
+    actors: () => actors(),
     current: () => JSON.parse(JSON.stringify(S)),
     suggestion: () => (S.stats ? suggestion() : ""),
   };

@@ -54,3 +54,14 @@ test("hurry multiplies the pace, a double tap clearly faster", () => {
   assert.ok(one >= calm * 1.5, `one ${one} calm ${calm}`);
   assert.ok(max > one && max <= calm * 2.6);
 });
+
+test("walking somewhere brings the camera back to follow the player", () => {
+  const w = W();
+  w.lookAt(500, 200);
+  assert.equal(w.isLooking(), true);
+  w.walkTo(200, 900);
+  assert.equal(w.isLooking(), false);
+  w.lookAt(500, 200);
+  w.walkTo(210, 900, true); // keyboard steps too
+  assert.equal(w.isLooking(), false);
+});

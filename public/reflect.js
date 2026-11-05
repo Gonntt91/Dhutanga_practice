@@ -5,32 +5,40 @@ window.NightReflect = (() => {
   const EMPTY_NIGHT = "Một đêm lặng lẽ.";
   const DIARY_MAX = 8;
 
+  // Each hook is a promise: the text is shown at night's end, the payoff really happens next night near `place`.
   const HOOKS = {
     monk: [
-      "Mai, sư già hứa kể tiếp chuyện cô bé Hạnh.",
-      "Nghe nói hoa sen ở ao sắp nở vào một đêm trăng.",
-      "Có tiếng ai đó gõ vào tảng đá sau đồi.",
-      "Cây gạo đầu ngõ vừa rụng một chiếc lá lạ.",
-      "Trong tịnh thất còn một cuốn kinh chưa ai mở.",
-      "Chuông sáng nay ngân lâu hơn mọi khi, không rõ vì sao.",
+      { id: "m_hanh", place: "graves", text: "Mai, sư già hứa kể tiếp chuyện cô bé Hạnh.",
+        payoff: ["Sư già ngồi đợi giữa các ngôi mộ, như đã đợi từ chiều.", "“Hôm nước lớn, cả xóm chia nhau nuôi em. Nhà này một bát cơm, nhà kia một manh áo.”", "“Chuyện còn dài. Ngồi với thầy một lát nhé.”"] },
+      { id: "m_sen", place: "ao", text: "Nghe nói hoa sen ở ao sắp nở vào một đêm trăng.",
+        payoff: ["Một bông sen đã nở, trắng muốt giữa đám lá.", "Hương rất nhẹ. Không ai hái, cũng không ai khoe.", "Người này đứng nhìn một lát, thấy mình chậm lại theo."] },
+      { id: "m_gao", place: "gao", text: "Cây gạo đầu ngõ vừa rụng một chiếc lá lạ.",
+        payoff: ["Dưới gốc gạo có một chiếc lá nằm riêng, không giống lá của cây.", "Mặt lá còn ướt sương, gân lá sáng nhẹ.", "Người này nhặt lên xem, rồi đặt lại chỗ cũ."] },
+      { id: "m_kinh", place: "hermitage", text: "Trong tịnh thất còn một cuốn kinh chưa ai mở.",
+        payoff: ["Trên kệ, cuốn kinh cũ nằm hơi lệch ra khỏi hàng.", "Bìa sờn, giấy ngả vàng, thoảng mùi trầm xa xưa.", "Trang đầu chỉ có một dòng chữ nhỏ: “Đọc chậm thôi.”"] },
+      { id: "m_chuong", place: "hermitage", text: "Chuông sáng nay ngân lâu hơn mọi khi, không rõ vì sao.",
+        payoff: ["Chuông vang lên một tiếng dài, rồi thêm một tiếng nhỏ hơn.", "Mấy con sẻ dưới mái bay lên rồi đậu lại.", "Chẳng có gì lạ. Chỉ là có người đã gõ chuông chậm hơn thường."] },
     ],
     villager: [
-      "Mai, bà cụ đầu xóm có chuyện muốn kể.",
-      "Có mùi trầm thoảng qua lối mòn lên chùa.",
-      "Ai đó để quên một chiếc giỏ nhỏ bên cổng chùa.",
-      "Nghe đồn ngoài nghĩa địa có đốm sáng nhỏ lúc gần sáng.",
-      "Ao sen sau chùa sắp có bông đầu tiên.",
-      "Tiếng tụng kinh đêm nay nghe như vọng lại từ rất xa.",
+      { id: "v_ba_cu", place: "well", text: "Mai, bà cụ đầu xóm có chuyện muốn kể.",
+        payoff: ["Bà cụ ngồi bên giếng, tay vẫn đan dở cái giỏ.", "“Hồi bà còn nhỏ, cây gạo đầu ngõ chỉ cao bằng cái cột nhà.”", "“Giờ nó che cả con đường. Cái gì lớn cũng từ từ thôi.”"] },
+      { id: "v_tram", place: "hermitage", text: "Có mùi trầm thoảng qua lối mòn lên chùa.",
+        payoff: ["Mùi trầm bay ra từ tịnh thất, nhẹ như hơi thở.", "Ai đó thắp nhang từ sớm, tàn nhang còn ấm.", "Người này đứng lại hít một hơi dài. Mùi quen như nhà."] },
+      { id: "v_gio", place: "village", text: "Ai đó để quên một chiếc giỏ nhỏ ngoài ngõ làng.",
+        payoff: ["Bên rào tre có một chiếc giỏ nhỏ, đậy lá chuối.", "Bên trong là mấy quả chuối chín và mảnh giấy: “Cho ai cần.”", "Người này nhìn một lát, để nguyên chỗ cũ cho người đang cần."] },
+      { id: "v_dom_sang", place: "graves", text: "Nghe đồn ngoài nghĩa địa có đốm sáng nhỏ lúc gần sáng.",
+        payoff: ["Giữa nghĩa địa, một đốm sáng nhỏ nhấp nháy rồi tắt.", "Lại gần thì chỉ là con đom đóm đậu trên tấm bia cũ.", "Người này mỉm cười. Có những lời đồn hóa ra rất hiền."] },
     ],
     ghost: [
-      "Mai, có thể sẽ có người đến thắp một nén nhang.",
-      "Bên bờ tường chùa, tiếng kinh nghe rõ hơn một chút.",
-      "Có một bông hoa lạ nở cạnh ngôi mộ cũ.",
-      "Gió đêm mang theo một cái tên nghe quen quen.",
-      "Đốm sáng nhỏ trên đất dường như đang chờ ai đó.",
-      "Có tiếng trẻ con khẽ ngân nga đâu đó sau những ngôi mộ.",
+      { id: "g_nhang", place: "graves", text: "Mai, có thể sẽ có người đến thắp một nén nhang.",
+        payoff: ["Cạnh ngôi mộ có một nén nhang mới cắm, khói bay thẳng lên.", "Không thấy ai, chỉ thấy hơi ấm lan trong bóng tối.", "Người này đứng lặng. Có người vẫn nhớ đến."] },
+      { id: "g_kinh", place: "hermitage", text: "Bên bờ tường chùa, tiếng kinh nghe rõ hơn một chút.",
+        payoff: ["Gió đổi hướng, tiếng kinh từ tịnh thất vọng ra rõ từng chữ.", "Nghe một câu thôi mà thấy nhẹ như được ai đỡ lấy.", "Người này ngồi nghe đến khi tiếng kinh thưa dần."] },
+      { id: "g_hoa", place: "gao", text: "Có một bông hoa lạ nở dưới gốc cây gạo.",
+        payoff: ["Dưới gốc gạo, một đóa hoa trắng vừa hé.", "Không ai trồng. Hoa cứ nở, như biết có người đang nhìn.", "Người này không chạm vào. Chỉ ngồi cạnh một lúc."] },
     ],
   };
+  const PLACE_LABEL = { village: "ngõ làng", gate: "cổng nghĩa địa", bamboo: "bụi tre", graves: "nghĩa địa", gao: "gốc gạo", hermitage: "tịnh thất", well: "giếng làng", mit: "gốc mít", ao: "ao sen", hang: "tảng đá lớn", thap: "tháp cổ" };
 
   const ACTIVITIES = {
     monk: [
@@ -108,7 +116,26 @@ window.NightReflect = (() => {
   const hash = (str) => { let h = 0; for (const c of String(str)) h = (h * 31 + c.charCodeAt(0)) >>> 0; return h; };
   const pick = (list, key) => list[hash(key) % list.length];
 
-  const hookFor = (role, runId) => pick(HOOKS[role] || HOOKS.monk, runId || "");
+  const promiseFor = (role, runId) => pick(HOOKS[role] || HOOKS.monk, runId || "");
+  const hookFor = (role, runId) => promiseFor(role, runId).text;
+  const hookById = (id) => { for (const list of Object.values(HOOKS)) for (const h of list) if (h.id === id) return h; return null; };
+
+  // The promise made at the end of night `day` is due on night day+1, once, near its place.
+  function promiseDue(cp) {
+    const p = cp && cp.promise;
+    if (!p || p.kept || typeof p.id !== "string" || p.day !== (cp.day || 0) - 1) return null;
+    return hookById(p.id);
+  }
+  const keepPromise = (cp) => (cp && cp.promise ? { ...cp, promise: { ...cp.promise, kept: true } } : cp);
+  function nudgeLine(cp) {
+    const h = promiseDue(cp);
+    return h ? `Hôm qua có lời hẹn ở ${PLACE_LABEL[h.place] || "đâu đó"}.` : null;
+  }
+  // The promise shown in tonight's reflection (same runId, same hook) is also what the next night keeps.
+  function withPromise(cp) {
+    if (cp.nextPromise && cp.nextPromise.day === cp.day) return cp;
+    return { ...cp, nextPromise: { id: promiseFor(cp.role, cp.runId).id, day: cp.day } };
+  }
 
   function awayBand(at, now) {
     const ms = (Number(now) || 0) - (Number(at) || 0);
@@ -166,7 +193,7 @@ window.NightReflect = (() => {
 
   const activityOf = (role, id) => (ACTIVITIES[role] || []).find((a) => a.id === id);
   function chooseAway(cp, activityId, now) {
-    return { ...cp, away: { activity: activityId, at: now, hook: hookFor(cp.role, cp.runId) } };
+    return withPromise({ ...cp, away: { activity: activityId, at: now, hook: hookFor(cp.role, cp.runId) } });
   }
   function closingLine(role, id) {
     const a = activityOf(role, id);
@@ -204,6 +231,7 @@ window.NightReflect = (() => {
     let cp = ctx.getCp();
     const ev = nightEvent(cp);
     if (ev.first) { cp = ev.cp; ctx.setCp(cp); }
+    if (!cp.nextPromise || cp.nextPromise.day !== cp.day) { cp = withPromise(ctx.getCp()); ctx.setCp(cp); }
 
     add(el("h2", "rf-title", "Quán xét cuối đêm"));
     add(el("p", "rf-quote", "Như soi gương, nhìn lại việc mình đã làm."));
@@ -254,7 +282,11 @@ window.NightReflect = (() => {
     const choices = el("div", "rf-choices");
     const nn = el("button", "rf-btn primary", "Sang đêm mới");
     nn.type = "button";
-    nn.addEventListener("click", () => { close(); ctx.newNight(); });
+    nn.addEventListener("click", () => {
+      close();
+      try { window.Milestones && Milestones.notify("newnight", {}); } catch {}
+      ctx.newNight();
+    });
     const rest = el("button", "rf-btn", "Nghỉ ở đây");
     rest.type = "button";
     rest.addEventListener("click", () => awayStep());
@@ -298,6 +330,7 @@ window.NightReflect = (() => {
     const add = (n) => { n.classList.add("rf-step"); n.style.animationDelay = i++ * 0.6 + "s"; col.appendChild(n); };
     add(el("h2", "rf-title", "Trong lúc vắng"));
     s.lines.forEach((t) => add(el("p", "rf-line", t)));
+    if (ctx.nudge) add(el("p", "rf-line", ctx.nudge));
     const b = el("button", "rf-btn primary", "Bắt đầu đêm mới");
     b.type = "button";
     b.addEventListener("click", () => { close(); if (ctx.onStart) ctx.onStart(); });
@@ -305,5 +338,5 @@ window.NightReflect = (() => {
     document.body.appendChild(root);
   }
 
-  return { HOOKS, ACTIVITIES, AWAY_STORIES, hookFor, awayBand, awayStory, summarizeDiary, nightEvent, dedicate, milestonesSince, chooseAway, closingLine, open, showAway, close };
+  return { HOOKS, ACTIVITIES, AWAY_STORIES, hookFor, promiseFor, hookById, promiseDue, keepPromise, nudgeLine, withPromise, PLACE_LABEL, awayBand, awayStory, summarizeDiary, nightEvent, dedicate, milestonesSince, chooseAway, closingLine, open, showAway, close };
 })();

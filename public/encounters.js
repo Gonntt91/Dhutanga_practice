@@ -15,6 +15,7 @@
   const snoozed = (q) => q.snooze && Date.now() < q.snooze;
   const snooze = (q, ms = 60000) => { q.snooze = Date.now() + ms; K.save(); };
   const toast = (t) => api() && api().toast(t);
+  const deed = (id) => { try { window.Village && Village.record(id, api() && api().day ? api().day() : 1); } catch (e) { console.error(e); } };
   const sound = () => api() && api().sound();
   const fx = { treeT: 0, peta: null, earth: 0, sparks: [] };
 
@@ -67,7 +68,7 @@
       label: "Ngõ làng",
       lines: ["Mẹ bé Na chạy ra ôm chầm lấy con, khóc mà cười.", "“Con tôi đây rồi. Cảm ơn, cảm ơn.”"],
       choices: [{ label: "Tiếp", primary: true, fn: () => {
-        q.step = "thank"; K.save(); K.closeSheet(); api().swingMood(0.25);
+        q.step = "thank"; deed("na_home"); K.save(); K.closeSheet(); api().swingMood(0.25);
         K.award("tuy_hy", "Người này thấy hai mẹ con đoàn tụ và vui lây niềm vui của họ.", () => { K.cooldown(2500); toast(dusk() ? "Ở gốc cây gạo, lá lại sáng lên." : "Lúc chạng vạng, quay lại gốc cây gạo nhé."); });
       } }],
     });
@@ -130,7 +131,7 @@
             label: "Giữa các ngôi mộ",
             lines: ["Bà ngoại ngẩng lên, cái bóng gầy guộc sáng dần.", "“Lành thay, lành thay…”, rồi bà tan vào ánh trăng."],
             choices: [{ label: "Chắp tay", primary: true, fn: () => {
-              q.step = "done"; K.save(); K.closeSheet(); fx.peta = null; World.resetLook();
+              q.step = "done"; deed("peta_fed"); K.save(); K.closeSheet(); fx.peta = null; World.resetLook();
               K.award("khong_tham", "Người này dâng cơm và hồi hướng phước cho bà ngoại đã khuất.", () => K.cooldown(2500));
             } }],
           });

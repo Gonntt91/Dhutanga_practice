@@ -23,6 +23,8 @@
 | Thẻ bất thiện 3 lần rồi "đã hiểu", album hai phần | mục 15.1 | **Đã có** | 4 thẻ bất thiện; câu đối trị cần thầy duyệt |
 | Phận sự tịnh xá, 13 hạnh đầu đà, năm triền cái | mục 15.3–15.5 | **Đề xuất** | — |
 | Vòng ngày, quán xét cuối ngày, việc khi vắng, cột mốc | mục 16 | **Một phần** | Có lưu tiến độ, quán xét cuối đêm, hồi hướng, câu hẹn ngày mai, việc khi vắng, "Trong lúc vắng", cột mốc và trang Dấu mốc; chưa có các buổi trong ngày |
+| Lời hẹn thành thật, làng có trí nhớ | mục 17.1 | **Đã có** | 12 lời hẹn có kết quả đêm sau; 5 việc làng nhớ (rau cho bà cụ, rau cho ông Tư, ngồi với sư già, dắt bé Na về, dâng cơm bà ngoại); cột mốc ẩn "Lời hẹn đã đến", "Muốn chơi thêm". Lời cần duyệt |
+| Triền cái khi ngồi, đêm rằm, bộ đôi thẻ, y phấn tảo, đặt hoa | mục 17.2–17.6 | **Đề xuất** | Thứ tự làm và kiểm chứng ở 17.8 |
 
 ## 0. Mục đích và tinh thần
 
@@ -1003,3 +1005,96 @@ Game cần **móc giữ chân mạnh**: không quay lại thì không học đư
 **Chưa kiểm chứng**
 - Đo vài chỉ số ẩn danh: tỷ lệ quay lại sau 1 ngày, sau 7 ngày; số ngày chơi trọn; độ dài mỗi lần chơi; người chơi bỏ ở buổi nào.
 - Cho 5–10 người chơi thử 1 tuần, rồi phỏng vấn ngắn: ngày nào thấy chán, vì sao quay lại.
+
+## 17. Bước tiếp theo: tạo bất ngờ cho người chơi
+
+Game đã có nhiều chỗ **mở chuyện**: thẻ, cột mốc, quán xét cuối đêm, việc khi vắng, chư thiên, hang, thiên cung. Cái còn thiếu là **phần đáp lại**: game hứa thì hôm sau phải xảy ra thật, người chơi làm gì thì thế giới phải nhớ. Bất ngờ cuốn hút nhất đến từ đó, không phải từ thêm nội dung mới.
+
+> Mỗi gói dưới đây vẫn qua câu kiểm tra ở 16.8: móc bằng tò mò, chờ đợi, tiến bộ, quan hệ; không móc bằng sợ mất, so bì.
+
+### 17.1. Lời hẹn thành thật, làng có trí nhớ
+
+*Công sức nhỏ, bất ngờ cao nhất. Làm trước.*
+
+- **Lời hẹn xảy ra thật.** Câu "Ngày mai" cuối đêm hiện chỉ là chữ. Đêm sau phải có đúng việc đó:
+  - hẹn *"Sen ở ao sẽ nở"* thì đêm sau ao có sen nở, kèm một khoảnh khắc riêng;
+  - hẹn *"Mai thầy kể tiếp"* thì sư già đứng đợi ở am.
+- **Người làng nhớ việc đã làm:**
+  - bà cụ nhớ hôm qua được dâng cơm: *"Hôm qua thầy cho bà nắm xôi, nay bà để dành quả chuối."*;
+  - ông Tư nhớ chuyện con chó;
+  - lời nói thay đổi theo việc người chơi đã làm, không lặp một câu.
+- **Cột mốc ẩn tự soi** đi kèm: *"Thấy được mình đang muốn chơi thêm. Đó cũng là Tham."*
+- **Kỹ thuật:** dùng lại biến `vars` trong tiến độ nhân vật. Chủ yếu là viết lời.
+- **Vì sao:** người chơi thấy việc mình làm có hậu quả. Đây là lý do quay lại mạnh nhất mà không cần ép.
+
+### 17.2. Ngồi thiền có triền cái
+
+*Công sức vừa, vừa vui vừa dạy. Đây là bản cụ thể của 15.5.*
+
+- **Khi ngồi, quanh nhân vật hiện các thứ làm xao lãng:**
+  - bướm bay: phóng dật;
+  - tiếng chó sủa: sân;
+  - mùi xôi: tham dục;
+  - mí mắt nặng: hôn trầm;
+  - ý nghĩ "ngồi vậy có đúng không": hoài nghi.
+- **Cách chơi:** người chơi **chạm nhẹ để ghi nhận**, không đuổi đi. Ghi nhận đúng lúc thì quả cầu sáng nhanh hơn và có cơ hội nhận Niệm.
+- **Phần thưởng hiếm:** ngồi lâu mà yên thì đôi khi giác chi Hỷ hiện ra, kèm hiệu ứng đẹp (nối với mục 9).
+- **Có hên xui:** thứ tự và nhịp xuất hiện ngẫu nhiên, nên mỗi lần ngồi khác nhau.
+- **Vì sao:** lúc ngồi đang thụ động trở thành việc có tay nghề. Người chơi tự học được rằng *biết nó đang có mặt là niệm*.
+
+### 17.3. Đêm rằm theo lịch thật
+
+*Công sức nhỏ đến vừa. Tạo hẹn tự nhiên.*
+
+- Ngày rằm, mùng một âm lịch thật là đêm đặc biệt trong game:
+  - trăng tròn, ao sen sáng;
+  - chư thiên dễ gặp hơn;
+  - người làng lên chùa đông;
+  - vai dân làng có Bát quan trai.
+- Lặp lại mỗi tháng, mỗi năm. Lỡ tháng này thì tháng sau còn, đúng nguyên tắc "không sợ mất".
+- **Vì sao:** người chơi có lý do mở game đúng ngày rằm. Đêm rằm sắp tới cũng là dịp thử với người chơi thật.
+
+### 17.4. Bộ đôi thẻ mở cảnh hiếm
+
+*Công sức vừa. Làm thẻ có ý nghĩa hơn.*
+
+- **Có đủ hai thẻ thiện liên quan thì mở một cảnh ẩn.** Ví dụ:
+  - Bi + Tùy hỷ: gặp đứa bé lạc;
+  - Niệm + Không sân: đi qua con chó dữ mà nó nằm yên;
+  - Không tham + Hỷ: được mời vào thiên cung.
+- Không báo trước bộ đôi nào mở cảnh gì. Cảnh mở ra như một bất ngờ, kèm hình minh họa của hai thẻ.
+- **Chỉ thẻ thiện ghép bộ**, đúng với 15.1: thiện mở đường, bất thiện là bài học.
+- **Vì sao:** thêm tò mò; thẻ không chỉ để sưu tầm (mục 4a).
+
+### 17.5. Chuyện y phấn tảo: cung truyện 3–5 đêm của Sư
+
+*Công sức vừa đến lớn. Bản cụ thể của 15.4.*
+
+- **Diễn tiến qua các đêm:** mỗi đêm nhặt một mảnh vải, giặt, nhuộm màu đất, may dần.
+- **Tiến bộ nhìn thấy được:** tấm y hiện dần trên nhân vật.
+- **Đêm cuối:** lễ nhận y, kèm cột mốc và skin y màu đất.
+- **Vì sao:** có cảm giác *kết thúc trọn* bên trong vòng ngày (16.7).
+
+### 17.6. Đặt hoa cho người đang vắng
+
+*Công sức vừa, cần phía server. Bản cụ thể của 16.6 bước 5.*
+
+- Nhân vật đang nghỉ hiện mờ ở chỗ họ dừng lại.
+- Người khác đặt được một bông hoa bên cạnh.
+- Khi quay lại, khung "Trong lúc vắng" báo: *"Có 3 người đặt hoa cạnh thầy."*
+- **Vì sao:** kết nối xã hội ấm, không cần chat, ít rủi ro quấy rối.
+
+### 17.7. Để sau
+
+- **Hang nhiều tầng (15.2):** đáng giá nhưng tốn nhất. Làm sau khi 17.1–17.4 cho thấy người chơi có quay lại.
+
+### 17.8. Thứ tự và kiểm chứng
+
+1. 17.1 và 17.2: cho cảm giác "game này sống" nhanh nhất.
+2. 17.3: kịp đêm rằm tới để thử với người chơi thật.
+3. Cho 3–5 người chơi thử vài ngày, xem họ có tự quay lại không.
+4. Rồi mới làm 17.4, 17.5, 17.6, sau đó tới hang.
+
+**Trước khi mời người chơi:** thử lưu tiến độ một lần trên Render với Postgres thật.
+
+**Cần thầy duyệt:** lời các triền cái, giác chi, câu nói của người làng, và cảnh mở từ bộ đôi thẻ (để không gán sai quan hệ giữa các tâm sở).

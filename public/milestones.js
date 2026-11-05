@@ -35,6 +35,8 @@ window.Milestones = (() => {
     { id: "first_dedicate", title: "Hồi hướng lần đầu", text: "Lần đầu chia phần phước của mình cho người khác." },
     { id: "first_deva", title: "Gặp chư thiên", text: "Một ánh sáng dừng lại trước người này.", hidden: true },
     { id: "cave_found", title: "Hang đá bí mật", text: "Ngồi yên đủ lâu thì thấy được điều người vội không thấy.", hidden: true },
+    { id: "promise_kept", title: "Lời hẹn đã đến", text: "Điều được hẹn hôm qua đã thật sự xảy ra.", hidden: true },
+    { id: "want_more", title: "Muốn chơi thêm", text: "Thấy được mình đang muốn chơi thêm. Đó cũng là Tham.", hidden: true },
     { id: "palace_stay", title: "Ở lại thiên cung", text: "Tâm đủ dịu để ở lại nơi sáng.", hidden: true },
   ];
   const NIGHTS = [[1, "night_1"], [7, "night_7"], [30, "night_30"], [100, "night_100"]];
@@ -63,6 +65,10 @@ window.Milestones = (() => {
     return view(id, s.got[id]);
   }
 
+  // Counted in memory only: how many times "Sang đêm mới" was chosen since this page opened.
+  let newNightsThisSession = 0;
+  const WANT_MORE_AT = 3;
+
   function notify(event, data, opts) {
     const d = data || {}, s = state(), out = [];
     const add = (id, name) => { const m = reach(s, id, name); if (m) out.push(m); };
@@ -75,7 +81,11 @@ window.Milestones = (() => {
       s.counts.nights = (s.counts.nights || 0) + 1;
       for (const [n, id] of NIGHTS) if (s.counts.nights >= n) add(id);
       s.save(); // the counter changed even when nothing was reached
-    } else if (event === "dedicate") add("first_dedicate");
+    } else if (event === "newnight") {
+      newNightsThisSession++;
+      if (newNightsThisSession >= WANT_MORE_AT) add("want_more");
+    } else if (event === "promise") add("promise_kept");
+    else if (event === "dedicate") add("first_dedicate");
     else if (event === "deva") add("first_deva");
     else if (event === "cave") add("cave_found");
     else if (event === "palace") { if (d.outcome === "stay") add("palace_stay"); }

@@ -130,3 +130,33 @@ test("backfill with no cards records nothing", () => {
   empty(M.backfill({}));
   empty(M.backfill(null));
 });
+
+test("promise_kept and want_more are hidden defs", () => {
+  const { M } = setup();
+  for (const id of ["promise_kept", "want_more"]) {
+    const d = M.defs.find((x) => x.id === id);
+    assert.ok(d && d.hidden, id);
+  }
+});
+
+test("promise_kept fires once, with its own title", () => {
+  const { M } = setup();
+  const a = M.notify("promise", {}, { quiet: true });
+  assert.deepEqual(ids(a), ["promise_kept"]);
+  assert.equal(a[0].title, "Lời hẹn đã đến");
+  assert.match(a[0].text, /hôm qua/);
+  empty(M.notify("promise", {}, { quiet: true }));
+});
+
+test("want_more fires on the 3rd new night in a session, once, and is not saved as a counter", () => {
+  const { M, box } = setup();
+  empty(M.notify("newnight", {}, { quiet: true }));
+  empty(M.notify("newnight", {}, { quiet: true }));
+  const a = M.notify("newnight", {}, { quiet: true });
+  assert.deepEqual(ids(a), ["want_more"]);
+  assert.equal(a[0].title, "Muốn chơi thêm");
+  assert.match(a[0].text, /Tham/);
+  empty(M.notify("newnight", {}, { quiet: true }));
+  assert.equal(box.cur.counts.newnight, undefined);
+  assert.equal(Object.keys(box.cur.counts).length, 0);
+});

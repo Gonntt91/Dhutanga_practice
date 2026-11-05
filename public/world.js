@@ -551,8 +551,9 @@ window.World = (() => {
   let lastWalkAt = -1e9;
   // steady: a held key re-aims every few frames, which must not count as tapping again.
   function walkTo(x, y, steady) {
+    look.on = false; // the camera follows the player again whenever they set off
     if (!steady) {
-      const now = performance.now();
+      const now = Date.now();
       player.hurry = hurryNext(player.hurry, now - lastWalkAt, player.tx != null);
       lastWalkAt = now;
     }
@@ -1731,6 +1732,10 @@ window.World = (() => {
       drawBubble(b, it.x, it.y - lift - 8);
     }
 
+    for (const a of actors) { // village memory: a remembered line over a villager, keyed "npc:<kind>"
+      const b = bubbles.get("npc:" + a.kind);
+      if (b) drawBubble(b, a.x, a.y - (a.kind === "dog" ? 22 : a.kind === "monk" ? 34 : 42) - 14);
+    }
     for (const a of actors) {
       if (!a.label) continue;
       ctx.font = '500 9px "Be Vietnam Pro", system-ui, sans-serif';

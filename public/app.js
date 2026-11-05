@@ -592,10 +592,11 @@
     // first time ever: a short survey of temperament before the night begins
     const begin = () => { if (!Mind.onRoleStart(role, () => { if (state.role === role) showWalkOrScene(); })) showWalkOrScene(); };
     const back = plan.cp.returnFrom;
+    const nudge = window.NightReflect && NightReflect.nudgeLine ? NightReflect.nudgeLine(plan.cp) : null;
     if (back && window.NightReflect && NightReflect.showAway) {
       // narrative only; shown once, cleared when the player presses start
       NightReflect.showAway({
-        role, away: back, now: Date.now(), runId: plan.cp.runId,
+        role, away: back, now: Date.now(), runId: plan.cp.runId, nudge,
         onStart: () => {
           if (state.role !== role) return;
           const { returnFrom, ...rest } = state.cp;
@@ -603,7 +604,10 @@
           begin();
         },
       });
-    } else begin();
+    } else {
+      begin();
+      if (nudge) setTimeout(() => { if (state.role === role) toast(nudge); }, 1500);
+    }
   }
 
   function leaveRole() {
@@ -1475,9 +1479,47 @@
     dev: () => isDev,
     emit: (topic) => post("/api/emit", { topic }),
     setPose: (p) => { state.mindPose = p; pushView(); sendPresence(true); },
-    busy: () => !!state.findOpen || !$("room").hidden || !$("picker").hidden || !$("map-panel").hidden || !$("cards-panel").hidden ||
-      (state.sceneOpen && !$("sheet").classList.contains("collapsed")),
+    day: () => (state.cp && state.cp.day) || 1,
+    busy: () => uiBusy(),
   });
+
+  // ---------- promises kept and village memory ----------
+  // Something is on screen that a story beat should not talk over.
+  function uiBusy() {
+    return !!state.findOpen || !$("room").hidden || !$("picker").hidden || !$("map-panel").hidden || !$("cards-panel").hidden ||
+      (state.sceneOpen && !$("sheet").classList.contains("collapsed"));
+  }
+  const NEAR_PROMISE = 90, NEAR_VILLAGE = 110;
+  const distTo = (pt) => { const p = World.getPlayer(); return Math.hypot(p.x - pt.x, p.y - pt.y); };
+  function keepPromiseNow(h) {
+    state.cp = NightReflect.keepPromise(state.cp);
+    lastCpJson = ""; saveProgress();
+    Save.log(`Lời hẹn hôm qua đã đến, ở ${NightReflect.PLACE_LABEL[h.place] || "đây"}.`);
+    Mind.kit.showSheet({
+      label: "Lời hẹn hôm qua", lines: h.payoff,
+      choices: [{ label: "Tiếp tục", primary: true, fn: () => Mind.kit.closeSheet() }],
+    });
+    try { window.Milestones && Milestones.notify("promise", {}); } catch {}
+  }
+  function villageSay(n) {
+    const p = Mind.parts.actors().find((a) => a.kind === n.npc);
+    if (p) { World.say("npc:" + n.npc, n.text, "villager"); return; }
+    Mind.kit.showSheet({ label: n.who, lines: [n.text], choices: [{ label: "Tiếp tục", primary: true, fn: () => Mind.kit.closeSheet() }] });
+  }
+  function memoryTick() {
+    if (!state.role || !state.cp || Mind.isOpen() || uiBusy() || document.querySelector(".reflect, .ms-reveal")) return;
+    const due = window.NightReflect && NightReflect.promiseDue(state.cp);
+    const here = (key) => World.PLACES[key] && distTo(World.PLACES[key]) <= NEAR_PROMISE;
+    if (due && here(due.place)) return keepPromiseNow(due);
+    if (!window.Village || state.role === "ghost") return;
+    const day = state.cp.day || 1;
+    for (const key of Village.places()) {
+      if (!World.PLACES[key] || distTo(World.PLACES[key]) > NEAR_VILLAGE) continue;
+      const n = Village.next(key, day, state.role);
+      if (n) return villageSay(n);
+    }
+  }
+  setInterval(memoryTick, 1000);
   function openQuest() {
     renderQuest();
     if (window.Discover) { const c = Discover.count(); $("book-count").textContent = `${c.seen}/${c.total}`; }
