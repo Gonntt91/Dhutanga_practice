@@ -6,6 +6,7 @@ window.Profile = (() => {
   const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; };
   let hooks = {};
   let selected = null;
+  let live = null; // the character being played right now (opened from the mind orb); null when opened from the picker
   const cache = new Map(); // id -> character (with data)
 
   const fmtDate = (iso) => { try { return new Date(iso).toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" }); } catch { return ""; } };
@@ -30,6 +31,7 @@ window.Profile = (() => {
 
   function renderList() {
     const list = $("profile-list"); list.replaceChildren();
+    list.hidden = !!live && live.id === "guest";
     const chars = (Save.me().characters || []);
     if (!chars.length) {
       list.appendChild(el("p", "hint", "Chưa có nhân vật nào. Quay lại và chọn một vai để tạo nhân vật đầu tiên."));
@@ -43,7 +45,7 @@ window.Profile = (() => {
       const glyph = el("span", "chip-avatar"); glyph.innerHTML = Avatar.svg(c.role, c.skin, 34);
       const txt = el("span", "chip-text");
       txt.appendChild(el("b", null, c.name));
-      txt.appendChild(el("small", null, `${ROLE_INFO[c.role] ? ROLE_INFO[c.role].name : c.role} · ${ago(c.updatedAt)}`));
+      txt.appendChild(el("small", null, `${ROLE_INFO[c.role] ? ROLE_INFO[c.role].name : c.role} · ${live && live.id === c.id ? "đang chơi" : ago(c.updatedAt)}`));
       b.append(glyph, txt);
       b.addEventListener("click", () => select(c.id));
       list.appendChild(b);
@@ -63,8 +65,12 @@ window.Profile = (() => {
     renderList();
     const box = $("profile-detail");
     box.replaceChildren(el("p", "hint", "Đang mở…"));
+    const isLive = !!live && live.id === id;
     let c;
-    try { c = await fetchCharacter(id); } catch { box.replaceChildren(el("p", "hint", "Chưa mở được nhân vật này, thử lại nhé.")); return; }
+    if (isLive) c = { id, name: live.name, role: live.role, data: { mind: live.mind, history: live.history, skin: live.skin } };
+    else {
+      try { c = await fetchCharacter(id); } catch { box.replaceChildren(el("p", "hint", "Chưa mở được nhân vật này, thử lại nhé.")); return; }
+    }
     if (selected !== id) return;
     const summary = (Save.me().characters || []).find((x) => x.id === id) || {};
     const mind = (c.data && c.data.mind) || {};
@@ -91,7 +97,7 @@ window.Profile = (() => {
       const done = async () => {
         const v = input.value.replace(/\s+/g, " ").trim();
         if (!v || v === c.name) { form.replaceWith(nameRow); return; }
-        try { c.name = await Save.renameCharacter(id, v); cache.set(id, c); } catch { alert("Chưa đổi được tên."); }
+        try { c.name = await Save.renameCharacter(id, v); cache.set(id, c); if (live && live.id === id) live.name = c.name; } catch { alert("Chưa đổi được tên."); }
         hooks.changed && hooks.changed();
         select(id);
       };
@@ -99,9 +105,10 @@ window.Profile = (() => {
       cancel.addEventListener("click", () => form.replaceWith(nameRow));
       input.addEventListener("keydown", (e) => { if (e.key === "Enter") done(); if (e.key === "Escape") form.replaceWith(nameRow); e.stopPropagation(); });
     });
-    nameRow.append(nameEl, rename);
+    nameRow.append(nameEl);
+    if (id !== "guest") nameRow.append(rename);
     who.appendChild(nameRow);
-    who.appendChild(el("p", "rc-who", `${ROLE_INFO[c.role] ? ROLE_INFO[c.role].name : c.role}${summary.createdAt ? " · tạo ngày " + fmtDate(summary.createdAt) : ""}${summary.updatedAt ? " · chơi " + ago(summary.updatedAt) : ""}`));
+    who.appendChild(el("p", "rc-who", `${ROLE_INFO[c.role] ? ROLE_INFO[c.role].name : c.role}${isLive ? " · đang chơi" : ""}${id === "guest" ? " · chơi thử, chưa lưu" : ""}${summary.createdAt ? " · tạo ngày " + fmtDate(summary.createdAt) : ""}${summary.updatedAt ? " · chơi " + ago(summary.updatedAt) : ""}`));
     if (mind.carita) who.appendChild(el("p", "mind-carita", `Người này thiên về tính ${P.caritaName(mind.carita)}.`));
     head.append(glyph, who);
     box.appendChild(head);
@@ -117,8 +124,40 @@ window.Profile = (() => {
       hooks.changed && hooks.changed();
       if (selected) select(selected); else { renderList(); $("profile-detail").replaceChildren(); }
     });
-    actions.append(play, del);
+    if (isLive) {
+      const back = el("button", "primary", "Quay lại chơi"); back.type = "button";
+      back.addEventListener("click", close);
+      actions.appendChild(back);
+      if (id === "guest" && hooks.login) {
+        const login = el("button", "pill", "Đăng nhập để lưu nhân vật"); login.type = "button";
+        login.addEventListener("click", () => { close(); hooks.login(); });
+        actions.appendChild(login);
+      }
+    } else if (live) {
+      // looking at another character while playing: switch to it
+      play.textContent = "Chơi nhân vật này";
+      actions.append(play);
+    } else actions.append(play, del);
     box.appendChild(actions);
+
+    // the mind right now (only for the character in play)
+    if (isLive && live.mood) {
+      const now = section("Tâm lúc này");
+      const row = el("div", "mood-now");
+      const dot = el("span", "mood-dot"); dot.style.background = live.mood.color; dot.style.boxShadow = `0 0 16px ${live.mood.color}`;
+      row.append(dot, el("b", null, live.mood.label));
+      now.appendChild(row);
+      if (live.suggestion) now.appendChild(el("p", "quest-tip", live.suggestion));
+      const legend = document.querySelector("#mind-info .mind-legend");
+      if (legend) {
+        const det = el("details", "mood-legend");
+        det.appendChild(el("summary", null, "Ý nghĩa các màu"));
+        det.appendChild(legend.cloneNode(true));
+        document.querySelectorAll("#mind-info > p.hint").forEach((p) => det.appendChild(p.cloneNode(true)));
+        now.appendChild(det);
+      }
+      box.appendChild(now);
+    }
 
     // stats
     const st = section("Chỉ số tâm");
@@ -168,7 +207,19 @@ window.Profile = (() => {
     box.appendChild(ds);
   }
 
+  // Opened from the mind orb while playing: the character in play first (guests too).
+  async function openCurrent(info) {
+    live = info;
+    $("profile-user").textContent = Save.me().user ? Save.me().user.name || "" : "";
+    $("profile").hidden = false;
+    selected = info.id;
+    if (Save.signedIn()) { await Save.refresh().catch(() => {}); cache.clear(); }
+    renderList();
+    select(info.id);
+  }
+
   async function open(id) {
+    live = null;
     if (!Save.signedIn()) return;
     cache.clear();
     await Save.refresh().catch(() => {});
@@ -186,5 +237,5 @@ window.Profile = (() => {
     hooks = h || {};
     $("profile-close").addEventListener("click", close);
   }
-  return { init, open, close, isOpen: () => !$("profile").hidden };
+  return { init, open, openCurrent, close, isOpen: () => !$("profile").hidden };
 })();

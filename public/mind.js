@@ -811,6 +811,8 @@ window.Mind = (() => {
     CARDS, CARD_ORDER, GOOD, BAD, bar,
     caritaName: (k) => (CARITA[k] ? CARITA[k].name : ""),
     viewCard: (id, own) => showCard(id, { own, then: () => {} }),
+    current: () => JSON.parse(JSON.stringify(S)),
+    suggestion: () => (S.stats ? suggestion() : ""),
   };
 
   return { parts, reload, init, onRoleStart, onRoleEnd, isOpen: () => open, bias, questInfo, renderStats, remote, openAlbum, dev, cardsChanged: syncCardsBtn };

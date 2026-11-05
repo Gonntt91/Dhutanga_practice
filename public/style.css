@@ -542,3 +542,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--lantern); o
 #nick.need { border-color: var(--lantern); box-shadow: 0 0 0 3px rgba(230,197,111,0.25); }
 .profile-name-row { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
 .profile-rename { min-width: 0; flex: 1; font: 600 20px var(--font-display); color: var(--ash); background: var(--night-2); border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; }
+.mood-now { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; font: 600 18px/1.2 var(--font-display); }
+.mood-dot { width: 26px; height: 26px; border-radius: 50%; flex: none; }
+.mood-legend summary { cursor: pointer; font: 500 13px var(--font-ui); color: var(--ash-dim); margin: 6px 0; }
+.mood-legend .mind-legend { margin-top: 8px; }

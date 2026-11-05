@@ -506,7 +506,12 @@
     Mind.reload();
     startRole(role);
   }
-  Profile.init({ play: (id) => playCharacter(id), changed: () => renderPicker() });
+  Profile.init({
+    // from the profile: play a character (leaving the one in play first, if any)
+    play: async (id) => { if (state.role) await leaveRole(); playCharacter(id); },
+    changed: () => { if (!state.role) renderPicker(); },
+    login: () => { if (Save.me().google) Save.flush().finally(() => { location.href = "/auth/google"; }); else { leaveRole(); toast("Đăng nhập ở màn hình chọn vai, rồi lưu lần chơi này thành nhân vật."); } },
+  });
   async function playCharacter(id) {
     try { await Save.openCharacter(id); } catch { toast("Chưa mở được nhân vật này."); return; }
     Mind.reload();
@@ -550,7 +555,7 @@
 
   function leaveRole() {
     Mind.onRoleEnd();
-    Save.closeCharacter().then(() => Save.refresh()).then(() => { if (!state.role) renderPicker(); });
+    const closing = Save.closeCharacter().then(() => Save.refresh()).then(() => { if (!state.role) renderPicker(); });
     state.mindPose = null;
     stopWatch();
     closeFind(true);
@@ -561,6 +566,7 @@
     World.stop();
     sendPresence(true);
     renderPicker();
+    return closing;
   }
 
   // ---------- place-driven flow ----------
@@ -785,10 +791,21 @@
     $("mind-name").textContent = moodLabel(g);
     World.setView({ mood: g });
   }
+  // Tapping the mind orb opens the character's profile: mind now, stats, cards, bag, diary.
   $("mind").addEventListener("click", () => {
-    const show = $("mind-info").hidden;
-    if (show) Mind.renderStats($("mind-stats"));
-    $("mind-info").hidden = !show;
+    if (!state.role) return;
+    const ch = Save.character();
+    const g = moodValue();
+    const [r, gg, b] = World.moodRgb(g);
+    Profile.openCurrent({
+      id: ch ? ch.id : "guest",
+      name: ch ? ch.name : state.nick || "Khách",
+      role: state.role,
+      mind: Mind.parts.current(),
+      history: Save.history(),
+      mood: { label: moodLabel(g), color: `rgb(${r},${gg},${b})` },
+      suggestion: Mind.parts.suggestion(),
+    });
   });
   $("mind-info-close").addEventListener("click", () => { $("mind-info").hidden = true; });
   // a swing of mood fades back toward the baseline over about half a minute
