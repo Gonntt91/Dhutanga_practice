@@ -130,3 +130,174 @@ test("old checkpoint without startedAt/away is still valid", () => {
   assert.equal(P_.valid(cp, "monk", STORY.monk), true);
   assert.equal(P_.decide(cp, "monk", STORY.monk, SPAWN, BOUNDS).mode, "resume");
 });
+
+// ---------- story arc across nights ----------
+function arcEnv() {
+  const sb = makeSandbox();
+  load(sb, "story.js");
+  load(sb, "story-nights.js");
+  load(sb, "chapters.js");
+  load(sb, "progress.js");
+  return { P: sb.Progress, S: sb.STORY, C: sb.Chapters };
+}
+const finishNight = (P, S, role, cp, meter) => {
+  const scene = S[role].scenes[cp.sceneId];
+  const band = scene.endings.findIndex((e) => meter <= e.max);
+  return P.complete({ ...cp, meter }, band).cp;
+};
+const endReachable = (story, from) => {
+  const seen = new Set(), stack = [from];
+  while (stack.length) {
+    const id = stack.pop();
+    if (seen.has(id)) continue;
+    seen.add(id);
+    const sc = story.scenes[id];
+    if (sc.end) return id;
+    for (const c of sc.choices || []) if (c.next) stack.push(c.next);
+    if (sc.watch) stack.push(sc.watch.next);
+  }
+  throw new Error("no end from " + from);
+};
+
+test("create starts in c1 with an empty arc history, and accepts start/meterStart/arc overrides", () => {
+  const P_ = P();
+  const cp = P_.create({ role: "monk", story: STORY.monk, spawn: SPAWN });
+  assert.deepEqual(JSON.parse(JSON.stringify(cp.arc)), { chapter: "c1", history: [] });
+  const cp2 = P_.create({ role: "monk", story: STORY.monk, spawn: SPAWN, start: "a1", meterStart: 8, arc: { chapter: "c2a", history: [] } });
+  assert.equal(cp2.sceneId, "a1");
+  assert.equal(cp2.meter, 8);
+  assert.equal(cp2.arc.chapter, "c2a");
+});
+
+test("complete records {chapter, band, day} once", () => {
+  const P_ = P();
+  const cp = { ...P_.create({ role: "monk", story: STORY.monk, spawn: SPAWN, day: 2 }), sceneId: "end" };
+  const a = P_.complete(cp, 2);
+  assert.equal(a.first, true);
+  assert.deepEqual(JSON.parse(JSON.stringify(a.cp.arc.history)), [{ chapter: "c1", band: 2, day: 2 }]);
+  const b = P_.complete(a.cp, 0);
+  assert.equal(b.first, false);
+  assert.equal(b.cp.arc.history.length, 1);
+  assert.equal(b.cp.arc.history[0].band, 2);
+});
+
+test("complete on a checkpoint without arc starts one from c1", () => {
+  const P_ = P();
+  const cp = P_.create({ role: "monk", story: STORY.monk, spawn: SPAWN });
+  delete cp.arc;
+  const r = P_.complete(cp, 1);
+  assert.equal(r.cp.arc.chapter, "c1");
+  assert.deepEqual(JSON.parse(JSON.stringify(r.cp.arc.history)), [{ chapter: "c1", band: 1, day: 1 }]);
+});
+
+test("newnight carries the arc and starts at the chapter's start scene", () => {
+  const { P: P_, S, C } = arcEnv();
+  const first = P_.decide(null, "villager", S.villager, SPAWN, BOUNDS).cp;
+  assert.equal(first.arc.chapter, "c1");
+  assert.equal(first.sceneId, "v1");
+  const done = finishNight(P_, S, "villager", { ...first, sceneId: "end" }, 9);
+  const r = P_.decide(done, "villager", S.villager, SPAWN, BOUNDS);
+  assert.equal(r.mode, "newnight");
+  assert.equal(r.cp.day, 2);
+  const want = C.startFor("villager", { chapter: "c1", history: [{ chapter: "c1", band: 2, day: 1 }] }, 2);
+  assert.equal(want.chapter, "c2a");
+  assert.equal(r.cp.arc.chapter, "c2a");
+  assert.equal(r.cp.sceneId, want.start);
+  assert.equal(r.cp.meter, want.meterStart);
+  assert.notEqual(r.cp.sceneId, "v1");
+  assert.deepEqual(JSON.parse(JSON.stringify(r.cp.arc.history)), [{ chapter: "c1", band: 2, day: 1 }]);
+  assert.equal(P_.valid(r.cp, "villager", S.villager), true);
+});
+
+test("newnight for a low-trust villager goes to the doubt chapter; the account memory v_alms overrides", () => {
+  const { P: P_, S } = arcEnv();
+  const first = P_.decide(null, "villager", S.villager, SPAWN, BOUNDS).cp;
+  const done = finishNight(P_, S, "villager", { ...first, sceneId: "end" }, 2);
+  assert.equal(P_.decide(done, "villager", S.villager, SPAWN, BOUNDS).cp.arc.chapter, "c2b");
+  assert.equal(P_.decide(done, "villager", S.villager, SPAWN, BOUNDS, { mem: ["v_alms"] }).cp.arc.chapter, "c2a");
+});
+
+test("each role walks c1 -> c2 -> ordinary nights without ever repeating a chapter", () => {
+  const { P: P_, S } = arcEnv();
+  for (const role of ["monk", "ghost", "villager"]) {
+    let cp = P_.decide(null, role, S[role], SPAWN, BOUNDS).cp;
+    const seen = [cp.arc.chapter];
+    for (let night = 1; night <= 7; night++) {
+      const ended = finishNight(P_, S, role, { ...cp, sceneId: endReachable(S[role], cp.sceneId) }, 5);
+      const r = P_.decide(ended, role, S[role], SPAWN, BOUNDS);
+      assert.equal(r.mode, "newnight");
+      assert.equal(r.cp.day, night + 1);
+      assert.ok(S[role].scenes[r.cp.sceneId]);
+      seen.push(r.cp.arc.chapter);
+      cp = r.cp;
+    }
+    assert.equal(seen[0], "c1");
+    assert.ok(/^c2/.test(seen[1]));
+    for (let i = 2; i < seen.length; i++) assert.ok(/^n[12]$/.test(seen[i]));
+    for (let i = 1; i < seen.length; i++) assert.notEqual(seen[i], seen[i - 1]);
+  }
+});
+
+test("resume keeps the current chapter, arc and scene", () => {
+  const { P: P_, S } = arcEnv();
+  const first = P_.decide(null, "monk", S.monk, SPAWN, BOUNDS).cp;
+  const done = finishNight(P_, S, "monk", { ...first, sceneId: "end" }, 9);
+  const night2 = P_.decide(done, "monk", S.monk, SPAWN, BOUNDS).cp;
+  const mid = { ...night2, meter: 6 };
+  const r = P_.decide(mid, "monk", S.monk, SPAWN, BOUNDS);
+  assert.equal(r.mode, "resume");
+  assert.equal(r.cp.arc.chapter, night2.arc.chapter);
+  assert.equal(r.cp.sceneId, night2.sceneId);
+  assert.equal(r.cp.runId, night2.runId);
+  assert.equal(r.cp.arc.history.length, 1);
+});
+
+test("resume of an old checkpoint without arc gets a c1 arc and keeps its scene", () => {
+  const { P: P_, S } = arcEnv();
+  const old = P_.create({ role: "ghost", story: S.ghost, spawn: SPAWN, day: 2 });
+  delete old.arc;
+  old.sceneId = "g3";
+  const r = P_.decide(old, "ghost", S.ghost, SPAWN, BOUNDS);
+  assert.equal(r.mode, "resume");
+  assert.equal(r.cp.sceneId, "g3");
+  assert.equal(r.cp.arc.chapter, "c1");
+});
+
+test("old checkpoint without arc at day >= 2 (night finished) moves on to a c2 chapter", () => {
+  const { P: P_, S } = arcEnv();
+  for (const role of ["monk", "ghost", "villager"]) {
+    const old = { ...P_.create({ role, story: S[role], spawn: SPAWN, day: 2 }), sceneId: "end", meter: 5 };
+    delete old.arc;
+    const done = { ...old, endedRunId: old.runId };
+    const r = P_.decide(done, role, S[role], SPAWN, BOUNDS);
+    assert.equal(r.mode, "newnight");
+    assert.equal(r.cp.day, 3);
+    assert.ok(/^c2/.test(r.cp.arc.chapter), `${role}: ${r.cp.arc.chapter}`);
+    assert.ok(S[role].scenes[r.cp.sceneId]);
+    assert.notEqual(r.cp.sceneId, S[role].start);
+  }
+  // a villager who remembered the alms is treated as having trusted
+  const v = { ...P_.create({ role: "villager", story: S.villager, spawn: SPAWN, day: 2 }), sceneId: "end", meter: 5 };
+  delete v.arc;
+  v.endedRunId = v.runId;
+  assert.equal(P_.decide(v, "villager", S.villager, SPAWN, BOUNDS, { mem: new Set(["v_alms"]) }).cp.arc.chapter, "c2a");
+});
+
+test("with no chapter data in the story, newnight falls back to the story start", () => {
+  const P_ = P(); // progress.js alone, fake story
+  const done = P_.complete({ ...P_.create({ role: "monk", story: STORY.monk, spawn: SPAWN }), sceneId: "end" }, 1).cp;
+  const r = P_.decide(done, "monk", STORY.monk, SPAWN, BOUNDS);
+  assert.equal(r.cp.sceneId, "a0");
+  assert.equal(r.cp.meter, 5);
+  assert.equal(r.cp.arc.chapter, "c1");
+});
+
+test("newnight keeps promise and away carry-over alongside the arc", () => {
+  const { P: P_, S } = arcEnv();
+  const first = { ...P_.decide(null, "monk", S.monk, SPAWN, BOUNDS).cp, sceneId: "end", away: { activity: "sit", at: 1 }, nextPromise: { id: "p1", day: 1 } };
+  const done = finishNight(P_, S, "monk", first, 9);
+  const r = P_.decide(done, "monk", S.monk, SPAWN, BOUNDS);
+  assert.deepEqual(r.cp.returnFrom, { activity: "sit", at: 1 });
+  assert.deepEqual({ ...r.cp.promise }, { id: "p1", day: 1 });
+  assert.ok(r.cp.arc.chapter);
+});

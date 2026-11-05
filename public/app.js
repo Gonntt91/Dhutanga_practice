@@ -97,7 +97,7 @@
   const endingFor = (scene) => scene.endings.find((e) => state.meter <= e.max) || scene.endings[scene.endings.length - 1];
   // Records the finished night once per runId; rendering the ending only reads state.
   function completeRun(scene) {
-    const r = Progress.complete(state.cp);
+    const r = Progress.complete(state.cp, Chapters.bandOf(scene, state.meter)); // the band decides how the next night begins
     if (!r.first) return;
     state.cp = r.cp;
     const ending = endingFor(scene);
@@ -559,7 +559,7 @@
     state.completed = loadCompleted();
     state.role = role;
     const spawn = World.SPAWN[role];
-    const plan = Progress.decide(loadCheckpoint(), role, STORY[role], spawn, { minX: 12, maxX: World.W - 12, minY: 60, maxY: World.H });
+    const plan = Progress.decide(loadCheckpoint(), role, STORY[role], spawn, { minX: 12, maxX: World.W - 12, minY: 60, maxY: World.H }, { mem: loadMem() });
     state.cp = plan.cp;
     state.sceneId = plan.cp.sceneId;
     state.sceneOpen = false;
@@ -590,7 +590,16 @@
     pushView();
     sendPresence(true);
     // first time ever: a short survey of temperament before the night begins
-    const begin = () => { if (!Mind.onRoleStart(role, () => { if (state.role === role) showWalkOrScene(); })) showWalkOrScene(); };
+    const begin = () => {
+      if (!Mind.onRoleStart(role, () => { if (state.role === role) showWalkOrScene(); })) showWalkOrScene();
+      if (announce) setTimeout(() => { if (state.role === role) toast(announce); }, 700);
+    };
+    // a new night names its chapter once ("Đêm 2 · Theo thầy tu tập"); a night in progress is not announced again
+    const chapterId = plan.cp.arc.chapter;
+    const chapterTitle = chapterId === "c1" ? "" : Chapters.title(role, chapterId);
+    const chapterLine = chapterTitle ? `Đêm ${plan.cp.day} · ${chapterTitle}` : "";
+    $("role-chip").title = chapterLine; // hover/long-press on the role chip; the toast below shows it once, for a new night
+    const announce = plan.mode === "newnight" ? chapterLine : "";
     const back = plan.cp.returnFrom;
     const nudge = window.NightReflect && NightReflect.nudgeLine ? NightReflect.nudgeLine(plan.cp) : null;
     if (back && window.NightReflect && NightReflect.showAway) {
@@ -606,7 +615,7 @@
       });
     } else {
       begin();
-      if (nudge) setTimeout(() => { if (state.role === role) toast(nudge); }, 1500);
+      if (nudge) setTimeout(() => { if (state.role === role) toast(nudge); }, announce ? 4800 : 1500);
     }
   }
 
