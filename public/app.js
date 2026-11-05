@@ -1072,13 +1072,31 @@
     // places
     g.font = '500 10px "Be Vietnam Pro", system-ui, sans-serif';
     g.textAlign = "left"; g.textBaseline = "middle";
-    for (const p of Object.values(m.PLACES)) {
-      g.fillStyle = "rgba(230,197,111,0.85)";
-      g.beginPath(); g.arc(p.x * sx, p.y * sy, 3, 0, 7); g.fill();
-      g.fillStyle = "rgba(220,213,197,0.8)";
-      const right = p.x * sx < w * 0.55;
+    const now = performance.now() / 1000;
+    for (const [key, p] of Object.entries(m.PLACES)) {
+      const ps = window.Discover && state.role ? Discover.placeState(key) : { visited: true, live: false };
+      const px = p.x * sx, py = p.y * sy;
+      const right = px < w * 0.55;
       g.textAlign = right ? "left" : "right";
-      g.fillText(p.name, p.x * sx + (right ? 8 : -8), p.y * sy);
+      if (ps.live) {
+        // something may happen here right now
+        const pulse = 0.5 + 0.5 * Math.sin(now * 4);
+        g.strokeStyle = `rgba(159,210,193,${0.35 + 0.5 * pulse})`; g.lineWidth = 1.4;
+        g.beginPath(); g.arc(px, py, 6 + pulse * 3, 0, 7); g.stroke();
+      }
+      if (!ps.visited) {
+        g.fillStyle = "rgba(220,213,197,0.35)";
+        g.beginPath(); g.arc(px, py, 3, 0, 7); g.fill();
+        g.font = '600 12px "Be Vietnam Pro", system-ui, sans-serif';
+        g.fillStyle = ps.live ? "rgba(159,210,193,0.95)" : "rgba(220,213,197,0.55)";
+        g.fillText("?", px + (right ? 8 : -8), py);
+        g.font = '500 10px "Be Vietnam Pro", system-ui, sans-serif';
+        continue;
+      }
+      g.fillStyle = "rgba(230,197,111,0.85)";
+      g.beginPath(); g.arc(px, py, 3, 0, 7); g.fill();
+      g.fillStyle = ps.live ? "rgba(159,210,193,0.95)" : "rgba(220,213,197,0.8)";
+      g.fillText(p.name, px + (right ? 8 : -8), py);
     }
     // others (only when within sight)
     for (const o of m.others) {
@@ -1319,6 +1337,49 @@
       box.appendChild(item);
     }
   }
+  // ---------- discovery book: unknown → heard of → met ----------
+  let questTab = "tasks";
+  function setQuestTab(t) {
+    questTab = t;
+    $("qtab-tasks").setAttribute("aria-pressed", String(t === "tasks"));
+    $("qtab-book").setAttribute("aria-pressed", String(t === "book"));
+    $("quest-tasks").hidden = t !== "tasks";
+    $("quest-book").hidden = t !== "book";
+    if (t === "book") renderBook();
+  }
+  function renderBook() {
+    if (!window.Discover) return;
+    const box = $("quest-book"); box.replaceChildren();
+    const { seen, total } = Discover.count();
+    box.appendChild(el("p", "book-progress", `Đã khám phá ${seen}/${total}`));
+    const bar = el("div", "book-bar"); const fill = el("span"); fill.style.width = (seen / total) * 100 + "%"; bar.appendChild(fill); box.appendChild(bar);
+    box.appendChild(el("p", "hint", "Ô có dấu ? là điều còn chưa biết. Bắt chuyện với người qua đường để nghe thêm tin đồn."));
+    const grid = el("div", "book-grid");
+    for (const e of Discover.entries()) {
+      const item = el("div", "book-item " + e.state);
+      const place = World.PLACES[e.place];
+      if (e.state === "unknown") {
+        item.appendChild(el("b", null, "?"));
+        item.appendChild(el("p", null, e.hint));
+      } else {
+        item.appendChild(el("b", null, e.title));
+        item.appendChild(el("p", null, e.state === "seen" ? `Đã gặp · ${place ? place.name : ""}` : e.hint));
+        if (e.state === "heard") {
+          item.appendChild(el("small", "book-tag", "Nghe đồn"));
+          if (e.condText.length) item.appendChild(el("small", "book-conds", e.condText.join(" · ")));
+          if (place) {
+            const go = el("button", "text-btn", `Tới ${place.name}`); go.type = "button";
+            go.addEventListener("click", () => { $("quest-panel").hidden = true; goTo(place.x, place.y + 34); });
+            item.appendChild(go);
+          }
+        }
+      }
+      grid.appendChild(item);
+    }
+    box.appendChild(grid);
+  }
+  $("qtab-tasks").addEventListener("click", () => setQuestTab("tasks"));
+  $("qtab-book").addEventListener("click", () => setQuestTab("book"));
   $("quest-login").addEventListener("click", () => {
     if (Save.me().google) { Save.flush().finally(() => { location.href = "/auth/google"; }); return; }
     $("quest-panel").hidden = true; leaveRole(); toast("Đăng nhập thử ở màn hình chọn vai, rồi lưu lần chơi này thành nhân vật.");
@@ -1346,7 +1407,12 @@
     busy: () => !!state.findOpen || !$("room").hidden || !$("picker").hidden || !$("map-panel").hidden || !$("cards-panel").hidden ||
       (state.sceneOpen && !$("sheet").classList.contains("collapsed")),
   });
-  function openQuest() { renderQuest(); $("quest-panel").hidden = false; }
+  function openQuest() {
+    renderQuest();
+    if (window.Discover) { const c = Discover.count(); $("book-count").textContent = `${c.seen}/${c.total}`; }
+    setQuestTab(questTab);
+    $("quest-panel").hidden = false;
+  }
   $("quest-btn").addEventListener("click", () => ($("quest-panel").hidden ? openQuest() : ($("quest-panel").hidden = true)));
   $("quest-close").addEventListener("click", () => ($("quest-panel").hidden = true));
   $("quest-go").addEventListener("click", () => {

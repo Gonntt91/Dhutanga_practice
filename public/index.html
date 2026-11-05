@@ -43,6 +43,11 @@
   </div>
   <section id="quest-panel" class="quest-panel" hidden aria-label="Việc đang chờ">
     <div class="mind-info-head"><span class="label">Việc đang chờ</span><button id="quest-close" class="text-btn" type="button">Đóng</button></div>
+    <div class="quest-tabs">
+      <button id="qtab-tasks" class="pill" type="button" aria-pressed="true">Việc đang chờ</button>
+      <button id="qtab-book" class="pill" type="button" aria-pressed="false">Sổ khám phá <span id="book-count" class="count"></span></button>
+    </div>
+    <div id="quest-tasks">
     <p id="quest-title" class="quest-title"></p>
     <p id="quest-body" class="hint"></p>
     <p id="quest-tip" class="quest-tip" hidden></p>
@@ -61,6 +66,8 @@
       <button id="quest-login" class="pill" type="button">Đăng nhập để lưu</button>
     </div>
     <p class="hint">Bạn có thể đi dạo và khám phá tự do bất cứ lúc nào. Việc đang chờ vẫn ở đây.</p>
+  </div>
+    <div id="quest-book" hidden></div>
   </section>
   <div id="toast" class="toast" aria-live="polite"></div>
   <div id="kbd-hint" class="kbd-hint" hidden>

@@ -240,6 +240,7 @@
   function pondVisit() {
     const q = Q("pond");
     snooze(q, 8 * 60000);
+    if (night()) { q.moon = true; K.save(); }
     const choices = [
       { label: "Ngồi ngắm một lát", primary: true, fn: () => { K.grow("niem", 0.8); K.grow("dinh", 0.8); K.closeSheet(); api().swingMood(0.25); toast("Người này ngồi yên. Gió mát, lòng lắng xuống như mặt ao."); } },
     ];
@@ -440,6 +441,7 @@
   function talk() {
     cart.pause = true;
     const S = K.S;
+    S.q.cart = { ...(S.q.cart || {}), met: true }; K.save();
     const has = (id) => S.items.includes(id);
     const done = () => { cart.talked = true; cart.pause = false; cart.stuck = false; K.closeSheet(); };
     const choices = [];
@@ -451,7 +453,12 @@
         K.gotItem("khan_ran", () => { K.setOpen(false); K.cooldown(2500); api().toast("“Cảm ơn nhé! Cái khăn rằn này tặng người, đi đêm cho ấm.”"); });
       } else api().toast("Bánh xe lên khỏi ổ gà. Ông lái buôn cười, vẫy tay cảm ơn.");
     } });
-    choices.push({ label: "Hỏi chuyện đường xa", fn: () => K.showSheet({ label: "Xe ngựa", lines: [RUMOURS[Math.floor(Math.random() * RUMOURS.length)]], choices: [{ label: "Cảm ơn ông", fn: done }] }) });
+    choices.push({ label: "Hỏi chuyện đường xa", fn: () => {
+      // a rumour about something this character has not heard of yet goes into the discovery book
+      const r = window.Discover && Discover.rumour();
+      const lines = r ? [r.rumour, "(Đã ghi vào Sổ khám phá.)"] : [RUMOURS[Math.floor(Math.random() * RUMOURS.length)]];
+      K.showSheet({ label: "Xe ngựa", lines, choices: [{ label: "Cảm ơn ông", fn: done }] });
+    } });
     if (has("rau_ma") && !has("banh_da")) choices.push({ label: "Tặng ông nắm rau má", fn: () => {
       K.dropItem("rau_ma"); K.giveItem("banh_da"); K.grow("tham", -1.5); K.save(); cart.talked = true; cart.pause = false; K.closeSheet(); K.setOpen(true);
       K.gotItem("banh_da", () => K.award("khong_tham", "Người này tặng ông lái buôn nắm rau má, ông đổi lại gói bánh đa.", () => K.cooldown(2500)));
@@ -558,4 +565,78 @@
     },
   });
   window.Cart = { spawn() { cart.wait = 0; cart.on = false; }, stuck() { cart.wait = 0; cart.on = false; setTimeout(() => { cart.stuckAt = -1; cart.stuck = true; cart.stuckUntil = performance.now() + 60000; }, 50); } };
+})();
+
+
+// ---------- discovery book: what can be found, shown as unknown → heard of → met ----------
+window.Discover = (() => {
+  const K = Mind.kit;
+  const q = (k) => (K.S.q && K.S.q[k]) || {};
+  const api = () => K.api();
+  const dark = () => (api() ? api().darkness() : 0);
+  const mood = () => (api() ? api().mood() : 0.5);
+  const has = (id) => K.S.items.includes(id);
+  const village = () => ["monk", "villager"].includes(K.role());
+  const did = () => q("tree").step === "done" || q("peta").step === "done" || (K.S.quest && K.S.quest.step === "done");
+  // cond icons: 🌇 from dusk, 🌙 at night, ✨ bright mind, 🪔/🌸 needs an item, 🧘 sit quietly, 🤝 after a kind deed
+  const ENTRIES = [
+    { id: "cho", title: "Con chó nhà ông Tư", place: "village", conds: [], hint: "Ở ngõ làng, có kẻ không ưa người lạ.", rumour: "“Con chó nhà ông Tư dữ lắm, đi qua ngõ thì cẩn thận.”", seen: () => (K.S.quest.bites || 0) > 0, live: () => village() },
+    { id: "su_gia", title: "Vị sư già giữa nghĩa địa", place: "graves", conds: [], hint: "Giữa các ngôi mộ, có người ngồi yên rất lâu.", rumour: "“Có một vị sư già hay ngồi giữa nghĩa địa. Ai ngồi cùng thầy thì lòng lắng xuống.”", seen: () => ["sit", "deva", "done"].includes(K.S.quest.step), live: () => K.S.quest.step === "monk" },
+    { id: "chu_thien", title: "Chư thiên", place: "hermitage", conds: ["🌙", "✨"], hint: "Có đêm, ánh sáng từ trời rọi xuống khu rừng.", rumour: "“Đêm khuya ở tịnh thất hay gốc gạo, có người thấy ánh sáng từ trời xuống, hoa rơi như mưa.”", seen: () => (K.S.deva.seen || 0) > 0, live: () => dark() >= 0.5 && mood() >= 0.62 },
+    { id: "tho_than", title: "Thọ thần ở gốc gạo", place: "gao", conds: ["🌇"], hint: "Một gốc cây già, lá có khi tự sáng.", rumour: "“Cây gạo già ấy có thần đấy. Chạng vạng mà thấy lá sáng thì chớ sợ.”", seen: () => (q("tree").step || "none") !== "none", live: () => dark() >= 0.4 },
+    { id: "be_na", title: "Đứa bé lạc", place: "bamboo", conds: [], hint: "Có tiếng khóc nhỏ đâu đó trong bụi tre.", rumour: "“Nhà chị Ba đầu ngõ mấy hôm nay cứ lo con bé hay chạy ra bụi tre.”", seen: () => ["follow", "thank", "done"].includes(q("tree").step), live: () => q("tree").step === "child" },
+    { id: "ba_ngoai", title: "Bóng người bên mộ thấp", place: "graves", conds: ["🌙"], hint: "Ban đêm, có ai đó gầy guộc đứng mãi giữa nghĩa địa.", rumour: "“Người làng bảo đêm đêm có bóng bà cụ đứng bên ngôi mộ thấp, như chờ ai.”", seen: () => (q("peta").step || "none") !== "none", live: () => village() && dark() >= 0.5 },
+    { id: "dia_than", title: "Địa thần ở cổng làng", place: "gate", conds: ["🤝", "🌇", "✨"], hint: "Có khi mặt đất ở cổng làng ấm lên lạ thường.", rumour: "“Ông bà xưa nói cổng làng có thần đất, chỉ hiện ra với người ngay thẳng, từng làm việc tốt.”", seen: () => q("earth").step === "done", live: () => did() && dark() >= 0.4 && mood() >= 0.5 },
+    { id: "hang", title: "Hang bí mật", place: "hang", conds: ["🧘"], hint: "Phía đông có một tảng đá lớn, mát lạnh lạ kỳ.", rumour: "“Tảng đá lớn phía đông ấy như biết thở. Ngồi tựa vào là thấy gió lạnh sau lưng.”", seen: () => !!q("cave").found, live: () => true },
+    { id: "day_hang", title: "Đáy hang", place: "hang", conds: ["🪔"], hint: "Sâu trong lòng đất có những người đói lâu năm.", rumour: "“Đi ngang hang đá sau đồi, tôi nghe như có tiếng người than đói.”", seen: () => q("cave").step === "done", live: () => !!q("cave").found && has("den_nho") },
+    { id: "ao_trang", title: "Trăng dưới ao sen", place: "ao", conds: ["🌙"], hint: "Ao đầu làng, đêm xuống thì khác hẳn ban ngày.", rumour: "“Ao sen đầu làng mà trăng lên thì đẹp lắm, ngồi đó lòng nhẹ hẳn.”", seen: () => !!q("pond").moon, live: () => dark() >= 0.5 },
+    { id: "thien_cung", title: "Thiên cung trên mây", place: "thap", conds: ["🌙", "🌸"], hint: "Ngọn tháp cổ trên đồi, đêm khuya có lúc ánh lên.", rumour: "“Đêm rằm, người ta thấy ánh sáng quanh cái tháp cổ trên đồi. Phải có hoa trời mới thấy lối.”", seen: () => (q("palace").visits || 0) > 0, live: () => dark() >= 0.5 && has("mandarava") },
+    { id: "xe_ngua", title: "Ông lái buôn", place: "village", conds: [], hint: "Thỉnh thoảng có tiếng vó ngựa dọc con đường.", rumour: "“Có ông lái buôn đánh xe ngựa qua làng, hay dừng lại tán chuyện.”", seen: () => !!q("cart").met, live: () => true },
+  ];
+  const COND_TEXT = { "🌇": "từ chạng vạng", "🌙": "ban đêm", "✨": "tâm sáng", "🪔": "cần đèn", "🌸": "cần hoa trời", "🧘": "ngồi yên", "🤝": "sau một việc tốt" };
+  const book = () => (K.S.disc = K.S.disc || { heard: {}, seen: {}, visited: {} });
+
+  function state(e) {
+    const b = book();
+    if (e.seen()) { if (!b.seen[e.id]) { b.seen[e.id] = Date.now(); K.save(); } return "seen"; }
+    return b.heard[e.id] ? "heard" : "unknown";
+  }
+  function entries() { return ENTRIES.map((e) => ({ ...e, state: state(e), condText: e.conds.map((c) => `${c} ${COND_TEXT[c]}`) })); }
+  function count() { const all = entries(); return { seen: all.filter((e) => e.state === "seen").length, total: all.length }; }
+  function rumour() {
+    const b = book();
+    const pool = ENTRIES.filter((e) => !e.seen() && !b.heard[e.id]);
+    if (!pool.length) return null;
+    const e = pool[Math.floor(Math.random() * pool.length)];
+    b.heard[e.id] = true; K.save();
+    return e;
+  }
+  // for the minimap: has the character been here, and could something happen here right now?
+  function placeState(key) {
+    const b = book();
+    const visited = !!b.visited[key];
+    const live = ENTRIES.some((e) => e.place === key && !e.seen() && (b.heard[e.id] || visited) && e.live());
+    return { visited, live };
+  }
+  // Runs on its own timer (not only when nothing else is open), so walking past a place always counts.
+  let primed = null;
+  function track() {
+    if (!K.role()) return;
+    const b = book();
+    // first pass for a character: record what was already met (and where) without a burst of toasts
+    if (primed !== K.S) {
+      primed = K.S;
+      for (const e of ENTRIES) if (e.seen()) { if (!b.seen[e.id]) b.seen[e.id] = Date.now(); if (!b.visited[e.place]) b.visited[e.place] = Date.now(); }
+      K.save();
+    }
+    const p = World.getPlayer();
+    for (const [k, pl] of Object.entries(World.PLACES)) {
+      if (!b.visited[k] && Math.hypot(p.x - pl.x, p.y - pl.y) < 80) { b.visited[k] = Date.now(); K.save(); }
+    }
+    for (const e of ENTRIES) {
+      if (!b.seen[e.id] && e.seen()) { b.seen[e.id] = Date.now(); b.visited[e.place] = b.visited[e.place] || Date.now(); K.save(); api() && api().toast(`Sổ khám phá: ${e.title}.`); }
+    }
+  }
+  setInterval(track, 500);
+  return { entries, count, rumour, placeState, COND_TEXT };
 })();
