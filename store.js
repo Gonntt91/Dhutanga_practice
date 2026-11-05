@@ -86,6 +86,11 @@ function pgStore(url) {
       const r = await q("update characters set data = $3, updated_at = now() where user_id = $1 and id = $2", [userId, id, data]);
       return r.rowCount > 0;
     },
+    async renameCharacter(userId, id, name) {
+      await wait();
+      const r = await q("update characters set name = $3, updated_at = now() where user_id = $1 and id = $2", [userId, id, name]);
+      return r.rowCount > 0;
+    },
     async deleteCharacter(userId, id) { await wait(); await q("delete from characters where user_id = $1 and id = $2", [userId, id]); },
   };
 }
@@ -141,6 +146,12 @@ function fileStore(file) {
       const c = db.characters[id];
       if (!c || c.user_id !== userId) return false;
       c.data = data; c.updated_at = now(); persist();
+      return true;
+    },
+    async renameCharacter(userId, id, name) {
+      const c = db.characters[id];
+      if (!c || c.user_id !== userId) return false;
+      c.name = name; c.updated_at = now(); persist();
       return true;
     },
     async deleteCharacter(userId, id) { const c = db.characters[id]; if (c && c.user_id === userId) { delete db.characters[id]; persist(); } },

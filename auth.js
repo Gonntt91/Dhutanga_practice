@@ -167,6 +167,14 @@ async function handle(req, res, url) {
       json(res, ok ? 200 : 404, ok ? { ok: true } : { error: "not found" });
       return true;
     }
+    if (req.method === "PATCH") {
+      const body = await readBody(req, 2048);
+      const name = cleanName(body.name);
+      if (!name) { json(res, 400, { error: "empty name" }); return true; }
+      const ok = await store.renameCharacter(user.id, id, name);
+      json(res, ok ? 200 : 404, ok ? { character: { id, name } } : { error: "not found" });
+      return true;
+    }
     if (req.method === "DELETE") { await store.deleteCharacter(user.id, id); json(res, 200, { ok: true }); return true; }
   }
   json(res, 404, { error: "not found" });

@@ -40,7 +40,7 @@ window.Profile = (() => {
       b.type = "button";
       b.dataset.role = c.role;
       b.setAttribute("aria-pressed", String(c.id === selected));
-      const glyph = el("span", "glyph"); glyph.appendChild(el("span"));
+      const glyph = el("span", "chip-avatar"); glyph.innerHTML = Avatar.svg(c.role, c.skin, 34);
       const txt = el("span", "chip-text");
       txt.appendChild(el("b", null, c.name));
       txt.appendChild(el("small", null, `${ROLE_INFO[c.role] ? ROLE_INFO[c.role].name : c.role} · ${ago(c.updatedAt)}`));
@@ -75,9 +75,32 @@ window.Profile = (() => {
     // header
     const head = el("div", "profile-head");
     head.dataset.role = c.role;
-    const glyph = el("div", "glyph"); glyph.appendChild(el("span"));
+    // portrait: drawn in layers so clothes, hair and items can be changed later (skin kept in character data)
+    const glyph = Avatar.node(c.role, c.data && c.data.skin, 132);
+    glyph.classList.add("profile-portrait");
     const who = el("div", "profile-who");
-    who.appendChild(el("h2", "profile-name", c.name));
+    const nameRow = el("div", "profile-name-row");
+    const nameEl = el("h2", "profile-name", c.name);
+    const rename = el("button", "text-btn", "Đổi tên"); rename.type = "button";
+    rename.addEventListener("click", () => {
+      const input = el("input", "profile-rename"); input.maxLength = 24; input.value = c.name;
+      const ok = el("button", "pill", "Lưu"); ok.type = "button";
+      const cancel = el("button", "text-btn", "Hủy"); cancel.type = "button";
+      const form = el("div", "profile-name-row"); form.append(input, ok, cancel);
+      nameRow.replaceWith(form); input.focus(); input.select();
+      const done = async () => {
+        const v = input.value.replace(/\s+/g, " ").trim();
+        if (!v || v === c.name) { form.replaceWith(nameRow); return; }
+        try { c.name = await Save.renameCharacter(id, v); cache.set(id, c); } catch { alert("Chưa đổi được tên."); }
+        hooks.changed && hooks.changed();
+        select(id);
+      };
+      ok.addEventListener("click", done);
+      cancel.addEventListener("click", () => form.replaceWith(nameRow));
+      input.addEventListener("keydown", (e) => { if (e.key === "Enter") done(); if (e.key === "Escape") form.replaceWith(nameRow); e.stopPropagation(); });
+    });
+    nameRow.append(nameEl, rename);
+    who.appendChild(nameRow);
     who.appendChild(el("p", "rc-who", `${ROLE_INFO[c.role] ? ROLE_INFO[c.role].name : c.role}${summary.createdAt ? " · tạo ngày " + fmtDate(summary.createdAt) : ""}${summary.updatedAt ? " · chơi " + ago(summary.updatedAt) : ""}`));
     if (mind.carita) who.appendChild(el("p", "mind-carita", `Người này thiên về tính ${P.caritaName(mind.carita)}.`));
     head.append(glyph, who);

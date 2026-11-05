@@ -428,6 +428,7 @@
       const row = el("div", "account-actions"); loginButtons(row); box.appendChild(row);
       $("new-title").textContent = "Chơi ngay";
       $("nick-label").textContent = "Tên hiển thị (không bắt buộc)";
+      $("nick").placeholder = "Một người lạ";
       return;
     }
     const head = el("div", "account-head");
@@ -483,11 +484,22 @@
       chars.appendChild(card);
     }
     $("new-title").textContent = "Tạo nhân vật mới";
-    $("nick-label").textContent = "Tên nhân vật";
+    $("nick-label").textContent = "Tên nhân vật (bắt buộc), rồi chọn vai bên dưới";
+    $("nick").placeholder = "Ví dụ: Thầy Minh Tâm, Bà Tư, Bóng áo trắng";
   }
   async function playNew(role) {
-    if (!Save.signedIn()) { Save.setGuestRole(role); Mind.reload(); return startRole(role); }
-    const name = ($("nick").value || "").replace(/\s+/g, " ").trim().slice(0, 24) || `${ROLE_INFO[role].name} ${(Save.me().characters || []).length + 1}`;
+    const typed = ($("nick").value || "").replace(/\s+/g, " ").trim().slice(0, 24);
+    if (!Save.signedIn()) { Save.setGuestRole(role, typed); Mind.reload(); return startRole(role); }
+    // a new character needs a name: the one typed in the box becomes the character's name
+    if (!typed) {
+      const input = $("nick");
+      input.classList.add("need");
+      input.scrollIntoView({ block: "center", behavior: "smooth" });
+      setTimeout(() => input.focus(), 250);
+      $("nick-label").textContent = `Đặt tên cho ${ROLE_INFO[role].name.toLowerCase()} của bạn trước nhé`;
+      return;
+    }
+    const name = typed;
     try { await Save.createCharacter(name, role); }
     catch (e) { toast(e.message === "too many characters" ? "Tài khoản đã đủ 12 nhân vật. Xóa bớt một nhân vật để tạo mới." : "Chưa tạo được nhân vật, thử lại nhé."); return; }
     $("nick").value = "";
@@ -1005,6 +1017,7 @@
     chatNote(res.heard === 0 ? "Chưa có ai ở gần để nghe thấy. Lại gần người khác nhé." : "");
   });
   function syncChatButton() { $("quest-btn").hidden = !state.role; if (!state.role) $("quest-panel").hidden = true; $("chat-btn").hidden = !state.role; $("zoom-ctl").hidden = !state.role; if (!state.role) openChat(false); }
+  $("nick").addEventListener("input", () => $("nick").classList.remove("need"));
   $("zoom-in").addEventListener("click", () => World.zoomBy(1.25));
   $("zoom-out").addEventListener("click", () => World.zoomBy(0.8));
 

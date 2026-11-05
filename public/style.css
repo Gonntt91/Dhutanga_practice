@@ -531,3 +531,14 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--lantern); o
   .profile-list { flex-direction: column; overflow: visible; position: sticky; top: 0; }
   .profile-chip { max-width: none; }
 }
+/* character portraits */
+.avatar-svg { display: block; overflow: visible; }
+.profile-portrait { flex: none; padding: 4px; border-radius: 16px; border: 1px solid var(--line);
+  background: radial-gradient(ellipse at 50% 35%, rgba(255,255,255,0.05), rgba(0,0,0,0.25)); }
+.profile-head { align-items: center; }
+.chip-avatar { width: 34px; height: 40px; flex: none; display: grid; place-items: end center; overflow: hidden; border-radius: 10px; background: rgba(255,255,255,0.03); }
+.chip-avatar .avatar-svg { width: 34px; height: 45px; }
+@media (max-width: 420px) { .profile-portrait .avatar-svg { width: 96px; height: 128px; } .profile-name { font-size: 24px; } }
+#nick.need { border-color: var(--lantern); box-shadow: 0 0 0 3px rgba(230,197,111,0.25); }
+.profile-name-row { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.profile-rename { min-width: 0; flex: 1; font: 600 20px var(--font-display); color: var(--ash); background: var(--night-2); border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; }

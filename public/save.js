@@ -6,6 +6,7 @@ window.Save = (() => {
   const ACCOUNT_KEYS = ["dhutanga.memory", "dhutanga.runs", "dhutanga.completed"];
   const CHAR_KEYS = ["dhutanga.mind", "dhutanga.history"];
   const GUEST_ROLE = "dhutanga.guestRole";
+  const GUEST_NICK = "dhutanga.guestNick";
   let me = { user: null, google: false, devLogin: false };
   let acct = {};          // account kv (strings, like localStorage)
   let char = null;        // { id, name, role, kv }
@@ -103,6 +104,12 @@ window.Save = (() => {
     me.characters = [{ id: char.id, name: char.name, role: char.role, cards: 0, items: 0, updatedAt: new Date().toISOString() }, ...(me.characters || [])];
     return char;
   }
+  async function renameCharacter(id, name) {
+    const { character } = await api("PATCH", "/api/characters/" + id, { name });
+    (me.characters || []).forEach((c) => { if (c.id === id) c.name = character.name; });
+    if (char && char.id === id) char.name = character.name;
+    return character.name;
+  }
   async function deleteCharacter(id) {
     await api("DELETE", "/api/characters/" + id);
     if (char && char.id === id) char = null;
@@ -120,19 +127,19 @@ window.Save = (() => {
     const runs = Number(ls.get("dhutanga.runs")) || 0;
     const hasMind = mind && (Object.keys(mind.cards || {}).length || (mind.items || []).length || mind.carita);
     if (!hasMind && !memory.length && !runs) return null;
-    return { mind, history, memory, runs, role: ls.get(GUEST_ROLE) || "villager", cards: Object.keys((mind && mind.cards) || {}).length, items: ((mind && mind.items) || []).length };
+    return { mind, history, memory, runs, role: ls.get(GUEST_ROLE) || "villager", nick: ls.get(GUEST_NICK) || "", cards: Object.keys((mind && mind.cards) || {}).length, items: ((mind && mind.items) || []).length };
   }
   // Move guest progress into a new character, merge story memory into the account, then clear the device copy.
   async function importGuest(name) {
     const g = guestProgress();
     if (!g) return null;
-    const c = await createCharacter(name || "Nhân vật đầu tiên", g.role, { mind: g.mind, history: [...g.history, { at: Date.now(), text: "Chuyển từ lần chơi thử vào tài khoản." }] });
+    const c = await createCharacter(name || g.nick || "Nhân vật đầu tiên", g.role, { mind: g.mind, history: [...g.history, { at: Date.now(), text: "Chuyển từ lần chơi thử vào tài khoản." }] });
     const a = accountToServer();
     let completed = {};
     try { completed = JSON.parse(ls.get("dhutanga.completed") || "{}"); } catch {}
     accountFromServer({ memory: [...new Set([...a.memory, ...g.memory])], runs: Math.max(a.runs, g.runs), completed: { ...a.completed, ...completed } });
     await pushAccount();
-    ["dhutanga.mind", "dhutanga.history", "dhutanga.memory", "dhutanga.runs", "dhutanga.completed", GUEST_ROLE].forEach(ls.del);
+    ["dhutanga.mind", "dhutanga.history", "dhutanga.memory", "dhutanga.runs", "dhutanga.completed", GUEST_ROLE, GUEST_NICK].forEach(ls.del);
     char = null;
     return c;
   }
@@ -143,8 +150,8 @@ window.Save = (() => {
   return {
     get, set, remove, flush, log, history,
     refresh, me: () => me, signedIn, character: () => char,
-    openCharacter, createCharacter, deleteCharacter, closeCharacter,
+    openCharacter, createCharacter, deleteCharacter, renameCharacter, closeCharacter,
     guestProgress, importGuest, devLogin, logout,
-    setGuestRole: (r) => ls.set(GUEST_ROLE, r),
+    setGuestRole: (r, nick) => { ls.set(GUEST_ROLE, r); if (nick) ls.set(GUEST_NICK, nick); },
   };
 })();
