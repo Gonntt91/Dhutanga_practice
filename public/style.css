@@ -302,3 +302,177 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--lantern); o
 /* Reading a sutta summary: a darker, old-manuscript paper. */
 .paper.book { background: #d8c9a0 linear-gradient(180deg, rgba(255,255,255,0.08), rgba(110,80,30,0.16)); transform: none; max-height: 90%; }
 .paper.book .paper-body p { font-size: 15.5px; }
+
+/* ---------- mind: quest cards, survey, sitting, card reveal, album ---------- */
+.mind-card { z-index: 5; }
+.sweep { position: relative; height: 170px; margin: 4px 0 2px; border-radius: 12px; overflow: hidden;
+  background: radial-gradient(ellipse at 50% 60%, rgba(201,180,138,0.16), rgba(201,180,138,0.04) 70%); border: 1px solid var(--line); }
+.leaf { position: absolute; width: 30px; height: 18px; padding: 0; border: 0; border-radius: 0 100% 0 100%;
+  background: linear-gradient(135deg, #c98a3a, #8a5a22); box-shadow: 0 1px 2px rgba(0,0,0,0.4); transition: opacity 0.4s, transform 0.4s; }
+.leaf.swept { opacity: 0; transform: translateX(60px) rotate(120deg) !important; pointer-events: none; }
+.sweep-time { position: absolute; right: 10px; top: 6px; font: 600 14px var(--font-ui); color: var(--ash-dim); }
+.herbs { background: radial-gradient(ellipse at 50% 70%, rgba(95,174,70,0.18), rgba(95,174,70,0.03) 70%); }
+.herb { position: absolute; width: 30px; height: 30px; padding: 0; border: 0; border-radius: 50%;
+  background: radial-gradient(circle at 40% 40%, #8fd06a, #3f8a30 70%); box-shadow: 0 0 0 3px rgba(95,174,70,0.18); transition: opacity 0.4s, transform 0.4s; }
+.herb.picked { opacity: 0; transform: translateY(-30px) scale(0.5); pointer-events: none; }
+
+.sit { position: relative; height: 230px; margin: 4px 0; overflow: hidden; }
+.orb-meter { position: absolute; left: 50%; bottom: 34px; width: 96px; height: 96px; margin-left: -48px; border-radius: 50%; overflow: hidden;
+  border: 1.5px solid rgba(159,210,193,0.7); background: rgba(159,210,193,0.06); box-shadow: inset 0 0 18px rgba(0,0,0,0.5); animation: breathe 8s ease-in-out infinite; }
+.orb-water { position: absolute; left: 0; right: 0; bottom: 0; height: 0; transition: height 0.9s ease;
+  background: linear-gradient(180deg, rgba(120,200,220,0.85), rgba(40,120,170,0.95)); }
+.orb-water::before { content: ""; position: absolute; left: -20%; right: -20%; top: -6px; height: 12px; border-radius: 50%; background: rgba(170,230,240,0.7); }
+.orb-meter.full { box-shadow: 0 0 24px rgba(159,210,193,0.8), inset 0 0 12px rgba(255,255,255,0.3); }
+.sit-clock { position: absolute; left: 0; right: 0; bottom: 16px; text-align: center; font: 12px var(--font-ui); color: var(--ash-dim); font-variant-numeric: tabular-nums; }
+.sit .thoughts { inset: 0 0 140px 0; }
+.sit .thought { bottom: 0; }
+
+.card-reveal { position: absolute; inset: 0; z-index: 9; display: grid; place-content: center; justify-items: center; gap: 12px;
+  padding: 24px 18px; background: rgba(4,7,7,0.82); overflow-y: auto; }
+.mcard { width: min(320px, 86vw); padding: 16px 18px 14px; border-radius: 14px; text-align: left;
+  background: linear-gradient(160deg, #1b2422, #101716); border: 1px solid var(--line); box-shadow: 0 12px 40px rgba(0,0,0,0.6); }
+.mcard.good { border-color: rgba(230,197,111,0.6); box-shadow: 0 0 30px rgba(230,197,111,0.18), 0 12px 40px rgba(0,0,0,0.6); }
+.mcard.bad { border-color: rgba(198,42,30,0.55); box-shadow: 0 0 30px rgba(198,42,30,0.16), 0 12px 40px rgba(0,0,0,0.6); }
+.mcard.flip { animation: cardflip 0.7s ease both; }
+@keyframes cardflip { from { transform: perspective(600px) rotateY(80deg) scale(0.9); opacity: 0; } to { transform: none; opacity: 1; } }
+.mcard-kind { font: 500 10px/1.3 var(--font-ui); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ash-dim); }
+.mcard.good .mcard-kind { color: var(--lantern); }
+.mcard.bad .mcard-kind { color: #e07a6a; }
+.mcard-name { margin: 2px 0 6px; font: 600 30px/1.1 var(--font-display); }
+.mcard-plain { margin: 0 0 8px; font: 16px/1.5 var(--font-body); }
+.mcard-ctx { margin: 0 0 8px; font: italic 14px/1.5 var(--font-body); color: var(--jade); }
+.mcard-tip { margin: 0 0 10px; padding: 6px 10px; border-left: 2px solid var(--lantern); font: 13px/1.5 var(--font-ui); color: var(--ash); background: rgba(230,197,111,0.06); }
+.mcard-faces { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 4px 10px; font: 13px/1.45 var(--font-ui); }
+.mcard-faces dt { color: var(--ash-dim); font-weight: 600; }
+.mcard-faces dd { margin: 0; }
+.mcard-faces .locked { opacity: 0.45; font-style: italic; }
+.mcard-faces .new { color: var(--lantern); animation: fadein 1s ease both; }
+.mcard-pali, .mcard-count { margin: 8px 0 0; font: 12px/1.5 var(--font-ui); color: var(--ash-dim); }
+.mcard-note { margin: 10px 0 0; font: 11px/1.4 var(--font-ui); color: var(--ash-dim); opacity: 0.8; }
+
+.mind-stats { margin: 0 0 10px; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+.mind-carita { margin: 0 0 8px; font: italic 15px/1.45 var(--font-body); }
+.stat-bars { display: grid; gap: 5px; margin: 0 0 8px; }
+.stat { display: grid; grid-template-columns: 70px 1fr; align-items: center; gap: 8px; font: 12px var(--font-ui); }
+.stat-track { height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; }
+.stat-fill { display: block; height: 100%; border-radius: 3px; transition: width 0.8s ease; }
+.stat-fill.good { background: linear-gradient(90deg, #c9a34a, #f0dc9a); }
+.stat-fill.bad { background: linear-gradient(90deg, #6a1c14, #c62a1e); }
+.being .hint { margin-top: 6px; }
+.quest-side { margin: 6px 0 10px; padding-top: 10px; border-top: 1px solid var(--line); }
+.quest-title.side { font-size: 17px; color: var(--jade); }
+
+.album-title { margin: 14px 0 8px; font: 600 18px/1.2 var(--font-display); }
+.album-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 8px; }
+.album-slot { min-height: 96px; display: grid; align-content: center; justify-items: center; gap: 4px; padding: 8px; text-align: center;
+  border-radius: 10px; border: 1px solid var(--line); background: var(--night-2); }
+.album-slot b { font: 600 19px/1.1 var(--font-display); }
+.album-slot span { font: 11px/1.35 var(--font-ui); color: var(--ash-dim); }
+.album-slot.good { border-color: rgba(230,197,111,0.55); }
+.album-slot.bad { border-color: rgba(198,42,30,0.5); }
+.album-slot.empty { border-style: dashed; opacity: 0.75; }
+.mind-info { max-height: calc(100% - 90px); overflow-y: auto; }
+
+/* HUD: keep the left column to two fixed lines so it never runs under the sky dial. */
+.hud-left { flex: 1; }
+#presence-count { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.role-row { flex-wrap: nowrap; }
+.role-chip { white-space: nowrap; }
+.mind-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 110px; }
+.left-btns { position: absolute; z-index: 4; left: max(12px, env(safe-area-inset-left, 0px)); top: calc(env(safe-area-inset-top, 0px) + 108px); display: flex; gap: 6px; }
+.left-btns .pill { background: var(--panel); }
+.left-btns .quest-btn { position: static; }
+.hud-left { overflow: hidden; padding: 2px 0 6px 2px; margin: -2px 0 -6px -2px; }
+.role-row, .mind { min-width: 0; }
+.mind-name { min-width: 0; flex: 1 1 auto; }
+@media (max-width: 420px) { .hud-right { gap: 4px; } .hud-right .pill { padding: 6px 9px; font-size: 11.5px; } }
+
+/* =====================================================================
+   DESKTOP (>= 900px wide). Everything above is the phone layout and is untouched below that width.
+   The world fills the window; the story cards become a floating panel at the bottom right; the full-screen
+   panels become centred dialogs. world.js picks a sensible scale on wide windows (see isDesktop()).
+   ===================================================================== */
+.kbd-hint { display: none; }
+
+@media (min-width: 900px) {
+  .app { max-width: none; margin: 0; box-shadow: none; }
+  .world { cursor: pointer; background: #070b0a; }
+  .hud { padding-left: 22px; padding-right: 22px; }
+  .sky, .left-btns { left: 22px; }
+  .chat-btn, .zoom-ctl { right: 22px; }
+  .quest-btn { left: 22px; }
+
+  /* hover feedback (mouse only) */
+  @media (hover: hover) {
+    .pill:not(:disabled):hover { border-color: var(--ash-dim); background: rgba(30, 42, 39, 0.9); color: #fff; }
+    .pill[aria-pressed="true"]:not(:disabled):hover { border-color: var(--lantern); }
+    .primary:not(:disabled):hover { background: #f0d589; }
+    .text-btn:hover { color: var(--ash); }
+    .choice:hover { background: var(--night-2); border-color: var(--ash-dim); }
+    .role-card:hover { border-color: var(--ash-dim); background: #19231f; }
+    .mind:hover .orb { filter: brightness(1.2); }
+    .sheet-handle:hover .grip { background: var(--ash-dim); }
+    .album-slot:hover { border-color: var(--ash-dim); }
+    .thought:hover, .leaf:hover, .herb:hover { filter: brightness(1.2); }
+    .sheet-handle, .role-card, .choice { cursor: pointer; }
+    button:disabled { cursor: default; }
+  }
+
+  /* story sheet, find card, mind card: a floating panel at the bottom right, the world stays visible */
+  .sheet {
+    left: auto; right: 22px; bottom: 22px; width: 420px; max-height: 70vh;
+    border: 1px solid var(--line); border-radius: 16px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.45);
+  }
+  .sheet-body { padding: 4px 20px 18px; }
+  .sheet.collapsed .sheet-handle { padding-bottom: 12px; }
+  .sheet-handle { padding: 10px 20px 10px; }
+
+  /* walk bar: compact card at the bottom left */
+  .walk-bar {
+    left: 22px; right: auto; bottom: 22px; width: auto; max-width: min(520px, calc(100% - 480px)); min-width: 300px;
+    padding: 12px 16px; gap: 14px; background: var(--panel); border: 1px solid var(--line); border-radius: 14px;
+    backdrop-filter: blur(10px); box-shadow: 0 10px 40px rgba(0, 0, 0, 0.45);
+  }
+
+  /* small floating panels: anchored near their buttons, not stretched across the screen */
+  .chat-panel { left: auto; right: 70px; top: 104px; width: 380px; max-width: none; margin: 0; }
+  .mind-info, .quest-panel { left: 22px; right: auto; top: 150px; width: 400px; max-width: none; margin: 0; max-height: calc(100% - 180px); overflow-y: auto; }
+  .chat-log { max-height: 36vh; }
+  .toast { top: 64px; width: min(60%, 460px); }
+  .look-back { top: 64px; }
+
+  /* full-screen panels become centred dialogs over a dim backdrop */
+  .app:has(> .panel:not([hidden]))::before { content: ""; position: absolute; inset: 0; z-index: 5; background: rgba(4, 7, 7, 0.6); }
+  .panel {
+    inset: auto; left: 50%; top: 50%; transform: translate(-50%, -50%);
+    width: min(560px, calc(100% - 48px)); max-height: 80vh; padding: 20px 24px 24px;
+    border: 1px solid var(--line); border-radius: 16px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+  }
+  .map-panel { height: min(80vh, 840px); }
+  .minimap { max-width: 280px; }
+
+  /* picker */
+  .picker { background: linear-gradient(rgba(12, 18, 17, 0.35), rgba(12, 18, 17, 0.94) 26%); }
+  .picker-inner { max-width: 556px; margin: 0 auto; padding: 14vh 18px 40px; }
+  .display { font-size: 44px; }
+  .lede { font-size: 16px; }
+
+  /* room: a centred portrait frame (room.js lays out for 400x720) over a dim backdrop */
+  .room {
+    inset: auto; left: 50%; top: 50%; transform: translate(-50%, -50%);
+    height: min(94vh, 960px); width: auto; aspect-ratio: 400 / 720; max-width: 96vw;
+    border-radius: 14px; overflow: hidden; box-shadow: 0 0 0 100vmax rgba(2, 4, 4, 0.82), 0 0 0 1px var(--line);
+  }
+  .room-close { top: 14px; }
+  .card-reveal { background: rgba(4, 7, 7, 0.86); }
+
+  /* keyboard hint */
+  .kbd-hint {
+    position: absolute; z-index: 4; left: 50%; top: 150px; transform: translateX(-50%); display: flex; align-items: center; gap: 12px;
+    max-width: min(560px, calc(100% - 48px)); padding: 6px 14px; border-radius: 999px;
+    background: rgba(12, 18, 17, 0.72); box-shadow: 0 0 0 1px var(--line); backdrop-filter: blur(6px);
+    font: 500 12px/1.4 var(--font-ui); color: var(--ash-dim);
+  }
+  .kbd-hint .text-btn { padding: 0; font-size: 12px; flex: none; }
+}
+@media (min-width: 1280px) { .kbd-hint { top: 14px; } }

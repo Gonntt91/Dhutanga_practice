@@ -113,3 +113,16 @@ Vòng tròn cạnh tên vai ở góc trên trái thể hiện tâm trạng: đen
 ### Khám phá tự do
 
 Bấm *Đi dạo* trong khung truyện, hoặc thu khung truyện rồi chạm xuống đất, để đi tự do. Nút *Nhiệm vụ* cho biết việc đang chờ và đưa nhân vật về đó. Trên *Bản đồ*, chạm một chỗ để chọn rồi *Nhìn sang đó* hoặc *Đi tới đó*. Nhà sư khi tâm xao động sẽ được gợi ý về tịnh thất đọc kinh rồi quay lại.
+
+### Hệ thống tâm (MVP)
+
+Thiết kế đầy đủ ở [docs/he-thong-tam.md](docs/he-thong-tam.md). Bản MVP trong `public/mind.js` gồm:
+
+- **Khảo sát tính cách** lần đầu chơi (quét lá, bông hoa, bát cơm) theo sáu hạng tính của Thanh Tịnh Đạo, rồi random chỉ số ngầm trong khung của nhóm.
+- **Chuỗi nhiệm vụ chó cắn** cho nhà sư và người dân: chó cắn ở ngõ làng → giếng làng (bà cụ) → hái rau má ở gốc mít → đem cho bà cụ hoặc nhà ông Tư → ngồi với sư già ở nghĩa địa (quả cầu đầy dần theo chỉ số, có hên xui) → chư thiên ghé thăm.
+- **Thẻ tâm sở** rơi sau mỗi bước (Sân, Hối hận, Tham, Không sân, Không tham, Niệm, Hỷ); gặp lại thì mở thêm mặt (đặc tính, phận sự, biểu hiện, nhân gần). Album ở nút **Thẻ**.
+- **Bảng chi tiết** khi bấm vòng tâm: 5 nhóm thiện, 3 gốc xấu, gợi ý tu tập.
+- **Chư thiên:** cột sáng, hoa mạn-đà-la rơi, xem tâm vị ấy, lưu ảnh khoảnh khắc. Người chơi khác thấy ánh sáng ở chỗ đó. Ngoài chuỗi nhiệm vụ, chư thiên thỉnh thoảng ghé tịnh thất hoặc gốc gạo vào ban đêm khi tâm sáng.
+- Dev (`?dev`): mục "Tâm và thẻ" để khảo sát lại, nhảy tới chỗ chó hoặc chỗ sư, gọi chư thiên, xóa dữ liệu tâm.
+
+Mọi chỉ số là mô phỏng để chơi. Nội dung thẻ và cấu trúc tâm của chư thiên cần thầy Theravāda duyệt.

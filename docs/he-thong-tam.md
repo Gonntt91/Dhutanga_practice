@@ -46,7 +46,7 @@ Hiện ở ba chỗ, ngắn gọn, không giảng giải:
 
 | Lớp | Ai | Thấy gì | Thuật ngữ |
 |---|---|---|---|
-| **Dạo chơi** | mới vào, chơi cho vui | vòng màu tâm, quả cầu khi làm nhiệm vụ, câu ngắn kiểu *"Bạn thấy nhẹ lòng hơn"* | **không có** |
+| **Dạo chơi** | mới vào, chơi cho vui | vòng màu tâm, quả cầu khi làm nhiệm vụ, câu ngắn kiểu *"Người này thấy nhẹ lòng hơn"* | **không có** |
 | **Tò mò** | đã làm vài chuỗi nhiệm vụ | bấm vòng tâm mở bảng chi tiết: 3 gốc xấu, 3 gốc tốt, 5 nhóm Tín Tấn Niệm Định Tuệ, gợi ý nên làm gì | tên Việt quen thuộc |
 | **Đi sâu** | chơi lâu, đã có nhiều thẻ | mặt sau của thẻ, Bảng tâm, chuỗi giác chi, màn "gộp lại" | thuật ngữ Việt, Pāli để trong ngoặc |
 
@@ -116,7 +116,7 @@ Gặp lại cùng tâm sở ở nhiệm vụ khác thì mở thêm một mặt, 
 | 4 | **biểu hiện** (nhận ra nó thế nào) |
 | 5 | **nhân gần** (cái gì làm nó sinh) và tên Pāli |
 
-Mỗi mặt chỉ 1–2 câu, kèm ví dụ từ chính những lần người chơi đã gặp: *"Bạn đã gặp Sân 3 lần: chó cắn, bị đồn oan, mất dép ở chùa."*
+Mỗi mặt chỉ 1–2 câu, kèm ví dụ từ chính những lần người chơi đã gặp: *"Người này đã gặp Sân 3 lần: chó cắn, bị đồn oan, mất dép ở chùa."*
 
 ### Album thẻ
 
@@ -295,7 +295,7 @@ Sau đó chỉ số được **random trong khung của nhóm**, nên hai ngư�
 | Trí | Tuệ cao, Tín thấp | Tín chậm | niệm sự chết, quán bốn đại |
 
 - Tính cách có thể pha, ví dụ "thiên sân, có trí".
-- Tên nhóm hiện nhẹ nhàng, ví dụ *"Bạn thiên về tính hăng hái"*; không dùng "tính sân" ở lớp Dạo chơi.
+- Tên nhóm hiện nhẹ nhàng, ví dụ *"Người này thiên về tính hăng hái"*; không dùng "tính sân" ở lớp Dạo chơi.
 - Cho làm lại khảo sát. Tính cách cũng đổi dần theo cách chơi.
 
 ## 6. Hai loại chỉ số
@@ -362,7 +362,7 @@ Chỉ số khác nhau thì tình huống mở ra khác nhau, nên mỗi người
    - Thỉnh thoảng hiện thẻ phóng tâm (*"vết cắn nhức"*, *"nhớ con chó"*); chạm để ghi nhận.
    - Người thiên sân hay thiên si đầy chậm, dễ bỏ ngang; bỏ ngang mở nhánh khác.
 6. Kết chuỗi:
-   - lớp Dạo chơi: *"Bạn thấy nhẹ lòng hơn."*
+   - lớp Dạo chơi: *"Người này thấy nhẹ lòng hơn."*
    - lớp Tò mò trở lên: thẻ **Sân** và thẻ **Không sân** hiện lần đầu, kèm *"vừa rồi trong bạn có…"*.
 
 Cả chuỗi khoảng 10 câu ngắn, 5–6 hành động.
@@ -462,7 +462,7 @@ Theo Vi Diệu Pháp, **loài nào sinh vào cõi nào là do tâm tái tục** 
 |---|---|
 | Dạo chơi | một câu: *"Vị này tâm sáng, ít giận, thường vui."* |
 | Tò mò | ba gốc thiện, ba gốc xấu dạng thanh; cảm giác thường gặp; cõi đang sống; một dòng vì sao sinh vào cõi đó (*"đời trước hay bố thí, giữ giới"*) |
-| Đi sâu | tâm tái tục (không gốc, hai gốc, ba gốc); tâm sở nổi trội; **so với tâm của chính người chơi** (*"Bạn và vị thọ thần giống nhau ở Tín; khác ở Sân."*) |
+| Đi sâu | tâm tái tục (không gốc, hai gốc, ba gốc); tâm sở nổi trội; **so với tâm của chính người chơi** (*"Người này và vị thọ thần giống nhau ở Tín; khác ở Sân."*) |
 
 - Bấm vào một loài lần đầu cũng rơi ra một thẻ: *Bỏn xẻn* từ ngạ quỷ (kèm lý do vì sao loài này sinh vào cõi ngạ quỷ), *Hoan hỷ* từ chư thiên.
 - Đã xem đủ chó, ngạ quỷ, thọ thần, chư thiên thì người chơi tự thấy một dải liên tục: không gốc thiện → nặng tham → hai gốc → ba gốc. **Cõi là kết quả của tâm**, và tâm mình hôm nay cũng đang nghiêng về một phía. Không cần giảng giải.

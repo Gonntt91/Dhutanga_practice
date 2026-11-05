@@ -11,7 +11,7 @@ const DATA_FILE = path.join(__dirname, "data", "traces.json");
 const MAX_TRACES = 500;
 
 const ROLES = ["monk", "ghost", "villager"];
-const MOMENT_TOPICS = ["chime", "sigh", "lantern"];
+const MOMENT_TOPICS = ["chime", "sigh", "lantern", "deva"];
 const TRACE_KINDS = ["offering", "chant", "sigh", "incense", "alms", "release", "vigil", "keepsake", "lamp", "bowl"];
 
 const MIME = {

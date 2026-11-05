@@ -77,6 +77,7 @@
   const currentScene = () => (state.role ? STORY[state.role].scenes[state.sceneId] : null);
   const currentPose = () => {
     const sc = currentScene();
+    if (state.mindPose) return state.mindPose;
     return sc && state.sceneOpen && sc.pose === "sit" ? "sit" : null;
   };
 
@@ -289,6 +290,7 @@
     chime: "Có tiếng chuông nhỏ vang lên đâu đó giữa các ngôi mộ.",
     sigh: "Có tiếng thở dài, rất gần, mà không thấy ai.",
     lantern: "Một đốm đèn lồng lay động sau bụi tre.",
+    deva: "Có ánh sáng lạ tỏa xuống ở phía xa, như có chư thiên vừa ghé.",
   };
 
   let toastTimer = null;
@@ -301,6 +303,10 @@
   }
 
   function onMoment(m) {
+    if (m.topic === "deva") {
+      if (m.from !== state.sid && state.role) { Mind.remote(m.x ?? 0.5, m.y ?? 0.5); toast(MOMENT_TEXT.deva); }
+      return;
+    }
     World.ripple(m.x ?? 0.5, m.y ?? 0.5, m.topic);
     if (state.soundOn) {
       if (m.topic === "chime") NightAudio.bell(m.from === state.sid ? 1 : 0.7);
@@ -419,10 +425,13 @@
     World.setPlayer(spawn.x, spawn.y);
     pushView();
     sendPresence(true);
-    showWalkOrScene();
+    // first time ever: a short survey of temperament before the night begins
+    if (!Mind.onRoleStart(role, () => { if (state.role === role) showWalkOrScene(); })) showWalkOrScene();
   }
 
   function leaveRole() {
+    Mind.onRoleEnd();
+    state.mindPose = null;
     stopWatch();
     closeFind(true);
     World.setFinds([]);
@@ -637,7 +646,7 @@
     const m = state.meter / 10;
     return state.role === "ghost" ? 1 - m : m;
   }
-  function moodValue() { return Math.max(0, Math.min(1, moodBase() + state.moodShift)); }
+  function moodValue() { return Math.max(0, Math.min(1, moodBase() + state.moodShift + Mind.bias())); }
   // For the ghost a higher meter (attachment) is worse, so its sign is flipped.
   const goodDelta = (d) => (state.role === "ghost" ? -d : d);
   const swingByDelta = (d) => { const g = goodDelta(d || 0); swingMood(g * (g < 0 ? 0.09 : 0.05)); };
@@ -656,7 +665,11 @@
     $("mind-name").textContent = moodLabel(g);
     World.setView({ mood: g });
   }
-  $("mind").addEventListener("click", () => { $("mind-info").hidden = !$("mind-info").hidden; });
+  $("mind").addEventListener("click", () => {
+    const show = $("mind-info").hidden;
+    if (show) Mind.renderStats($("mind-stats"));
+    $("mind-info").hidden = !show;
+  });
   $("mind-info-close").addEventListener("click", () => { $("mind-info").hidden = true; });
   // a swing of mood fades back toward the baseline over about half a minute
   setInterval(() => {
@@ -1050,6 +1063,14 @@
       state.completed = {}; state.vars = new Set(); toast("Đã xóa dữ liệu đã lưu.");
     });
 
+    const mind = row("Tâm và thẻ");
+    btn(mind, "Khảo sát lại", () => Mind.dev.resetSurvey());
+    btn(mind, "Tới chỗ chó", () => { if (state.role) { closeFind(true); state.leftScene = true; showWalkBar(); Mind.dev.dog(); } });
+    btn(mind, "Tới chỗ sư", () => { if (state.role) { closeFind(true); state.leftScene = true; showWalkBar(); Mind.dev.sitNow(); } });
+    btn(mind, "Gọi chư thiên", () => state.role && Mind.dev.deva());
+    btn(mind, "Xem thẻ", () => Mind.openAlbum());
+    btn(mind, "Xóa tâm", () => Mind.dev.wipe());
+
     const fx = row("Hiệu ứng");
     btn(fx, "Cú", () => window.dispatchEvent(new CustomEvent("owl", { detail: { pan: 0 } })));
     btn(fx, "Quạ", () => window.dispatchEvent(new CustomEvent("crow", { detail: { pan: 0, n: 3 } })));
@@ -1081,24 +1102,27 @@
   }
 
   // ---------- boot ----------
-  World.init($("world"), (x, y) => {
+  // fromKey: the keyboard (desktop) is walking; same rules as a tap on the ground, except it never snaps to a nearby find.
+  const onWorldTap = (x, y, fromKey) => {
     if (!state.role) return;
-    if (state.findOpen) return;
+    state.sideTarget = null;
+    if (state.findOpen || Mind.isOpen()) return;
     if (state.sceneOpen) {
       // tapping the world while reading folds the sheet so the scene is visible
       if (!$("sheet").classList.contains("collapsed")) { setCollapsed(true); return; }
       // sheet already folded: tapping the ground steps out of the story to wander (a lying-around thing is walked to)
-      const near = nearestFind(x, y);
+      const near = fromKey ? null : nearestFind(x, y);
       state.leftScene = true;
       showWalkBar();
       state.findTarget = near;
       if (near) World.walkTo(near.x, near.y + 8); else World.walkTo(x, y);
       return;
     }
-    const hit = nearestFind(x, y);
+    const hit = fromKey ? null : nearestFind(x, y);
     state.findTarget = hit;
     if (hit) World.walkTo(hit.x, hit.y + 8); else World.walkTo(x, y);
-  });
+  };
+  World.init($("world"), onWorldTap);
 
   $("walk-btn").addEventListener("click", () => {
     const sc = currentScene();
@@ -1127,7 +1151,38 @@
     $("quest-tip").textContent = "Lòng thầy đang xao động, thiếu vững tin. Trong tịnh thất có kệ kinh và bàn thờ Đức Phật; đọc vài trang có thể giúp tâm vững lại.";
     $("quest-tip-go").hidden = !low;
     $("quest-cancel").hidden = !state.detour;
+    const side = Mind.questInfo();
+    $("quest-side").hidden = !side;
+    if (side) { $("quest-side-title").textContent = side.title; $("quest-side-body").textContent = side.body; }
   }
+  $("quest-side-go").addEventListener("click", () => {
+    const side = Mind.questInfo();
+    if (!side) return;
+    $("quest-panel").hidden = true;
+    goTo(side.x, side.y + 14);
+  });
+  // walk somewhere outside the story (the pending scene keeps waiting)
+  function goTo(x, y) {
+    if (state.sceneOpen) wander();
+    else state.leftScene = true;
+    if ($("walk-bar").hidden && !state.sceneOpen) showWalkBar();
+    state.findTarget = null;
+    state.sideTarget = { x, y, t: Date.now() }; // walking to a side errand: passing the story's place does not reopen it
+    World.walkTo(x, y);
+  }
+  const isDev = new URLSearchParams(location.search).has("dev") && !(window.APP_CONFIG && window.APP_CONFIG.dev === false);
+  Mind.init({
+    swingMood, toast, goTo,
+    refresh: () => pushView(),
+    sound: () => state.soundOn,
+    darkness: () => currentDarkness(currentScene()),
+    mood: () => moodValue(),
+    dev: () => isDev,
+    emit: (topic) => post("/api/emit", { topic }),
+    setPose: (p) => { state.mindPose = p; pushView(); sendPresence(true); },
+    busy: () => !!state.findOpen || !$("room").hidden || !$("picker").hidden || !$("map-panel").hidden || !$("cards-panel").hidden ||
+      (state.sceneOpen && !$("sheet").classList.contains("collapsed")),
+  });
   function openQuest() { renderQuest(); $("quest-panel").hidden = false; }
   $("quest-btn").addEventListener("click", () => ($("quest-panel").hidden ? openQuest() : ($("quest-panel").hidden = true)));
   $("quest-close").addEventListener("click", () => ($("quest-panel").hidden = true));
@@ -1155,11 +1210,14 @@
 
   // arrival + presence loop
   setInterval(() => {
-    if (state.role && !state.sceneOpen && !state.findOpen) {
+    if (state.role && !state.sceneOpen && !state.findOpen && !Mind.isOpen()) {
       const t = state.findTarget;
       if (t) {
         const p = World.getPlayer();
         if (Math.hypot(p.x - t.x, p.y - (t.y + 8)) <= FIND_DIST) { openFind(t); }
+      } else if (state.sideTarget) {
+        const p = World.getPlayer();
+        if ((!p.moving && Date.now() - state.sideTarget.t > 800) || Math.hypot(p.x - state.sideTarget.x, p.y - state.sideTarget.y) < 20) state.sideTarget = null;
       } else if (!state.detour) {
         const d = distanceToPlace();
         if (state.leftScene && d > ARRIVE_DIST + 40) state.leftScene = false; // walked away: arriving again reopens the scene
@@ -1182,6 +1240,69 @@
   const touch = () => { state.lastTouch = Date.now(); };
   ["pointerdown", "keydown"].forEach((ev) => window.addEventListener(ev, touch, true));
   setInterval(renderTraces, 60000);
+
+  // ---------- desktop: keyboard walking, shortcuts, hint (see also the desktop section of style.css) ----------
+  (function desktopKeys() {
+    const held = new Set();
+    let keyTimer = null, keyWalking = false;
+    const DIRS = { w: [0, -1], arrowup: [0, -1], s: [0, 1], arrowdown: [0, 1], a: [-1, 0], arrowleft: [-1, 0], d: [1, 0], arrowright: [1, 0] };
+    const typing = (el) => !!el && (el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.tagName === "SELECT" || el.isContentEditable);
+    const modalOpen = () => !$("map-panel").hidden || !$("cards-panel").hidden || !$("traces-panel").hidden;
+    const blocked = () => !state.role || !$("picker").hidden || !$("room").hidden || !$("card-reveal").hidden || modalOpen() || Mind.isOpen() || !!state.findOpen;
+    function stepKeys() {
+      if (!held.size || blocked()) { if (!held.size) stopKeys(); return; }
+      let dx = 0, dy = 0;
+      held.forEach((k) => { dx += DIRS[k][0]; dy += DIRS[k][1]; });
+      if (!dx && !dy) { if (keyWalking) { World.stop(); keyWalking = false; } return; }
+      const n = Math.hypot(dx, dy), p = World.getPlayer();
+      keyWalking = true;
+      onWorldTap(p.x + (dx / n) * 70, p.y + (dy / n) * 70, true);
+    }
+    function stopKeys() {
+      clearInterval(keyTimer); keyTimer = null; held.clear();
+      if (keyWalking) { keyWalking = false; World.stop(); }
+    }
+    const CLOSERS = ["map-close", "cards-close", "traces-close", "mind-info-close", "quest-close", "chat-close"];
+    const PANELS = ["map-panel", "cards-panel", "traces-panel", "mind-info", "quest-panel", "chat-panel"];
+    function closeTop() {
+      for (let i = 0; i < PANELS.length; i++) if (!$(PANELS[i]).hidden) { $(CLOSERS[i]).click(); return true; }
+      return false;
+    }
+    window.addEventListener("keydown", (e) => {
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      const k = e.key.length === 1 ? e.key.toLowerCase() : e.key.toLowerCase();
+      if (typing(e.target)) { if (k === "escape") { if (e.target.id === "chat-input") openChat(false); else e.target.blur(); } return; }
+      if (k === "escape") { if (closeTop()) e.preventDefault(); return; }
+      if (!state.role || !$("picker").hidden || !$("room").hidden || !$("card-reveal").hidden) return;
+      if (k in DIRS) {
+        e.preventDefault();
+        if (e.repeat && held.has(k)) return;
+        held.add(k);
+        if (!keyTimer) { keyTimer = setInterval(stepKeys, 120); }
+        stepKeys();
+      } else if (k === "m") { e.preventDefault(); if ($("map-panel").hidden) { if (!modalOpen()) openMap(); } else closeMap(); }
+      else if (k === "enter" && e.target.tagName !== "BUTTON" && !$("chat-btn").hidden) { e.preventDefault(); openChat(true); }
+      else if (k === "+" || k === "=") World.zoomBy(1.25);
+      else if (k === "-" || k === "_") World.zoomBy(0.8);
+    });
+    window.addEventListener("keyup", (e) => {
+      const k = e.key.toLowerCase();
+      if (!held.delete(k)) return;
+      if (!held.size) stopKeys(); else stepKeys();
+    });
+    window.addEventListener("blur", stopKeys);
+
+    // small dismissible hint, only where there is a keyboard and a mouse
+    const hint = $("kbd-hint");
+    if (!hint || !window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
+    let dismissed = false;
+    try { dismissed = localStorage.getItem("kbdHintDismissed") === "1"; } catch {}
+    $("kbd-hint-close").addEventListener("click", () => {
+      dismissed = true; hint.hidden = true;
+      try { localStorage.setItem("kbdHintDismissed", "1"); } catch {}
+    });
+    setInterval(() => { hint.hidden = dismissed || !state.role || !$("picker").hidden; }, 800);
+  })();
 
   renderPicker();
   connect();

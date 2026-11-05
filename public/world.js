@@ -13,6 +13,8 @@ window.World = (() => {
     graves: { x: 222, y: 1065, name: "Giữa các ngôi mộ" },
     gao: { x: 150, y: 625, name: "Gốc cây gạo" },
     hermitage: { x: 205, y: 300, name: "Tịnh thất" },
+    well: { x: 112, y: 2016, name: "Giếng làng" },
+    mit: { x: 300, y: 2196, name: "Gốc mít" },
   };
   const UNNAMED = { x: 262, y: 1032 };
   const SPAWN = {
@@ -137,6 +139,8 @@ window.World = (() => {
       decor.push({ kind: "tree", x, y, s: 0.7 + r() * 0.5 });
     }
     decor.push({ kind: "gate", x: 200, y: 1795 });
+    decor.push({ kind: "well", x: 112, y: 2004 });
+    decor.push({ kind: "mit", x: 300, y: 2180 });
     decor.push({ kind: "ruin", x: 335, y: 1300 });
     decor.push({ kind: "shrine", x: 205, y: 262 });
     decor.push({ kind: "sign", x: 206, y: 585 });
@@ -437,6 +441,13 @@ window.World = (() => {
   // The shown darkness eases toward the scene's darkness, so dusk and dawn fade in instead of snapping.
   let shownDark = view.darkness;
   let tapHandler = null;
+  // NPCs and visitors placed by other modules (mind.js): dog, old woman, monk, deva.
+  let actors = [];
+  let fxHook = null;
+  function setActors(list) { actors = list || []; }
+  function setFx(fn) { fxHook = fn; }
+  // A picture of the current view (for "save this moment").
+  function snapshot() { try { return canvas.toDataURL("image/jpeg", 0.9); } catch { return null; } }
 
   function init(canvasEl, onTap) {
     canvas = canvasEl;
@@ -496,13 +507,21 @@ window.World = (() => {
     canvas.height = Math.round(rect.height * dpr);
     shade.width = canvas.width;
     shade.height = canvas.height;
-    baseScale = rect.width / BASE_VIEW_W;
+    baseScale = isDesktop() ? desktopBaseScale(rect) : rect.width / BASE_VIEW_W;
     zoomTarget = clampZoom(zoomTarget);
     applyZoom();
   }
   // Zoom: 1 shows BASE_VIEW_W units across the screen. Zooming out shows more of the wider world,
   // but never more than the world's own width.
-  function minZoom() { return Math.max(0.62, BASE_VIEW_W / W); }
+  // Desktop (wide window): the view would be far too close if it were fitted to BASE_VIEW_W, so fit the view height
+  // instead, but never show more than WIDE_MAX x the world's width (the rest would be empty dark sides).
+  const DESKTOP_MIN_W = 900, WIDE_MAX = 1.6, DESKTOP_VIEW_H = 800;
+  function isDesktop() { return window.innerWidth >= DESKTOP_MIN_W; }
+  function desktopBaseScale(rect) { return Math.max(rect.height / DESKTOP_VIEW_H, rect.width / (W * WIDE_MAX)); }
+  function minZoom() {
+    if (isDesktop() && canvas) { const rect = canvas.getBoundingClientRect(); return Math.min(1, Math.max(0.55, rect.width / (baseScale * W * WIDE_MAX))); }
+    return Math.max(0.62, BASE_VIEW_W / W);
+  }
   function clampZoom(z) { return Math.max(minZoom(), Math.min(1.8, z)); }
   function setZoom(z) { zoomTarget = clampZoom(z); }
   function zoomBy(f) { setZoom(zoomTarget * f); }
@@ -539,7 +558,8 @@ window.World = (() => {
   function ripple(nx, ny, kind) { ripples.push({ x: nx * W, y: ny * H, kind, t: 0 }); }
 
   function clampCam(y) { return Math.max(-viewH * 0.1, Math.min(H + 450 - viewH, y)); }
-  function clampCamX(x) { return Math.max(0, Math.min(W - viewW, x)); }
+  // A view wider than the world (wide desktop window) is centred on the world instead of clamped.
+  function clampCamX(x) { return viewW >= W ? (W - viewW) / 2 : Math.max(0, Math.min(W - viewW, x)); }
 
   // Free look: camera detached from the character. Limited by view.lookRange (per role).
   const look = { on: false, target: 0, targetX: 0, idle: 0, announced: false };
@@ -983,6 +1003,108 @@ window.World = (() => {
     lights.push({ x, y: y - 15, r: 60, a: 0.55 });
   }
 
+  // Village well: a round stone rim with a rope and bucket.
+  function drawWell(d) {
+    const { x, y } = d;
+    const c = (n, dy) => lerpHex(n, dy, dayMix);
+    shadow(x, y + 4, 18);
+    ellipse(x, y, 17, 7, c("#2f3531", "#b3ae9d"));
+    ctx.fillStyle = c("#2a2f2b", "#c9c4b2"); ctx.fillRect(x - 17, y - 10, 34, 10);
+    ellipse(x, y - 10, 17, 7, c("#3a403b", "#d2cebd"));
+    ellipse(x, y - 10, 12, 4.6, c("#05080a", "#2d4d5c"));
+    ctx.fillStyle = c("#2b241b", "#7a5532");
+    ctx.fillRect(x - 15, y - 34, 3, 26); ctx.fillRect(x + 12, y - 34, 3, 26); ctx.fillRect(x - 16, y - 36, 32, 3);
+    ctx.strokeStyle = c("#4a4030", "#a08a60"); ctx.lineWidth = 0.8;
+    ctx.beginPath(); ctx.moveTo(x, y - 34); ctx.lineTo(x, y - 20); ctx.stroke();
+    ctx.fillStyle = c("#3a3226", "#8a6a3a"); ctx.fillRect(x - 3, y - 21, 6, 5);
+  }
+
+  // Jackfruit tree: a broad dark crown and big fruits hanging from the trunk.
+  function drawMit(d) {
+    const { x, y } = d;
+    shadow(x, y, 22);
+    if (dayMix > 0.05) ellipse(x + 20, y + 8, 40, 14, `rgba(15,50,18,${0.25 * dayMix})`);
+    ctx.fillStyle = COLORS.trunk; ctx.fillRect(x - 5, y - 46, 10, 46);
+    ellipse(x - 16, y - 58, 24, 17, COLORS.canopy);
+    ellipse(x + 16, y - 60, 24, 17, COLORS.canopy);
+    ellipse(x, y - 76, 22, 16, pal("#17201b"));
+    if (dayMix > 0.05) ellipse(x - 8, y - 80, 12, 7, `rgba(190,240,120,${0.35 * dayMix})`);
+    const fruit = lerpHex("#2f3a22", "#8fae3e", dayMix);
+    for (const [fx, fy] of [[-6, -34], [6, -26], [-4, -18]]) { ellipse(x + fx, y + fy, 4, 6, fruit); }
+    // a patch of pennywort (rau má) at the foot of the tree
+    for (let i = 0; i < 7; i++) ellipse(x - 24 + i * 7, y + 8 + (i % 2) * 3, 3.2, 2.2, lerpHex("#1e2b20", "#5fae46", dayMix));
+  }
+
+  function drawDog(a, lights) {
+    const { x, y } = a;
+    const f = a.facing || 1;
+    const wag = Math.sin(time * (a.angry ? 14 : 6)) * 3;
+    shadow(x, y, 11);
+    const body = lerpHex("#3a2c20", "#9a6a3a", dayMix);
+    ctx.save(); ctx.translate(x, y); ctx.scale(f, 1);
+    ctx.fillStyle = body;
+    ctx.fillRect(-8, -7, 2.4, 7); ctx.fillRect(5, -7, 2.4, 7);
+    ellipse(0, -9, 10, 5, body);
+    ellipse(10, -14, 4.6, 4, body);
+    ctx.beginPath(); ctx.moveTo(8.4, -17); ctx.lineTo(9.6, -21); ctx.lineTo(11.4, -17.4); ctx.fill();
+    ctx.strokeStyle = body; ctx.lineWidth = 1.8;
+    ctx.beginPath(); ctx.moveTo(-9, -10); ctx.quadraticCurveTo(-13, -15, -14 + wag * 0.3, -18 + wag); ctx.stroke();
+    ctx.fillStyle = "rgba(240,220,160,0.9)"; ctx.fillRect(10.6, -15.4, 1.2, 1.2);
+    if (a.angry) {
+      ctx.strokeStyle = "rgba(255,180,140,0.8)"; ctx.lineWidth = 1;
+      for (let k = 0; k < 3; k++) { ctx.beginPath(); ctx.arc(15, -14, 4 + k * 3 + (time * 6 % 3), -0.6, 0.6); ctx.stroke(); }
+    }
+    ctx.restore();
+  }
+
+  // A heavenly being: a tall shining figure floating above the ground, crowned, with a soft halo.
+  function drawDeva(a, lights) {
+    const { x, y } = a;
+    const k = a.alpha == null ? 1 : a.alpha;
+    if (k <= 0.01) return;
+    const float = Math.sin(time * 1.3) * 3;
+    const fy = y - 14 + float;
+    ctx.save();
+    ctx.translate(x, y); ctx.scale(1.5, 1.5); ctx.translate(-x, -y);
+    ctx.globalAlpha = k;
+    const halo = ctx.createRadialGradient(x, fy - 34, 2, x, fy - 30, 46);
+    halo.addColorStop(0, "rgba(255,250,225,0.95)");
+    halo.addColorStop(0.35, "rgba(255,226,150,0.45)");
+    halo.addColorStop(1, "rgba(255,226,150,0)");
+    ctx.fillStyle = halo; ctx.beginPath(); ctx.arc(x, fy - 30, 46, 0, Math.PI * 2); ctx.fill();
+    // flowing robe
+    const sway = Math.sin(time * 1.7) * 3;
+    const robe = ctx.createLinearGradient(x, fy - 40, x, fy + 6);
+    robe.addColorStop(0, "#fff6dc"); robe.addColorStop(1, "rgba(255,214,140,0.25)");
+    ctx.fillStyle = robe;
+    ctx.beginPath();
+    ctx.moveTo(x - 6, fy - 34);
+    ctx.quadraticCurveTo(x - 14, fy - 12, x - 12 + sway, fy + 6);
+    ctx.quadraticCurveTo(x, fy + 2, x + 12 + sway, fy + 6);
+    ctx.quadraticCurveTo(x + 14, fy - 12, x + 6, fy - 34);
+    ctx.closePath(); ctx.fill();
+    // scarf ribbons
+    ctx.strokeStyle = "rgba(255,200,120,0.75)"; ctx.lineWidth = 1.6;
+    for (const s of [-1, 1]) {
+      ctx.beginPath(); ctx.moveTo(x + s * 6, fy - 30);
+      ctx.bezierCurveTo(x + s * 22, fy - 24 + sway, x + s * 18, fy - 4, x + s * 28, fy + 4 - sway); ctx.stroke();
+    }
+    ellipse(x, fy - 39, 4.6, 4.8, "#f3d9b4");
+    // crown
+    ctx.fillStyle = "#ffd76a";
+    ctx.beginPath(); ctx.moveTo(x - 5, fy - 42); ctx.lineTo(x - 3, fy - 50); ctx.lineTo(x, fy - 45); ctx.lineTo(x + 3, fy - 50); ctx.lineTo(x + 5, fy - 42); ctx.closePath(); ctx.fill();
+    ctx.restore();
+  }
+
+  function drawActor(a, lights) {
+    switch (a.actorKind) {
+      case "dog": drawDog(a, lights); break;
+      case "granny": drawVillager(a.x, a.y, 0, false, a.facing || 1, lights); break;
+      case "monk": drawMonk(a.x, a.y, a.pose || "sit", 0, false, 1, lights); break;
+      case "deva": { const k = a.alpha == null ? 1 : a.alpha; if (k > 0.01) lights.push({ x: a.x, y: a.y - 34, r: 170 * k, a: 0.95 * k }); break; }
+    }
+  }
+
   // ---------- characters ----------
   function drawMonk(x, y, pose, phase, moving, facing, lights) {
     lights.push({ x, y: y - 14, r: 58, a: 0.7 });
@@ -1073,6 +1195,8 @@ window.World = (() => {
     const top = camY - 40;
     const bottom = camY + viewH + 80;
     const lights = [];
+    const sides = viewW > W;
+    if (sides) { ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, canvas.width, canvas.height); }
     ctx.setTransform(k, 0, 0, k, -camX * k, -camY * k);
     drawGround(top - 40, bottom);
 
@@ -1081,6 +1205,7 @@ window.World = (() => {
     for (const d of decor) if (d.y > top - 20 && d.y < bottom + 160) items.push(d);
     for (const [pid, o] of others) items.push({ kind: "char", mood: o.mood, role: o.role, x: o.rx, y: o.ry, pose: o.pose, phase: o.phase, moving: o.moving, facing: o.x >= o.rx ? 1 : -1, label: o.nick || roleName(o.role), pid });
     for (const b of bots) items.push({ kind: "ghostbot", x: b.x, y: b.y, phase: b.phase, alpha: botAlpha(b) });
+    for (const a of actors) items.push({ ...a, actorKind: a.kind, kind: "actor" });
     if (view.role) items.push({ kind: "char", mood: view.mood, role: view.role, x: player.x, y: player.y, pose: view.pose, phase: player.phase, moving: player.moving, facing: player.facing, label: "bạn", isMe: true });
     items.sort((a, b) => a.y - b.y);
 
@@ -1099,6 +1224,9 @@ window.World = (() => {
         case "ruin": drawRuin(it); break;
         case "char": drawAura(it.x, it.y, it.mood); drawCharacter(it, lights, viewerIsGhost); break;
         case "ghostbot": drawGhost(it.x, it.y, it.phase, it.alpha, lights); break;
+        case "well": drawWell(it); break;
+        case "mit": drawMit(it); break;
+        case "actor": drawActor(it, lights); break;
       }
     }
 
@@ -1172,6 +1300,8 @@ window.World = (() => {
     drawFinds();
     drawOwl();
     drawCrow();
+    if (fxHook) { ctx.save(); try { fxHook(ctx, { time, dayMix, camX, camY, viewW, viewH }); } catch (e) { console.error(e); } ctx.restore(); }
+    for (const a of actors) if (a.kind === "deva") drawDeva(a);
     ctx.globalCompositeOperation = "lighter";
     for (const l of lights) {
       if (l.r < 50) continue;
@@ -1233,9 +1363,30 @@ window.World = (() => {
       drawBubble(b, it.x, it.y - lift - 8);
     }
 
+    for (const a of actors) {
+      if (!a.label) continue;
+      ctx.font = '500 9px "Be Vietnam Pro", system-ui, sans-serif';
+      ctx.textAlign = "center";
+      const ly = a.y - (a.kind === "dog" ? 22 : a.kind === "deva" ? 92 : a.kind === "monk" ? 34 : 42);
+      if (dayMix > 0.5) { ctx.lineWidth = 2.6; ctx.strokeStyle = "rgba(250,246,230,0.85)"; ctx.strokeText(a.label, a.x, ly); ctx.fillStyle = "rgba(32,48,28,0.85)"; }
+      else ctx.fillStyle = a.kind === "deva" ? "rgba(255,240,200,0.95)" : "rgba(220,213,197,0.7)";
+      ctx.fillText(a.label, a.x, ly);
+    }
     if (view.marker && PLACES[view.marker]) {
       drawMarker(PLACES[view.marker]);
       if (view.hint) drawHint(PLACES[view.marker]);
+    }
+    if (sides) {
+      // wide window: the world's left and right edges melt into the dark page instead of ending in a hard line
+      const fw = 30;
+      ctx.globalCompositeOperation = "destination-out";
+      for (const [x0, x1] of [[0, fw], [W, W - fw]]) {
+        const g = ctx.createLinearGradient(x0, 0, x1, 0);
+        g.addColorStop(0, "rgba(0,0,0,1)"); g.addColorStop(0.5, "rgba(0,0,0,0.4)"); g.addColorStop(1, "rgba(0,0,0,0)");
+        ctx.fillStyle = g;
+        ctx.fillRect(Math.min(x0, x1) - (x0 === 0 ? 40 : 0), camY - 80, fw + 40, viewH + 200);
+      }
+      ctx.globalCompositeOperation = "source-over";
     }
   }
 
@@ -1299,5 +1450,5 @@ window.World = (() => {
     return role && window.ROLE_INFO ? ROLE_INFO[role].name : "";
   }
 
-  return { moodRgb, zoomBy, say, setFinds, lookAt, resetLook, isLooking, getMap, W, H, PLACES, SPAWN, init, setView, setPlayer, walkTo, stop, getPlayer, setOthers, ripple };
+  return { setActors, setFx, snapshot, moodRgb, zoomBy, say, setFinds, lookAt, resetLook, isLooking, getMap, W, H, PLACES, SPAWN, init, setView, setPlayer, walkTo, stop, getPlayer, setOthers, ripple };
 })();

@@ -9,6 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Literata:opsz,wght@7..72,400;7..72,500&family=Be+Vietnam+Pro:wght@400;500&display=swap">
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="items.css">
 </head>
 <body>
 <div id="app" class="app">
@@ -35,7 +36,10 @@
     <canvas id="sky-canvas" class="sky-canvas" width="168" height="64"></canvas>
     <div class="sky-text"><span id="sky-name" class="sky-name"></span><span id="sky-hint" class="sky-hint"></span></div>
   </div>
-  <button id="quest-btn" class="pill quest-btn" type="button" hidden>Nhiệm vụ</button>
+  <div class="left-btns">
+    <button id="quest-btn" class="pill quest-btn" type="button" hidden>Nhiệm vụ</button>
+    <button id="cards-btn" class="pill" type="button" hidden>Thẻ <span id="cards-count" class="count">0</span></button>
+  </div>
   <section id="quest-panel" class="quest-panel" hidden aria-label="Việc đang chờ">
     <div class="mind-info-head"><span class="label">Việc đang chờ</span><button id="quest-close" class="text-btn" type="button">Đóng</button></div>
     <p id="quest-title" class="quest-title"></p>
@@ -46,9 +50,19 @@
       <button id="quest-tip-go" class="pill" type="button" hidden>Về tịnh thất đọc kinh</button>
       <button id="quest-cancel" class="pill" type="button" hidden>Bỏ, quay lại chỗ cũ</button>
     </div>
+    <div id="quest-side" class="quest-side" hidden>
+      <p class="label">Việc nhỏ trong làng</p>
+      <p id="quest-side-title" class="quest-title side"></p>
+      <p id="quest-side-body" class="hint"></p>
+      <button id="quest-side-go" class="pill" type="button">Đưa tôi tới đó</button>
+    </div>
     <p class="hint">Bạn có thể đi dạo và khám phá tự do bất cứ lúc nào. Việc đang chờ vẫn ở đây.</p>
   </section>
   <div id="toast" class="toast" aria-live="polite"></div>
+  <div id="kbd-hint" class="kbd-hint" hidden>
+    <span>WASD / mũi tên: đi · M: bản đồ · +/−: phóng to · Enter: trò chuyện · Esc: đóng</span>
+    <button id="kbd-hint-close" class="text-btn" type="button" aria-label="Ẩn gợi ý phím">Ẩn</button>
+  </div>
   <button id="look-back" class="pill look-back" type="button" hidden>Về chỗ</button>
 
   <div id="zoom-ctl" class="zoom-ctl" hidden>
@@ -58,6 +72,7 @@
 
   <section id="mind-info" class="mind-info" hidden aria-label="Ý nghĩa màu tâm">
     <div class="mind-info-head"><span class="label">Màu của tâm</span><button id="mind-info-close" class="text-btn" type="button">Đóng</button></div>
+    <div id="mind-stats" class="mind-stats" hidden></div>
     <ul class="mind-legend">
       <li><i style="background:#0b0b0d"></i><b>Đen</b>: sân, u tối, tức giận.</li>
       <li><i style="background:#c62a1e"></i><b>Đỏ</b>: tham, bám chấp, nhớ nhung không buông.</li>
@@ -146,6 +161,33 @@
     </div>
   </section>
 
+  <!-- mind: quest beats, survey, sitting -->
+  <section id="mind-card" class="sheet find-card mind-card" hidden aria-live="polite">
+    <div class="sheet-body">
+      <div id="mind-label" class="label find-label"></div>
+      <div id="mind-lines" class="lines"></div>
+      <div id="mind-extra"></div>
+      <div id="mind-choices" class="choices"></div>
+    </div>
+  </section>
+
+  <!-- a mental-factor card being revealed -->
+  <section id="card-reveal" class="card-reveal" hidden aria-live="polite">
+    <p id="card-reveal-label" class="label"></p>
+    <div id="card-reveal-slot"></div>
+    <button id="card-reveal-ok" class="primary" type="button">Giữ thẻ này</button>
+  </section>
+
+  <!-- album of cards -->
+  <section id="cards-panel" class="panel" hidden aria-label="Thẻ tâm sở">
+    <div class="panel-head">
+      <h2 class="label">Thẻ tâm sở</h2>
+      <button id="cards-close" class="text-btn" type="button">Đóng</button>
+    </div>
+    <p class="hint">Mỗi việc bạn làm có những tâm sở đi kèm. Gặp lại một tâm sở thì thẻ mở thêm một mặt. Đây là mô phỏng giản lược để chơi.</p>
+    <div id="cards-list"></div>
+  </section>
+
   <!-- inside the abandoned house (2.5D) -->
   <section id="room" class="room" hidden aria-label="Bên trong nhà hoang">
     <canvas id="room-canvas" class="room-canvas"></canvas>
@@ -183,6 +225,7 @@
       <input id="nick" maxlength="24" autocomplete="off" placeholder="Một người lạ">
       <div id="role-list" class="roles"></div>
       <p class="disclaimer credits">Tiếng gà, quạ, chó, cú, chim là ghi âm thật từ Wikimedia Commons (alys, National Park Service, Amada44, Vianney Bajart, L. Shyamal, Saurmandal, V. Arkhipov, Ashwin Baindur). Chi tiết giấy phép trong sounds/CREDITS.md.</p>
+      <p class="disclaimer">Các chỉ số tâm trong game là mô phỏng để chơi, không phải thước đo tâm thật.</p>
       <p class="disclaimer">Đây là trải nghiệm mô phỏng để chiêm nghiệm hạnh đầu đà. Xin đừng tự ý ngủ ở nghĩa địa hay nhà hoang ngoài đời thật.</p>
     </div>
   </section>
@@ -205,6 +248,8 @@
 <script src="world.js"></script>
 <script src="buddha.js"></script>
 <script src="room.js"></script>
+<script src="items.js"></script>
+<script src="mind.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
