@@ -599,7 +599,7 @@ Bản đồ vẫn nhỏ gọn như hiện nay, nhưng có thêm tầng:
 ## 11. Ranh giới
 
 - Minh và Giải thoát **không bao giờ** là cấp độ hay phần thưởng. Cuối chuỗi giác chi chỉ là một cảnh lặng lúc rạng đông và một câu ngắn, kiểu *"đường còn dài, cứ biết từng hơi thở"*.
-- Không tiền công đức, không huy hiệu, không bảng xếp hạng, không so sánh người chơi.
+- Không tiền công đức, không huy hiệu để so sánh, không bảng xếp hạng, không so sánh người chơi. **Cột mốc riêng tư** thì có (mục 16.5): chỉ chủ nhân vật xem, không cho sức mạnh.
 - Quả cầu đầy chỉ có nghĩa là xong nhiệm vụ.
 - Xả được thưởng hơn sự hăng hái; không khuyến khích đuổi theo con số.
 
@@ -779,3 +779,205 @@ Thay vì chỉ "ngồi cho đầy quả cầu":
 5. **Năm triền cái khi ngồi.**
 6. **Nền nhiều bản đồ**, rồi **hang tầng 1–2**.
 7. Các hạnh đầu đà còn lại, các tầng hang sâu hơn, sự kiện xoay vòng theo canh.
+
+## 16. Vòng ngày: một đời tu theo từng ngày
+
+Hiện tại game là **"một đêm rồi đổi vai"**: hết đêm thì quay về màn chọn nhân vật. Thiếu vòng lặp nên người chơi không có lý do quay lại với cùng một nhân vật. Mục này đổi thành **"một đời tu theo từng ngày"**: nhân vật sống ở chùa ngày này qua ngày khác, mỗi ngày có việc, có thể dừng ở cuối ngày và quay lại sau.
+
+### 16.1. Một ngày trong game
+
+Mượn nhịp sống ở chùa rừng Theravāda, rút gọn mỗi ngày còn khoảng **15–20 phút chơi**.
+
+| Buổi | Sư | Dân làng | Hồn ma |
+|---|---|---|---|
+| **Khuya** | ngồi thiền, kinh hành; gặp chư thiên, ngạ quỷ (nội dung hiện có) | ngủ, hoặc thức canh lúa | lang thang, gặp người thức khuya |
+| **Rạng sáng** | tụng kinh, đi khất thực | nấu cơm, dâng bát | theo người đi chợ sớm |
+| **Sáng** | thọ thực, quét sân, phận sự | làm ruộng, ra chợ | ngồi ngoài tường chùa nghe tụng |
+| **Chiều** | học kinh, may y, vào hang | lên chùa nghe pháp, giúp việc chùa | về mả, chờ người hồi hướng |
+| **Tối** | tụng kinh chiều, quán xét cuối ngày | thắp đèn, kể chuyện | chờ được hồi hướng |
+
+- Nhân vật có **"Ngày thứ N ở chùa"**. Màn chọn vai chỉ còn dùng để tạo nhân vật mới hoặc đổi nhân vật.
+- Mỗi buổi có **1–2 việc chính**, lấy từ phận sự (15.3), hạnh đầu đà (15.4), chuỗi truyện, và **một chuyện tình cờ**. Ngày nào cũng có việc, không ngày nào giống hệt ngày nào.
+- Chuyện tình cờ không lặp lại trong vài ngày gần nhau.
+- Người chơi **không bắt buộc** làm hết các buổi: có thể bỏ qua một buổi ("để thời gian trôi"). Việc bỏ qua chỉ ghi lại, không bị phạt.
+
+### 16.2. Kết thúc một ngày: quán xét và hồi hướng
+
+Kinh Giáo giới La-hầu-la ở rừng Ambalaṭṭhikā (Trung Bộ 61) dạy soi lại việc mình làm như soi gương: trước, trong và sau khi làm. Đây là cách khép ngày đúng tinh thần, và là nơi tự nhiên để hiện thẻ.
+
+**Màn "Quán xét cuối ngày":**
+1. Nhìn lại các việc trong ngày, mỗi việc một dòng kèm thẻ nhận được.
+2. Cột mốc mới, nếu có (16.5).
+3. **Hồi hướng công đức.** Nghi thức nhỏ để khép ngày; ngạ quỷ ở mả có thể sáng lên.
+4. Chọn **"Sang ngày mới"** hoặc **"Nghỉ ở đây"** (16.3).
+
+Đây là **điểm dừng tự nhiên**: người chơi biết lúc nào thoát game là "trọn vẹn", không bỏ dở giữa chừng.
+
+### 16.3. Khi người chơi rời đi
+
+Chọn "Nghỉ ở đây" thì người chơi **giao cho nhân vật một việc**. Mỗi việc **chuẩn bị cho ngày mai**:
+
+| Vai | Việc khi vắng | Ngày mai mở ra |
+|---|---|---|
+| Sư | ngồi thiền dưới cội cây | một triền cái hiện ra sớm để nhận diện |
+| Sư | học một bài kinh (Từ Bi, Hạnh Phúc, Châu Báu…) | thầy hỏi lại bài, có cuộc nói chuyện riêng |
+| Sư | may y từ vải phấn tảo | tiến thêm một đoạn trong chuỗi y phấn tảo |
+| Sư | giữ hạnh không nằm qua đêm | một thử thách hôn trầm |
+| Dân làng | nấu cơm để sáng mai dâng bát | dâng bát cho sư, có cơ hội thẻ Không tham |
+| Dân làng | dệt vải | có vải để cúng dường y |
+| Dân làng | lên chùa nghe pháp | một tin đồn về nơi chốn (Sổ khám phá) |
+| Hồn ma | ngồi ngoài tường nghe tụng kinh | tâm dịu bớt, dễ được người nhìn thấy |
+
+**Khi quay lại:**
+- Nhân vật **đang ở đúng chỗ, đúng tư thế** lúc rời đi: đang ngồi dưới cây gạo, đang cầm kinh.
+- Một khung ngắn **"Trong lúc vắng"**, chủ yếu là chuyện kể: *"Người này ngồi suốt canh ba. Hôn trầm đến hai lần. Sáng ra có một chiếc lá rơi trên vai."*
+
+**Người chơi khác thấy nhân vật đang vắng:**
+- Nhân vật vẫn ngồi ở chỗ cũ, mờ hơn một chút, kèm chữ *"đang ngồi thiền"* hoặc *"đang học kinh"*.
+- Người khác có thể **đặt một bông hoa, cúi chào**. Không nhắn tin, không tương tác gì khác.
+- Lần sau quay lại: *"Có 2 người dừng lại chắp tay khi người này vắng."*
+
+**Ranh giới:**
+- Kết quả khi vắng **nhỏ và có trần**: tối đa bằng một đêm, dù vắng một tuần. Không thẻ mới, không lên cấp thẻ; chỉ chuyện kể và việc chuẩn bị cho ngày mai.
+- Vắng không bị phạt: nhân vật không đói, không mất gì.
+- **Không quà điểm danh hằng ngày.** Chuỗi ngày chỉ ở dạng "chuỗi mềm", vắng thì tạm nghỉ chứ không mất (16.8).
+- Lời văn giữ đúng: *"nhân vật vẫn ngồi"*, không ngụ ý tu thay hay tu tự động có kết quả.
+
+### 16.4. Trạng thái cần lưu cho mỗi nhân vật
+
+- ngày thứ mấy, buổi nào;
+- đang ở bản đồ nào, chỗ nào, tư thế gì;
+- việc giao khi vắng, thời điểm rời đi;
+- việc trong ngày đã làm, chuyện tình cờ đã gặp gần đây (để không lặp);
+- cột mốc đã đạt.
+
+Bỏ luồng "hết đêm thì về màn chọn vai". Hồn ma hiện kết thúc bằng việc buông bỏ; với vòng ngày, đó trở thành **một cột mốc lớn** chứ không phải kết thúc nhân vật. Hồn ma buông bỏ xong thì **tái sinh** thành một nhân vật mới có liên hệ (16.8).
+
+### 16.5. Cột mốc
+
+Nhận thẻ, kể cả thẻ bất thiện, là **một cột mốc**. Theo Tứ niệm xứ, biết tâm có sân là "tâm có sân" đã là niệm. Vì vậy cột mốc ghi nhận **việc thấy được**, không khen chê thiện hay bất thiện.
+
+| Cột mốc | Câu hiện ra |
+|---|---|
+| **Thẻ đầu tiên** (bất kỳ) | *"Lần đầu nhìn thấy tâm mình."* |
+| Thẻ bất thiện đầu tiên | *"Thấy được Sân. Biết nó đang có mặt là bước đầu của niệm."* |
+| Thẻ thiện đầu tiên | *"Một hạt giống thiện đã nảy mầm."* |
+| Hiểu trọn một tâm sở bất thiện (15.1) | *"Đã hiểu Sân: nó là gì, từ đâu đến, cái gì làm nó dịu."* |
+| Hiểu đủ ba gốc tham, sân, si | màn "gộp lại": ba gốc của mọi tâm bất thiện |
+| Ngày đầu tiên trọn vẹn | *"Một ngày ở chùa."* |
+| 7, 30, 100 ngày ở chùa | **cộng dồn, không cần liên tiếp** |
+| May xong y phấn tảo | áo y màu đất **thành skin** của nhân vật |
+| Hồi hướng cho ngạ quỷ lần đầu | hình ngạ quỷ sáng lên trong sổ |
+| Soi đường cho người khác trong hang | cột mốc kết nối |
+| **Cột mốc ẩn** | chỉ hiện khi gặp, ví dụ ngồi đủ lâu ở mả mà không sợ |
+
+**Cách hiện:**
+- Lúc đạt: một màn nhỏ, có hình minh họa, nhạc chuông nhẹ.
+- Trang **"Dấu mốc"** trong hồ sơ nhân vật: hình, ngày đạt, câu chuyện lúc đó.
+- Phần thưởng chỉ là **ghi nhớ, hiểu thêm, đôi khi skin**. Không sức mạnh, không chỉ số.
+- **Riêng tư.** Người chơi khác chỉ thấy skin (ví dụ y màu đất), không thấy danh sách cột mốc.
+- Mật độ: dày ở những ngày đầu (để người mới thấy mình đang tiến), thưa dần về sau.
+
+### 16.6. Thứ tự làm đề xuất
+
+1. Vòng ngày tối giản cho **Sư**: khuya → khất thực → quét sân → tối. Dân làng và hồn ma tạm dùng vòng đơn giản hơn.
+2. Quán xét cuối ngày, hồi hướng, chọn "Sang ngày mới" hoặc "Nghỉ ở đây".
+3. Việc khi vắng và khung "Trong lúc vắng".
+4. Cột mốc, bắt đầu bằng ba cột mốc thẻ đầu tiên và "Một ngày ở chùa".
+5. Người khác thấy nhân vật đang vắng, đặt được hoa.
+
+### 16.7. Đánh giá
+
+**Điểm mạnh**
+- **Có lý do quay lại với cùng một nhân vật:** việc khi vắng chuẩn bị cho ngày mai, chuỗi nhiều ngày (y phấn tảo), số ngày ở chùa.
+- **Có điểm dừng tự nhiên:** cuối ngày là lúc thoát game trọn vẹn, hợp người chơi casual 15–20 phút.
+- **Gắn kết với tinh thần game:** quán xét theo kinh, hồi hướng, nhịp sống chùa thật; người chơi học về đời sống tu viện mà không cần giảng.
+- **Cột mốc đổi cách nhìn thẻ bất thiện:** "thấy được" là thành tựu, giảm cảm giác bị phán xét.
+- **Kết nối xã hội nhẹ nhàng:** đặt hoa cho người đang vắng, không cần chat, ít rủi ro quấy rối.
+- **Tận dụng thứ đã có:** thẻ, sổ khám phá, profile, avatar và skin, tài khoản lưu nhân vật.
+
+**Điểm yếu và rủi ro**
+- **Khối lượng nội dung lớn nhất từ trước tới giờ:** 5 buổi × 3 vai, cộng chuyện tình cờ. Nếu thiếu nội dung thì ngày thứ 4–5 bắt đầu lặp. Cách giữ: làm vai Sư trước, mỗi buổi chỉ 1–2 việc, ưu tiên các hệ có biến số (phận sự với biến số nhỏ, triền cái ngẫu nhiên).
+- **Nhịp chậm có thể không hợp mọi người:** người thích hành động sẽ thấy quét sân, tụng kinh là chậm. Bù lại bằng hang động và chuyện tình cờ để có lúc hồi hộp.
+- **Vòng lặp quay lại mỗi ngày là kỹ thuật hai mặt:** dễ trượt sang kiểu game nhàn rỗi gây nghiện. Cách giữ: móc bằng tò mò và tiến bộ thay vì sợ mất, chuỗi mềm, không phạt khi vắng, kết quả khi vắng có trần (16.8).
+- **Mất cảm giác "kết thúc trọn":** "một đêm" trước đây có mở và kết rõ. Cần giữ các **cung truyện có kết** (chuỗi Hạnh, y phấn tảo) bên trong vòng ngày.
+- **Hồn ma khó khớp vòng ngày:** hồn ma có cung "buông bỏ" mang tính kết thúc. Cần thiết kế riêng (16.4).
+- **Cột mốc có thể kéo người chơi về đuổi danh sách:** giữ riêng tư, có cột mốc ẩn, không đếm phần trăm hoàn thành.
+- **Kỹ thuật:** lưu trạng thái nhân vật chi tiết hơn; hiển thị nhân vật vắng cho người khác cần server giữ danh sách "nhân vật đang nghỉ", không chỉ người đang online.
+- **Kiểm chứng:** chưa biết người chơi thật có quay lại hay không. Nên làm bản tối giản (16.6 bước 1–2) rồi cho vài người chơi thử 3–5 ngày trước khi làm tiếp.
+
+### 16.8. Giữ chân người chơi và phương án cho từng điểm yếu
+
+Game cần **móc giữ chân mạnh**: không quay lại thì không học được. Nhưng game dạy về Tham mà giữ người chơi bằng cách khai thác lòng tham và nỗi sợ mất của họ thì tự mâu thuẫn, và người chơi Phật tử, các chùa sẽ nhận ra.
+
+> **Nguyên tắc:** móc mạnh, nhưng móc bằng **tò mò, chờ đợi, tiến bộ, quan hệ**. Không móc bằng **sợ mất, so bì, trả tiền**.
+>
+> **Câu kiểm tra mỗi móc trước khi thêm:** *"Cái móc này giữ người chơi bằng tò mò, chờ đợi, tiến bộ, quan hệ, hay bằng sợ mất, so bì?"*
+
+#### Móc nên dùng mạnh tay
+
+| Móc | Cách làm trong game |
+|---|---|
+| **Tò mò** | dấu "?" trong Sổ khám phá, mặt thẻ chưa mở, tầng hang chưa vào |
+| **Hẹn ngày mai** | việc khi vắng chuẩn bị cho mai; *"Hoa sen ở ao sẽ nở sáng mai"*; *"Mai thầy kể tiếp chuyện Hạnh"*. Mỗi ngày kết thúc bằng **một câu treo** |
+| **Tiến bộ thấy được** | thẻ thiện lên cấp, y may dần qua từng đêm, số ngày ở chùa |
+| **Bất ngờ hiếm** | chư thiên hiếm, cột mốc ẩn, chuyện tình cờ; phần thưởng bất ngờ đến từ việc chơi, không từ tiền |
+| **Lịch thật** | ngày rằm, mùng một thật là ngày Bát quan trai trong game; Vesak; mùa an cư 3 tháng là một "mùa" lớn |
+| **Quan hệ** | đặt hoa cho người vắng, soi đường trong hang, nhân vật trong làng nhớ việc người chơi đã làm |
+| **Bản sắc** | skin kiếm bằng tu tập (y màu đất), nhân vật mang dấu ấn riêng |
+
+#### Vùng xám: dùng có điều kiện
+
+| Móc | Phiên bản dùng trong game |
+|---|---|
+| Chuỗi ngày liên tiếp | **chuỗi mềm**: có đếm; vắng thì chuỗi "tạm nghỉ", không về 0 |
+| Thông báo | người chơi tự bật; nội dung là chuyện trong game (*"Sen đã nở"*), không bao giờ *"Bạn sắp mất chuỗi!"* |
+| Quà khi quay lại | **quà chào mừng sau khi vắng** (*"Có người để lại gói xôi ở cổng"*), không phải quà điểm danh mỗi ngày |
+| Sự kiện có hạn | sự kiện theo mùa **lặp lại hằng năm**; lỡ năm nay thì năm sau còn |
+
+#### Không dùng
+
+- gacha, mua thẻ, mua công đức;
+- phạt khi vắng; thứ quý chỉ có một lần rồi mất vĩnh viễn;
+- bảng xếp hạng công đức, so sánh tâm giữa người chơi;
+- hệ năng lượng để bán.
+
+#### Biến mâu thuẫn thành nội dung
+
+- Chơi lâu liền mạch thì sư già nhắc: *"Ngồi lâu rồi, nghỉ mắt đi con."*
+- Cột mốc ẩn: *"Thấy được mình đang muốn chơi thêm. Đó cũng là Tham."*
+- Người chơi học được ngay trên chính trải nghiệm chơi game của mình.
+
+#### Phương án cho từng điểm yếu (16.7)
+
+**Nội dung lặp (rủi ro lớn nhất)**
+- **Ghép tình huống từ mảnh:** mẫu tình huống × nơi chốn × loài gặp × giờ, trăng, thời tiết × tâm hiện tại. Ví dụ "chó cắn" + mưa + đang Sân khác hẳn "chó cắn" + nắng + có Niệm. 20 mẫu có thể cho hàng trăm biến thể.
+- **Nhân vật trong làng có trí nhớ:** bà cụ nhớ hôm qua được dâng cơm, ông Tư nhớ chuyện con chó. Làng thay đổi theo người chơi.
+- **Nhịp tuần, tháng, mùa:** ngày thường, ngày rằm, mùa an cư, lễ dâng y Kathina cuối mùa.
+- **Dấu vết người chơi khác** (đã có) làm mỗi ngày khác nhau.
+- **Quy trình viết:** mỗi tình huống 3–5 câu ngắn theo mẫu. Có thể dùng AI soạn nháp, nhưng **người duyệt từng câu**, nhất là câu về giáo lý.
+
+**Nhịp chậm**
+- Mỗi ngày có **đường cong nhịp**: yên lúc khuya, động lúc khất thực, hồi hộp lúc chiều vào hang, lắng lúc quán xét tối.
+- **Việc thuần thục thì làm nhanh:** quét sân đủ nhiều lần thì có nút *"Quét như mọi ngày"*, xong trong vài giây; chỉ khi có biến số mới phải chơi kỹ.
+- Phận sự có kỹ năng thật: quét đúng nhịp, gánh nước không đổ.
+
+**Mất cảm giác kết thúc trọn**
+- **Cung truyện 3–7 ngày** có mở và kết: y phấn tảo, chuyện Hạnh, một ngạ quỷ được siêu thoát.
+- **Mùa là một chương:** mùa an cư có lễ kết thúc (Kathina), tổng kết mùa, rồi sang chương mới.
+
+**Hồn ma khó khớp vòng ngày**
+- Vòng ngày của hồn ma là hành trình đến buông bỏ, khoảng 5–10 ngày.
+- Buông bỏ xong là cột mốc lớn, rồi **tái sinh**: chọn tái sinh thành một em bé trong làng, một nhân vật mới **có liên hệ** với hồn ma cũ, giữ một phần ký ức và thẻ.
+- Đúng với giáo lý tái sinh, và giữ được người chơi.
+
+**Đuổi theo danh sách cột mốc**
+- Không hiện phần trăm hoàn thành; phần lớn cột mốc là ẩn; mỗi cột mốc là một câu chuyện, không phải một ô đánh dấu.
+
+**Kỹ thuật**
+- Rời game thì lưu ảnh chụp trạng thái nhân vật (16.4).
+- Server giữ danh sách "nhân vật đang nghỉ" theo bản đồ, gửi kèm khi có người vào; giới hạn vài chục người cho nhẹ.
+
+**Chưa kiểm chứng**
+- Đo vài chỉ số ẩn danh: tỷ lệ quay lại sau 1 ngày, sau 7 ngày; số ngày chơi trọn; độ dài mỗi lần chơi; người chơi bỏ ở buổi nào.
+- Cho 5–10 người chơi thử 1 tuần, rồi phỏng vấn ngắn: ngày nào thấy chán, vì sao quay lại.
