@@ -94,7 +94,7 @@ Mọi bậc đều mở bằng **thẻ thu được từ nhiệm vụ** (mục 4
 
 - Game ghi lại các tâm sở ngầm trong suốt nhiệm vụ. Tâm sở mạnh nhất, hoặc mới nhất với người chơi, thành thẻ.
 - **Cùng một nhiệm vụ, cách làm khác nhau thì ra thẻ khác nhau.** Chuỗi "chó cắn": nhặt gậy → thẻ *Sân*; rửa vết thương rồi đem rau cho nhà ông Tư → thẻ *Không sân*; ngồi với sư đủ lâu → thẻ *Niệm*.
-- **Thẻ bất thiện cũng là thẻ.** Không có thẻ "xấu" để tránh; hiểu Sân cũng quý như hiểu Không sân.
+- **Thẻ bất thiện cũng là thẻ.** Không có thẻ "xấu" để tránh; hiểu Sân cũng quý như hiểu Không sân. Nhưng thẻ bất thiện chỉ để hiểu, không lên cấp, không mở truyện (xem mục 15.1).
 - Có hên xui nhẹ: đôi khi rơi ra tâm sở đi kèm (ví dụ *Hối hận* sau khi nhặt gậy).
 
 ### Mặt trước (ai cũng đọc được)
@@ -572,6 +572,8 @@ Bản đồ vẫn nhỏ gọn như hiện nay, nhưng có thêm tầng:
 
 **Có thể làm sau:** cõi rồng (nāga) dưới ao sen, thế giới trong lòng cây gạo.
 
+> Hang được mở rộng thành một thế giới riêng ở mục 15.2.
+
 ### Ranh giới
 
 - **Cung điện là quả của việc thiện của chính vị ấy**, không phải phần thưởng ban cho người chơi. Người chơi không bao giờ "kiếm được" cung điện.
@@ -623,6 +625,10 @@ Bản đồ vẫn nhỏ gọn như hiện nay, nhưng có thêm tầng:
 7. Các loài, cấu trúc tâm tái tục của từng loài, cách hiện chư thiên và nhiệm vụ hồi hướng (mục 9a).
 8. **Thành phần tâm sở của từng tâm** trong bộ bài tâm, luật tạo tâm thiện và bảng đổi lá (mục 4c).
 9. Chuyện của từng vị thiên, ngạ quỷ phỏng theo Chuyện Thiên Cung, Chuyện Ngạ Quỷ; cách hiện thiên cung, hang ngạ quỷ (mục 9b).
+10. Cách hiện hình 14 tâm sở bất thiện trong hang, và câu chỉ sang pháp đối trị (mục 15.1, 15.2).
+11. Phận sự tịnh xá theo Luật tạng, cách để việc thường ngày không thành cày điểm (mục 15.3).
+12. Ba mức của từng hạnh đầu đà, cách phát nguyện và ghi nhận khi phạm (mục 15.4).
+13. Cách hiện năm triền cái khi ngồi, cặp triền cái và đối trị, ranh giới không ngụ ý chứng thiền (mục 15.5).
 
 ## 14. Bản thử nhỏ nhất (MVP)
 
@@ -633,3 +639,143 @@ Bản đồ vẫn nhỏ gọn như hiện nay, nhưng có thêm tầng:
 5. Lời nhắc mô phỏng ở màn đầu và chân thẻ.
 
 Nếu vòng này vui thì mới mở rộng sang ngũ căn, giác chi, Bảng tâm. Truyện dài hiện có (m1–m6) sẽ dần chuyển thành các tình huống ngắn.
+
+## 15. Giai đoạn tiếp: thiện mở đường, bất thiện là bài học
+
+Sau bản thử, có hai vấn đề: người chơi đôi khi bị kẹt nhiệm vụ hoặc hết việc để làm, và vai Sư chưa có đời tu đủ sâu. Mục này gom các hướng đã bàn, theo một nguyên tắc chung:
+
+> **Tâm thiện là con đường. Tâm bất thiện là bài học gặp dọc đường.**
+
+Vòng chơi chính:
+
+```
+tu tập trên mặt đất (phận sự, hạnh đầu đà, thiền)
+   → tâm sáng hơn → nhận và nâng thẻ thiện
+   → thẻ thiện mở mạch truyện mới, mở tầng hang sâu hơn
+   → trong hang gặp tâm bất thiện, hiểu chúng
+   → tâm tối dần, phải lên mặt đất tu tiếp
+```
+
+### 15.1. Hai loại thẻ, hai vai trò
+
+| | Thẻ thiện | Thẻ bất thiện |
+|---|---|---|
+| Nhận được khi | **làm đúng hành vi đó** (bố thí → Không tham, giúp người → Bi, ngồi thiền nhận ra triền cái → Niệm) | **tình cờ gặp** trong khám phá, chủ yếu trong hang |
+| Lên cấp | có, cấp 1–5 như mục 4b | **không** |
+| Số lần gặp | không giới hạn, càng luyện càng mạnh | khoảng **3 lần**, rồi thành "đã hiểu" và không rơi nữa |
+| Mở truyện, mở cửa | **có**, đây là trục tiến lên duy nhất | **không** |
+| Mặt cuối | nhân gần, tên Pāli | **chỉ sang pháp đối trị**: *"Từ là đối trị của Sân. Thử giúp bà cụ ở mả."* |
+
+- **Ba lần gặp một thẻ bất thiện:** lần 1 mở mặt trước (chuyện vừa xảy ra); lần 2 mở đặc tính và biểu hiện; lần 3 mở nhân gần và pháp đối trị, rồi thẻ thành **"đã hiểu"**.
+- Gom nhiều thẻ bất thiện **không được gì thêm**, nên không ai muốn lao vào cày bất thiện mà bỏ tu tập.
+- **Album chia hai phần:** *"Tâm đang tu"* (thiện, có cấp) và *"Tâm đã hiểu"* (bất thiện, có tiến độ hiểu x/14).
+- **14 tâm sở bất thiện:** Si, Vô tàm, Vô quý, Trạo cử, Tham, Tà kiến, Mạn, Sân, Tật đố, Xan tham (bỏn xẻn), Hối quá, Hôn trầm, Thụy miên, Hoài nghi.
+- **Thẻ thiện là "mắt thấy", không phải sức mạnh.** Thẻ không làm nhân vật mạnh hơn mà cho thấy những gì trước đó không thấy:
+
+| Thẻ thiện | Mở ra |
+|---|---|
+| Niệm | dấu vết ẩn trên bản đồ (lá gạo sáng), lối đi trong hang |
+| Bi | nghe tiếng ngạ quỷ than, mở chuỗi giúp cõi dưới |
+| Tùy hỷ | thấy cung điện chư thiên |
+| Xả | người thân đã khuất dám đến gần kể chuyện |
+| Tàm, Quý | người làng từng làm sai tìm đến xin lời khuyên |
+
+- **"Mắt thấy" theo tâm lúc này.** Thẻ đã có thì giữ, nhưng chỉ hoạt động khi tâm hiện tại đủ sáng. Vừa giận xong thì lá gạo tắt, cung điện mờ. Người chơi tự thấy tâm hiện tại quan trọng hơn bộ sưu tập.
+- **Hai nguồn thẻ thiện.** Thiền cho nhóm định và tuệ (Niệm, Tĩnh lặng, Nhu nhuyến, Hỷ). Hành động cho nhóm đức hạnh (Không tham, Bi, Kiên nhẫn). Người không thích ngồi thiền vẫn đi tiếp được.
+
+**Thay đổi so với bản thử:** Sân, Tham, Hối hận hiện lên cấp như thẻ thiện; cần sửa thành 3 lần gặp rồi "đã hiểu".
+
+### 15.2. Hang động: cõi dưới
+
+Tảng đá sau đồi là **cửa vào một thế giới riêng**, không chỉ là một cảnh. Trước mắt làm 1–2 khu; về sau mở thêm tầng.
+
+**Lý do vào hang:** tò mò, và để **hiểu các tâm bất thiện**, vì ở đây chúng hiện thành hình.
+
+| Hiện hình | Tâm sở |
+|---|---|
+| ngạ quỷ ôm bát rỗng, không chịu chia | Xan tham |
+| bóng nhìn trộm ánh đèn người khác | Tật đố |
+| tảng đá tự cao chắn lối | Mạn |
+| sương mù, ngã ba không biển chỉ | Hoài nghi |
+| tiếng vọng nói đi nói lại một lỗi cũ | Hối quá |
+| hơi lạnh làm đèn chùng xuống | Hôn trầm, Thụy miên |
+
+**Đi sâu phải có thẻ thiện:**
+- Tầng 1, cửa hang: ai cũng vào được.
+- Tầng 2: cần Niệm để thấy lối.
+- Tầng 3: cần Bi để ngạ quỷ cho đi qua.
+- Tầng 4: cần Xả để vượt khu ảo ảnh người thân.
+
+Người chưa tu đủ trên mặt đất chỉ dừng ở cửa hang. Hang là nơi **kiểm tra những gì đã tu**, không thay thế cho tu.
+
+**Bóng tối là tâm:**
+- Ánh đèn theo tâm lúc này. Sợ, Sân, Si làm đèn mờ.
+- Ngồi yên hoặc ra thẻ Niệm thì đèn sáng lại.
+- **Ở lâu trong hang thì tâm tối dần.** Phải lên mặt đất quét sân, ngồi thiền, làm việc thiện để sáng lại. Vòng chơi tự nhiên thành: lên tu, xuống hiểu, lên tu tiếp.
+
+**Người chơi khác** thấy nhau trong hang như đốm đèn từ xa, có thể soi đường cho nhau.
+
+**Nền kỹ thuật cần làm đúng từ đầu:**
+- World chở được **nhiều bản đồ** (mặt đất, hang tầng 1, 2…): mỗi bản đồ có địa điểm, nhân vật, bản đồ nhỏ riêng.
+- Người chơi chỉ thấy nhau khi cùng bản đồ.
+- Điều kiện mở tầng là **điều kiện tâm** (thẻ thiện, việc đã làm), không phải chìa khóa.
+
+**Mở rộng về sau:** hồ ngầm thông xuống cõi long thần (nāga), di tích một vị sư xưa từng ẩn tu trong hang.
+
+**Ranh giới:** giữ giọng "đây là hình tượng biểu đạt tâm". Ngạ quỷ đáng thương, không đáng sợ (mục 9b). Không mô tả cõi giới như một khẳng định.
+
+### 15.3. Phận sự tịnh xá: luôn có việc để làm
+
+Luật tạng (phần Phận sự, *vatta*) có sẵn các việc hằng ngày ở trú xứ: quét sân, gánh nước, lau giảng đường, sắp chỗ ngồi, hầu thầy. Đây là **nền** của game: lúc nào cũng có việc, kể cả khi chuỗi nhiệm vụ đã xong.
+
+**Mỗi vai một kiểu việc:**
+- **Sư:** quét sân, gánh nước, hầu thầy, sắp chỗ ngồi.
+- **Dân làng:** dâng hoa, nấu cháo, mang nước, lau tượng.
+- **Hồn ma:** không làm được việc, chỉ quanh quẩn; có thể làm gió nhẹ giúp hoặc phá.
+
+**Chống nhàm chán:**
+- **Phần thưởng giảm dần trong đêm.** Lần đầu được nhiều, lần sau ít. Thông điệp ngầm: quét không phải để lấy thưởng.
+- **Biến số nhỏ mỗi lần:** gặp tổ kiến (vòng qua hay quét luôn), nhặt được vật ai đánh rơi (mở một chuyện), gió thổi lá bay lại (thử kiên nhẫn).
+- **Tâm ảnh hưởng cách làm.** Quét khi đang Sân thì nhanh nhưng bụi bay, chim hoảng. Quét có niệm thì chậm nhưng thấy được thứ người khác bỏ qua.
+
+**Sự kiện xoay vòng theo canh đêm** vẫn có nhưng **thưa**: con mèo lạc, đứa trẻ khóc, gió tắt đèn chùa, sư kinh hành cần người soi đường. Mỗi sự kiện chỉ hiện khi đúng giờ, đúng nơi, đúng tâm, và không lặp lại trong cùng một đêm.
+
+**Không để kẹt:** nhiệm vụ đứng yên quá vài phút thì một nhân vật đi ngang buông một câu gợi ý. Bước nào cần vật phẩm thì phải có ít nhất một chỗ lấy lại được.
+
+### 15.4. Đời tu của Sư: 13 hạnh đầu đà
+
+Theo Thanh Tịnh Đạo, chương II. Đây là trục chính của vai Sư.
+
+| Nhóm | Hạnh | Gợi ý lối chơi |
+|---|---|---|
+| Y | y phấn tảo (lượm vải bỏ may y); chỉ giữ ba y | nhặt vải ở bãi tha ma, đống rác; giặt, nhuộm, may thành y **qua nhiều đêm** |
+| Ăn | khất thực; khất thực tuần tự từng nhà; ăn một chỗ ngồi; ăn trong bát; không nhận thêm sau khi đã từ chối | đi khất thực theo thứ tự, không chọn nhà giàu; gặp cám dỗ thì từ chối |
+| Chỗ ở | ở rừng; gốc cây; ngoài trời; bãi tha ma; chỗ nào được chỉ cũng nhận | chọn chỗ ngồi đêm nay; mỗi chỗ có thử thách riêng: muỗi, mưa, sợ hãi |
+| Oai nghi | không nằm (chỉ đi, đứng, ngồi) | cả đêm không nằm; mệt thì hôn trầm kéo tới |
+
+- **Ba mức: nghiêm, vừa, nhẹ**, đúng như Thanh Tịnh Đạo ghi cho từng hạnh. Đầu đêm người chơi **tự phát nguyện** mức nào. Giữ được thì tâm vững hơn và có thẻ thiện; phạm thì chỉ ghi lại, không phạt nặng.
+- **Hạnh hợp tính cách:** Thanh Tịnh Đạo nói hạnh đầu đà hợp với người tính tham và tính si. Game đã có hệ tính cách (mục 5), nên có thể gợi ý hạnh hợp từng nhân vật.
+- **Bắt đầu bằng y phấn tảo:** chuỗi nhiều đêm, cho người chơi lý do quay lại. Mỗi đêm nhặt được vài mảnh vải; mỗi mảnh có một câu chuyện nhỏ về người từng dùng nó.
+- Hạnh đầu đà là **tự nguyện**, không phải điều kiện bắt buộc để chơi vai Sư.
+
+### 15.5. Ngồi thiền sâu hơn: năm triền cái
+
+Thay vì chỉ "ngồi cho đầy quả cầu":
+
+- Khi ngồi, **năm triền cái** lần lượt hiện thành hình ảnh: dục (mùi cơm, hình ảnh đẹp), sân (chuyện chó cắn hiện lại), hôn trầm thụy miên (mí mắt nặng, đèn chùng), trạo cử hối quá (ý nghĩ chạy lung tung, lỗi cũ), nghi (*"ngồi thế này để làm gì?"*).
+- Người chơi chỉ cần **nhận ra và gọi tên** đúng thứ đang hiện. Nhận đúng thì nó tan và quả cầu sáng thêm. Nhận sai thì không sao, chỉ chậm hơn.
+- **Thẻ đến theo chất lượng, không theo thời lượng:** thẻ Niệm, Tĩnh lặng, Hỷ đến khi nhận ra đúng, không đến vì ngồi lâu.
+- **Không đảm bảo:** có đêm ngồi tốt mà không được thẻ, kèm một câu nhẹ: *"Tâm hôm nay động, mai ngồi lại."*
+- **Đề mục hợp tính cách** (mục 5) thì triền cái tương ứng dễ nhận ra hơn.
+- **Kinh hành** là cách thứ hai: đi chậm, dùng khi hôn trầm nặng.
+- **Ranh giới:** không có "chứng thiền", "đắc quả". Chỉ dừng ở mức tâm lắng hơn, thấy rõ hơn (mục 11).
+
+### 15.6. Thứ tự làm đề xuất
+
+1. **Không để kẹt:** câu gợi ý khi nhiệm vụ đứng yên; chỗ lấy lại vật phẩm.
+2. **Sửa luật thẻ:** thẻ bất thiện 3 lần rồi "đã hiểu"; album hai phần; mặt cuối chỉ sang đối trị.
+3. **Phận sự tịnh xá:** quét sân trước (đã có cơ chế quét lá), phần thưởng giảm dần, biến số nhỏ.
+4. **Y phấn tảo:** chuỗi nhiều đêm đầu tiên của vai Sư.
+5. **Năm triền cái khi ngồi.**
+6. **Nền nhiều bản đồ**, rồi **hang tầng 1–2**.
+7. Các hạnh đầu đà còn lại, các tầng hang sâu hơn, sự kiện xoay vòng theo canh.
