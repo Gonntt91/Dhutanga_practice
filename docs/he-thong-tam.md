@@ -1,0 +1,452 @@
+# Hệ thống tâm: học Vi Diệu Pháp qua trải nghiệm
+
+> Trạng thái: **bản thiết kế, chưa code.** Nội dung giáo lý (nhóm tâm sở, thẻ tâm sở, gợi ý tu tập, cách hiện giác chi) **cần thầy Theravāda duyệt** trước khi đưa vào game.
+
+## 0. Mục đích và tinh thần
+
+**Mục đích:** qua việc chơi, người chơi hiểu dần về tâm, tâm sở và cách tu tập trong Phật giáo. Lộ trình đi từ tổng quan vào chi tiết (gộp → tách → gộp lại), dựa trên Vi Diệu Pháp (Abhidhamma).
+
+**Ba điều luôn giữ:**
+
+1. **Đây là mô phỏng giả định.** Tâm không thể đo bằng con số. Công thức trong game chỉ là cách gần đúng để chơi, có cả yếu tố hên xui để không cứng và máy móc. Game nói rõ điều này với người chơi (mục 2).
+2. **Vui trước, sâu sau.** Đa số người chơi chỉ muốn làm nhiệm vụ, khám phá bản đồ, gặp người khác. Họ chơi trọn vẹn mà không cần biết một thuật ngữ nào.
+3. **Chiều sâu dành cho người tò mò.** Ai chơi lâu, làm nhiều nhiệm vụ thì **thu thập thêm thẻ tâm sở** và mở dần các bậc kiến thức. Không bắt người chơi đọc sách lý thuyết để mở khóa.
+
+## 1. Nguồn tham khảo
+
+- **Kinh Paṭhama Ānanda** (SN 46.3): chuỗi niệm hơi thở → Tứ niệm xứ → Thất giác chi → Minh và Giải thoát; bảy giác chi sinh theo thứ tự; tu "thường xuyên, liên tục, lặp đi lặp lại".
+- Bài giảng của **Thiền sư Kyunpin (U Jaṭila)**, Sư cô Diệu Pháp (Sudhamma) dịch:
+  - 2017, bài 1 (kinh văn): https://ngaikyunpin.wordpress.com/2022/09/21/1-phap-2017-thien-vien-kyunpin-bai-1/
+  - 2018, bài 6 (lời giảng cùng kinh): https://ngaikyunpin.wordpress.com/2022/09/18/2018-thien-vien-kyunpin-bai-6/
+  - Nửa sau bài 2018 mới đọc qua bản tóm tắt, **chưa đối chiếu nguyên văn**.
+- **Thanh Tịnh Đạo** (Visuddhimagga): sáu hạng tính (chương III) và đề mục hợp với từng hạng; quân bình ngũ căn.
+- **Vi Diệu Pháp Toát Yếu** (Abhidhammattha Saṅgaha), ví dụ bản *A Comprehensive Manual of Abhidhamma* của Bhikkhu Bodhi: 52 tâm sở, 89/121 tâm, 37 phẩm trợ đạo.
+- **Trường Bộ, Kinh Phúng Tụng (DN 33)**: ba loại tuệ (văn, tư, tu).
+- **Kinh Lửa** (SN 46.53): khi tâm chìm thì nuôi giác chi nào, khi tâm động thì nuôi giác chi nào (dùng cho thẻ đối trị).
+- **Tương Ưng Chư Thiên** (SN 1) và **Kinh Ngoài Bức Tường** (Tirokuḍḍa, Tiểu Tụng): chư thiên đến hỏi đạo lúc đêm khuya; ngạ quỷ thân quyến và hồi hướng.
+
+Lời giảng 2018 nhấn mạnh và game dùng làm luật chơi:
+
+- giữ **một đề mục chính**, không phân tích, không hỏi vì sao;
+- **ghi nhận đã là tâm thiện** ("giận, giận" thì nó tự lắng);
+- dấu hiệu niệm giác chi: tâm tự bám đề mục, như *viên đá chìm xuống nước*;
+- lỗi thường gặp: chống lại cái khó chịu, phân tích, bám cái dễ chịu, bỏ ngồi khi đau.
+
+## 2. Lời nhắc "đây là mô phỏng"
+
+Hiện ở ba chỗ, ngắn gọn, không giảng giải:
+
+- **Màn đầu**, một dòng: *"Các chỉ số tâm trong game là mô phỏng để chơi, không phải thước đo tâm thật."*
+- **Chân mọi thẻ chi tiết:** *"Mô phỏng giản lược. Hãy hỏi thầy để hiểu đúng."*
+- **Trang "Về hệ thống tâm"** trong phần giới thiệu: nguồn tham khảo, cách game giản lược, và lời mời đọc kinh sách thật.
+
+## 3. Ba lớp người chơi, ba độ sâu
+
+| Lớp | Ai | Thấy gì | Thuật ngữ |
+|---|---|---|---|
+| **Dạo chơi** | mới vào, chơi cho vui | vòng màu tâm, quả cầu khi làm nhiệm vụ, câu ngắn kiểu *"Bạn thấy nhẹ lòng hơn"* | **không có** |
+| **Tò mò** | đã làm vài chuỗi nhiệm vụ | bấm vòng tâm mở bảng chi tiết: 3 gốc xấu, 3 gốc tốt, 5 nhóm Tín Tấn Niệm Định Tuệ, gợi ý nên làm gì | tên Việt quen thuộc |
+| **Đi sâu** | chơi lâu, đã có nhiều thẻ | mặt sau của thẻ, Bảng tâm, chuỗi giác chi, màn "gộp lại" | thuật ngữ Việt, Pāli để trong ngoặc |
+
+**Quy tắc chống ngợp:**
+
+- 30 phút đầu (hoặc trước khi xong chuỗi nhiệm vụ đầu tiên): **không có một từ Pāli hay thuật ngữ Hán Việt khó nào** trên màn hình.
+- Mỗi lần chỉ mở **một** khái niệm mới, và luôn ngay sau khi người chơi vừa trải qua nó.
+- Thuật ngữ mới luôn đi kèm một câu đời thường, ví dụ *"Sân: cái nóng trong lòng khi bị trái ý."*
+- Mọi bảng chi tiết đều có thể đóng lại; không bắt buộc đọc để đi tiếp.
+
+## 4. Lộ trình kiến thức: gộp → tách → gộp lại
+
+| Bậc | Mở khi | Người chơi thấy | Bài học |
+|---|---|---|---|
+| 0 | từ đầu | vòng màu, quả cầu | tâm lúc này dễ chịu hay nặng nề |
+| 1 | thẻ đầu tiên (xong nhiệm vụ đầu) | 3 gốc xấu (tham, sân, si), 3 gốc tốt (không tham, không sân, không si) | mọi việc làm đều có gốc |
+| 2 | có khoảng 6–8 thẻ | 5 nhóm Tín Tấn Niệm Định Tuệ; 5 chướng ngại | năng lực tu tập và cái cản trở |
+| 3 | có khoảng 15 thẻ | album xếp thẻ theo 4 nhóm tâm sở (7 biến hành, 6 biệt cảnh, 14 bất thiện, 25 tịnh hảo) | một tâm gồm nhiều tâm sở cùng sinh |
+| 4 | đủ thẻ cho một loại tâm | các tâm xếp theo gốc và thọ | một sát-na tâm cụ thể là gì |
+| 5 | có đủ các bộ thẻ liên quan | **gộp lại**: căn, lực, giác chi, đạo chi đều quy về cùng nhóm tâm sở; 37 phẩm trợ đạo quy về khoảng 14 pháp | thấy toàn hệ thống |
+
+Mọi bậc đều mở bằng **thẻ thu được từ nhiệm vụ** (mục 4a), không bằng đọc sách lý thuyết.
+
+### Các màn "à, ra vậy" ở bậc 5
+
+**Ngũ căn và ngũ lực là cùng năm tâm sở:** tín, tinh tấn, niệm, nhất tâm, tuệ. Gọi là *căn* khi nó làm chủ trong phạm vi của mình; gọi là *lực* khi không còn bị cái đối nghịch lay động.
+
+**Thất giác chi quy về tâm sở:**
+
+| Giác chi | Tâm sở |
+|---|---|
+| Niệm | niệm |
+| Trạch pháp | tuệ |
+| Tinh tấn | tinh tấn |
+| Hỷ | hỷ |
+| Khinh an | thân khinh an, tâm khinh an |
+| Định | nhất tâm |
+| Xả | trung bình (tatramajjhattatā), không phải thọ xả |
+
+## 4a. Thẻ bài tâm sở: phần thưởng của mỗi nhiệm vụ
+
+**Xong mỗi nhiệm vụ thì nhận một thẻ**: tâm sở nổi bật nhất trong cách người chơi vừa làm. Thẻ giải thích tâm sở đó **ngay trong tình huống vừa xảy ra**. Thu thập thẻ là cách chính để học tâm và tâm sở.
+
+### Thẻ nào rơi ra
+
+- Game ghi lại các tâm sở ngầm trong suốt nhiệm vụ. Tâm sở mạnh nhất, hoặc mới nhất với người chơi, thành thẻ.
+- **Cùng một nhiệm vụ, cách làm khác nhau thì ra thẻ khác nhau.** Chuỗi "chó cắn": nhặt gậy → thẻ *Sân*; rửa vết thương rồi đem rau cho nhà ông Tư → thẻ *Không sân*; ngồi với sư đủ lâu → thẻ *Niệm*.
+- **Thẻ bất thiện cũng là thẻ.** Không có thẻ "xấu" để tránh; hiểu Sân cũng quý như hiểu Không sân.
+- Có hên xui nhẹ: đôi khi rơi ra tâm sở đi kèm (ví dụ *Hối hận* sau khi nhặt gậy).
+
+### Mặt trước (ai cũng đọc được)
+
+- **Tên đời thường** và tên gọi chính (ví dụ *Sân: cái nóng trong lòng*).
+- **Một hình minh họa** gắn với tình huống.
+- **Câu "lúc nãy"**, 1–2 câu: *"Lúc chó cắn, bạn nóng lên và muốn đánh lại. Đó là Sân."*
+- **Một mẹo nhỏ**: *"Khi nóng lên, thử biết 'nóng, nóng' rồi thở một hơi."*
+
+### Mặt sau (mở dần khi gặp lại)
+
+Gặp lại cùng tâm sở ở nhiệm vụ khác thì mở thêm một mặt, theo cách định nghĩa của Chú giải và Thanh Tịnh Đạo:
+
+| Lần gặp | Mở thêm |
+|---|---|
+| 1 | mặt trước |
+| 2 | **đặc tính** (nó là gì) |
+| 3 | **phận sự** (nó làm gì) |
+| 4 | **biểu hiện** (nhận ra nó thế nào) |
+| 5 | **nhân gần** (cái gì làm nó sinh) và tên Pāli |
+
+Mỗi mặt chỉ 1–2 câu, kèm ví dụ từ chính những lần người chơi đã gặp: *"Bạn đã gặp Sân 3 lần: chó cắn, bị đồn oan, mất dép ở chùa."*
+
+### Album thẻ
+
+- Xếp thẻ thành các trang. Lúc đầu chỉ có hai trang đơn giản: **Tâm sở tốt** và **Tâm sở xấu**.
+- Đủ thẻ thì album **tự xếp lại** theo cách sâu hơn: 3 gốc → 5 nhóm Tín Tấn Niệm Định Tuệ → 4 nhóm tâm sở. Mỗi lần xếp lại là một bài học "gộp, tách".
+- Ô trống hiện bóng mờ và gợi ý nhẹ nơi có thể gặp: *"Có lẽ gặp ở gốc gạo, lúc chiều."*
+- **Bộ thẻ:** gom đủ một bộ thì mở màn "gộp lại". Ví dụ đủ 5 thẻ Tín, Tinh tấn, Niệm, Nhất tâm, Tuệ thì hiện: *"Năm thẻ này cũng chính là ngũ căn và ngũ lực."*
+- Thẻ tâm thiền, tâm siêu thế **không rơi ra từ nhiệm vụ**. Nếu có, chỉ là trang mô tả ghi "đã nghe sư giảng", không bao giờ là "đã đạt".
+
+### Giữ cho thẻ không thành sưu tầm vô nghĩa
+
+- Không có độ hiếm, không mua, không đổi chác, không gacha.
+- Không có điểm cho việc đủ album; phần thưởng chỉ là hiểu thêm và mở cảnh mới.
+- Trò chơi học (kéo thẻ vào đúng nhóm) là **tùy chọn**, không chặn đường.
+
+## 4b. Dùng thẻ: pháp đối trị
+
+Thẻ không chỉ để sưu tầm; người chơi **ra thẻ trong tình huống** để đối trị tâm xấu đang nổi lên. Nhưng thẻ **không bị tiêu đi** như tiền, vì:
+
+- tiêu thẻ biến thiện thành tiền tệ (chính là "tiền công đức" mà game tránh);
+- trong thực tế niệm không bị dùng hết khi đối trị tham; càng dùng càng quen, càng mạnh (huân tập).
+
+### Ra thẻ
+
+- Khi một tâm xấu nổi lên (chó cắn làm Sân bùng lên, mùi cơm làm Tham nổi lên, buồn ngủ khi ngồi), người chơi chọn một thẻ trong tay.
+- Thẻ **không mất** khi dùng; mỗi thẻ có thời gian nghỉ ngắn, giống thể lực cầu thủ.
+- Không ra thẻ nào thì tình huống diễn ra theo chỉ số ngầm; vẫn có truyện, chỉ là khác đi.
+
+### Đúng cặp thì hiệu quả
+
+| Tâm xấu nổi lên | Thẻ hợp | Thẻ kém hợp |
+|---|---|---|
+| Sân | Không sân, Từ | Tinh tấn (càng hăng càng nóng) |
+| Tham | Không tham, Buông bỏ | Hỷ (dễ bám thêm) |
+| Buồn ngủ, uể oải | Tinh tấn, Hỷ | Khinh an (càng chùng) |
+| Tâm động, bồn chồn | Khinh an, Định | Tinh tấn |
+| Nghi ngờ | Tuệ, Tín | Hỷ |
+| **Mọi trường hợp** | **Niệm**: lúc nào cũng có ích, làm thẻ khác mạnh thêm | |
+
+- Nguồn: Kinh Lửa (SN 46.53) và quân bình ngũ căn (Thanh Tịnh Đạo). Niệm luôn hữu ích là đúng lời kinh.
+- Ra thẻ sai không bị phạt nặng, chỉ kém hiệu quả; mặt sau thẻ giải thích vì sao.
+
+### Hiệu quả có hên xui
+
+```
+hiệu_quả = cấp_thẻ × chỉ_số_nền × (thêm nếu có Niệm) × hên_xui
+```
+
+Có lần ra đúng thẻ mà Sân vẫn chưa lắng; game nói thật: *"Lần này chưa được. Cứ biết nó."*
+
+### Nâng cấp kiểu FIFA, bằng luyện tập
+
+| Cách lên cấp | Ý nghĩa |
+|---|---|
+| **Dùng thẻ đúng lúc và thành công** | cách chính; luyện tập làm quen |
+| Nhận lại thẻ trùng từ nhiệm vụ | lên một chút, mở thêm một mặt (hiểu thêm) |
+| Không dùng lâu ngày | tụt nhẹ (lâu không luyện thì mòn) |
+
+- **Cấp thẻ 1–5**, khớp năm mặt của thẻ: hiểu càng sâu thì dùng càng tốt.
+- **Cấp thẻ đẩy chỉ số nền:** mỗi lần dùng thành công, chỉ số nền của tâm sở đó nhích lên một chút, theo đường cong giảm dần.
+- **Không ghép, không đốt thẻ** để lên cấp. Thẻ chỉ mạnh lên khi được dùng.
+
+### Dùng thẻ cũng mở ra truyện
+
+- Ra *Từ* lúc bị chó cắn → con chó dịu lại, ông Tư xin lỗi, mở nhánh làm lành.
+- Ra *Niệm* khi ngồi ở nghĩa địa gặp hồn ma → không bỏ chạy, nghe được chuyện của nó.
+
+### Bảng tâm
+
+- Tự điền khi người chơi trải qua một loại tâm.
+- Tâm thiền, tâm siêu thế chỉ ghi là **"đã đọc trong sách"**, không bao giờ là "đã đạt".
+
+## 5. Tính cách ban đầu: sáu hạng tính
+
+Thanh Tịnh Đạo (chương III) chia sáu hạng tính: **tham, sân, si, tín, tầm (hay suy tính), trí**. Sách nhận ra từng hạng qua dáng đi, cách ăn, cách làm việc, cách nhìn. Ví dụ quét sân:
+
+- thiên tham: quét cẩn thận, gọn đẹp;
+- thiên sân: quét vội, mạnh tay, không đều;
+- thiên si: quét lơ đãng, bỏ sót chỗ.
+
+### Khảo sát bằng việc làm, không hỏi đáp
+
+Màn đầu là 3–4 việc nhỏ: **quét sân, nhận bát cơm, đi ngang con chó, nhìn một bông hoa**. Game đo cách làm (nhanh hay chậm, kỹ hay sót, chọn gì) để xếp nhóm tính. Người chơi không thấy đây là bài kiểm tra.
+
+Sau đó chỉ số được **random trong khung của nhóm**, nên hai người cùng nhóm vẫn khác nhau.
+
+| Nhóm tính | Chỉ số nền thiên về | Tốc độ tăng đặc trưng | Đề mục hợp (Thanh Tịnh Đạo) |
+|---|---|---|---|
+| Tham | Tín khá, Tham cao | Niệm bình thường | quán bất tịnh, quán thân |
+| Sân | Tấn cao, Sân cao | Định chậm | tâm từ, bi, hỷ, xả |
+| Si | Si cao, Niệm thấp | Niệm chậm (×0.6) | niệm hơi thở |
+| Tầm | Tuệ khá, phóng tâm cao | Định chậm | niệm hơi thở |
+| Tín | Tín cao, Tuệ thấp | Tuệ chậm | niệm Phật, Pháp, Tăng |
+| Trí | Tuệ cao, Tín thấp | Tín chậm | niệm sự chết, quán bốn đại |
+
+- Tính cách có thể pha, ví dụ "thiên sân, có trí".
+- Tên nhóm hiện nhẹ nhàng, ví dụ *"Bạn thiên về tính hăng hái"*; không dùng "tính sân" ở lớp Dạo chơi.
+- Cho làm lại khảo sát. Tính cách cũng đổi dần theo cách chơi.
+
+## 6. Hai loại chỉ số
+
+| | **Thẻ chỉ số** (nền) | **Quả cầu** (nhiệm vụ) |
+|---|---|---|
+| Là gì | năng lực lâu dài, 1–99, giống thẻ cầu thủ FIFA | tiến độ một buổi, một nhiệm vụ |
+| Đổi | rất chậm, qua nhiều ngày chơi | đầy dần trong vài phút |
+| Hiện | ẩn; mở ở lớp Tò mò, chi tiết ở lớp Đi sâu | luôn hiện khi làm nhiệm vụ |
+| Ý nghĩa | khuynh hướng tâm do huân tập | **chỉ để hoàn thành nhiệm vụ**, không có nghĩa là đã đủ chánh niệm |
+
+### Bên dưới: chỉ số ngầm theo tâm sở
+
+Game tính ngầm theo nhóm tâm sở. Màn hình chỉ hiện bản gộp hợp với lớp của người chơi.
+
+```
+tức_thời += (nền − tức_thời)·k_hồi + sự_kiện + nhiễu
+nền      += (trung_bình_gần_đây − nền)·k_chậm         // k_chậm rất nhỏ, giảm dần khi nền cao
+```
+
+- Tức thời dao động quanh nền: lên xuống, nhưng xoay quanh mốc.
+- Giữ đều lâu ngày thì mốc nâng; bỏ lâu thì mốc hạ chậm.
+
+### Tốc độ đầy quả cầu
+
+```
+tốc_độ = nền_của_nhóm × hệ_số_tính_cách × (1 − chướng_ngại_lúc_đó) × hệ_số_nơi_chốn × hên_xui
+```
+
+- Mỗi lần đầy quả cầu chỉ cộng **một chút** vào thẻ chỉ số, theo đường cong giảm dần (đầu lên nhanh, càng cao càng chậm).
+- Ví dụ: người thiên si ngồi ở nghĩa địa thì quả cầu đầy chậm và hay rò.
+
+### Yếu tố hên xui
+
+Để không máy móc, mỗi kết quả là **xác suất nghiêng theo chỉ số**, không phải ngưỡng cứng:
+
+- **nhiễu nhỏ** trong tức thời (±);
+- **ngày đẹp, ngày xấu:** mỗi lần vào game random một "khí trời trong lòng" nhẹ, ví dụ *"Hôm nay bạn hơi uể oải"*;
+- **sự kiện bất chợt:** mưa, chó sủa, người lạ cho quà, làm lệch kết quả;
+- người chỉ số thấp **vẫn có lúc** ngồi rất yên, người chỉ số cao **vẫn có lúc** bị cuốn đi.
+
+## 7. Truyện ngắn: tình huống theo trạng thái
+
+Thay kịch bản dài bằng nhiều **tình huống ngắn** (storylet, như cách các game Fallen London, Disco Elysium kể chuyện). Mỗi tình huống có:
+
+- **điều kiện:** chỉ số, nơi chốn, giờ, nhiệm vụ đang làm, hên xui;
+- **1–2 câu**, mỗi câu không quá 12 chữ;
+- **hành động trên đồ vật trong thế giới** (hái, đưa, ngồi, đi theo, rửa) thay cho danh sách lựa chọn bằng chữ;
+- **kết quả:** đổi chỉ số, mở tình huống khác.
+
+Chỉ số khác nhau thì tình huống mở ra khác nhau, nên mỗi người có câu chuyện riêng.
+
+### Ví dụ chuỗi "chó cắn"
+
+1. *Chó nhà ông Tư cắn vào chân.* Quả cầu đỏ lên, Sân tăng vọt.
+2. Hành động mở ra:
+   - **nhặt gậy** → Sân tăng, mở "cãi nhau với ông Tư";
+   - **bỏ đi** → Sân âm ỉ; đêm đó khó ngủ, đi ngang mộ thì thấy hồn ma;
+   - **rửa vết thương ở giếng** → Sân lắng dần, mở bước 3.
+3. Ở giếng, bà cụ: *"Gốc mít có rau má, hái giúp bà một nắm."* Đi hái (thu thập).
+4. Mang rau cho sư, hoặc cho chính nhà ông Tư. Đây là bố thí: quả cầu chuyển xanh, tâm không tham có mặt. Cho nhà ông Tư thì Sân giảm mạnh hơn và có cảnh làm lành.
+5. Đi ngang nghĩa địa, gặp sư: *"Ngồi với thầy một lát?"*
+   - Đồng hồ ngồi 2–3 phút thật; quả cầu Niệm đầy dần.
+   - Thỉnh thoảng hiện thẻ phóng tâm (*"vết cắn nhức"*, *"nhớ con chó"*); chạm để ghi nhận.
+   - Người thiên sân hay thiên si đầy chậm, dễ bỏ ngang; bỏ ngang mở nhánh khác.
+6. Kết chuỗi:
+   - lớp Dạo chơi: *"Bạn thấy nhẹ lòng hơn."*
+   - lớp Tò mò trở lên: thẻ **Sân** và thẻ **Không sân** hiện lần đầu, kèm *"vừa rồi trong bạn có…"*.
+
+Cả chuỗi khoảng 10 câu ngắn, 5–6 hành động.
+
+### Các loại nhiệm vụ gợi ý
+
+| Loại | Ví dụ | Tâm sở chính được luyện |
+|---|---|---|
+| Bố thí | hái rau, dâng cơm, đưa đèn cho người lạc | không tham |
+| Giữ giới | trả lại đồ nhặt được, nói thật dù thiệt | tàm quý |
+| Tâm từ | dỗ đứa trẻ khóc, cho chó ăn, ngồi cạnh hồn ma | không sân |
+| Nghe pháp | ngồi nghe sư ở gốc gạo (đồng hồ) | tín, văn tuệ |
+| Ngồi thiền | ngồi ở tịnh thất, nghĩa địa (đồng hồ, quả cầu) | niệm, định |
+| Kinh hành | đi chậm theo lối đánh dấu | niệm, tinh tấn |
+| Suy xét | so lời đồn với manh mối về Hạnh | tư tuệ |
+
+## 8. Gợi ý tu tập trong bảng chi tiết
+
+Chọn theo chỗ yếu nhất, kèm nơi chốn; bấm vào thì nhân vật tự đi tới.
+
+| Tình trạng | Gợi ý (lớp Tò mò) |
+|---|---|
+| Tín thấp | Lễ Phật ở tịnh thất, đọc một bài kinh |
+| Tín nhiều hơn Tuệ | Thử so lời đồn với manh mối |
+| Tuệ nhiều hơn Tín, hay nghi | Nghe sư giảng; ngồi yên, đừng phân tích |
+| Tấn thấp, buồn ngủ | Đi kinh hành, rửa mặt ở giếng |
+| Tấn nhiều hơn Định, tâm động | Ngồi ở gốc gạo, chỉ theo hơi thở |
+| Sân cao | Làm một việc tốt cho người làm bạn giận |
+| Tham cao | Đi khất thực, nhận gì ăn nấy |
+
+Cặp tín–tuệ, tấn–định (Thanh Tịnh Đạo) chỉ dùng để chọn gợi ý, không phạt người chơi.
+
+## 9. Ngồi thiền và thất giác chi (lớp Đi sâu, chủ yếu nhà sư)
+
+### Cơ chế
+
+- Giữa màn hình: vòng hơi thở phồng xẹp, một đề mục chính.
+- Phóng tâm trôi vào thành **thẻ** (tiếng cú, chó sủa, đau gối, nhớ Hạnh, mùi cơm).
+- **Ghi nhận:** chạm vào thẻ, thẻ hiện chữ đơn giản ("nghe", "đau", "nhớ", "giận") rồi tan. Chuỗi niệm tăng.
+- **Bỏ mặc:** thẻ kéo khung hình trôi theo, chuỗi niệm hụt.
+- **Bẫy** (lấy từ lỗi thường gặp trong bài giảng):
+
+| Bẫy | Hệ quả |
+|---|---|
+| "Nghĩ xem vì sao" | phân tích, Si tăng |
+| "Gạt đi" | chống lại cái khó chịu, Sân tăng |
+| "Giữ cảm giác này lại" | bám cái dễ chịu, Tham tăng |
+| "Đổi tư thế" khi đau | Tấn hụt nhẹ |
+
+### Giác chi xuất hiện theo chuỗi trong kinh
+
+Giác chi **không mở bằng gom điểm**. Nó sinh ra khi niệm đủ liên tục, và chi trước phải có mặt thì chi sau mới sinh. Vì vậy "đủ niệm nhưng định còn thiếu thì lâu hơn" tự xảy ra.
+
+| # | Giác chi | Điều kiện (mô phỏng) | Đổi trong lối chơi |
+|---|---|---|---|
+| 1 | Niệm (*viên đá chìm*) | Niệm nền đủ cao và đã giữ đầy quả cầu nhiều buổi | thẻ ghi nhận nhanh hơn, vòng thở tự giữ nhịp |
+| 2 | Trạch pháp | niệm giác chi giữ được một lúc | thẻ hiện mờ "sinh… diệt" |
+| 3 | Tinh tấn | trạch pháp có mặt | cơn đau không còn làm hụt chuỗi |
+| 4 | Hỷ | tinh tấn liên tục | ánh sáng ấm lên; hiện bẫy "giữ lại" |
+| 5 | Khinh an | không mắc bẫy hỷ | màn hình mềm đi, thở chậm, âm thanh xa dần |
+| 6 | Định | khinh an có mặt | thẻ thưa hẳn |
+| 7 | Xả | định có mặt | thẻ dễ chịu và khó chịu cùng màu; nút "gạt đi", "giữ lại" tự biến mất |
+
+- Niệm đứt thì tụt một hai bậc, không về 0.
+- Lần đầu lên được Niệm giác chi phải mất **nhiều ngày chơi**; người chơi hiểu vì sao kinh nói "thường xuyên, liên tục".
+- Có hên xui: thỉnh thoảng một buổi ngồi đi xa hơn mức thường.
+
+### Bốn đêm theo Tứ niệm xứ (gắn truyện về Hạnh)
+
+| Đêm | Niệm xứ | Nội dung |
+|---|---|---|
+| 1 | Thân | hơi thở, muỗi, tiếng cú |
+| 2 | Thọ | đau gối khi ngồi lâu, gió lạnh |
+| 3 | Tâm | giận vì lời đồn, sợ khi ngồi ở nghĩa địa (hạnh đầu đà) |
+| 4 | Pháp | buồn ngủ, nghi ngờ; ký ức về Hạnh; hồn ma ngồi gần |
+
+## 9a. Chư thiên và các loài khác
+
+Theo Vi Diệu Pháp, **loài nào sinh vào cõi nào là do tâm tái tục** (sát-na tâm đầu tiên của một đời sống): tâm đó có bao nhiêu gốc thiện thì quyết định cõi. Cho người chơi bấm xem "cấu trúc tâm" của các loài là một bài học thật về 31 cõi: **tâm khác nhau thì cõi khác nhau**.
+
+Đêm trong rừng cũng là bối cảnh đúng kinh: nhiều bài trong Tương Ưng Chư Thiên mở đầu bằng cảnh đêm khuya, một vị thiên tỏa sáng khắp khu rừng rồi đến hỏi đạo.
+
+### Các loài có thể gặp (từ gần đến hiếm)
+
+| Loài | Gặp ở đâu, khi nào | Cấu trúc tâm (mô phỏng) | Vai trò trong game |
+|---|---|---|---|
+| **Con chó** (súc sinh) | đầu làng | tâm tái tục không gốc thiện; nặng si | xem để hiểu vì sao nó cắn; cho ăn rơi thẻ Từ |
+| **Ngạ quỷ** | nghĩa địa, đêm | nặng tham, bỏn xẻn | đã có vai hồn ma; nhiệm vụ hồi hướng |
+| **Thọ thần** (thần cây) | gốc gạo, canh khuya | hai hoặc ba gốc thiện; tâm vui | che chở, nhắc nhở, kể chuyện cũ của cây và làng |
+| **Địa thần, thần giữ chùa** | cổng làng, tịnh thất | gốc thiện, hay hoan hỷ | xuất hiện khi người chơi giữ giới, rải tâm từ |
+| **Chư thiên cõi trời** | rất hiếm, đêm sâu, ánh sáng quanh sư | ba gốc thiện, tâm sáng | đến nghe pháp, hỏi một câu, hoan hỷ "lành thay" rồi đi |
+| **Phạm thiên** | không gặp trực tiếp | tâm thiền | chỉ là trang mô tả "nghe sư kể" |
+
+### Bảng "cấu trúc tâm" khi bấm vào một loài
+
+| Lớp | Thấy gì |
+|---|---|
+| Dạo chơi | một câu: *"Vị này tâm sáng, ít giận, thường vui."* |
+| Tò mò | ba gốc thiện, ba gốc xấu dạng thanh; cảm giác thường gặp; cõi đang sống; một dòng vì sao sinh vào cõi đó (*"đời trước hay bố thí, giữ giới"*) |
+| Đi sâu | tâm tái tục (không gốc, hai gốc, ba gốc); tâm sở nổi trội; **so với tâm của chính người chơi** (*"Bạn và vị thọ thần giống nhau ở Tín; khác ở Sân."*) |
+
+- Bấm vào một loài lần đầu cũng rơi ra một thẻ: *Bỏn xẻn* từ ngạ quỷ (kèm lý do vì sao loài này sinh vào cõi ngạ quỷ), *Hoan hỷ* từ chư thiên.
+- Đã xem đủ chó, ngạ quỷ, thọ thần, chư thiên thì người chơi tự thấy một dải liên tục: không gốc thiện → nặng tham → hai gốc → ba gốc. **Cõi là kết quả của tâm**, và tâm mình hôm nay cũng đang nghiêng về một phía. Không cần giảng giải.
+
+### Thân bằng quyến thuộc
+
+Nguồn: **Kinh Ngoài Bức Tường** (Tirokuḍḍa, Tiểu Tụng). Ngạ quỷ là thân quyến đã mất, đứng ngoài tường chờ người nhà làm phước và hồi hướng; khi được hồi hướng thì hoan hỷ và được an vui.
+
+**Ví dụ chuỗi "bà ngoại":**
+
+1. Ở nghĩa địa, một bóng ma đứng mãi gần một ngôi mộ. Bấm vào: Tham và Bỏn xẻn rất cao; dòng *"đời trước là bà của bạn"*.
+2. Bà nói một câu: *"Đói lắm… không ai nhớ."*
+3. Nhiệm vụ: nấu một bát cơm, dâng cho sư, rồi **hồi hướng** cho bà.
+4. Bà hoan hỷ: chỉ số Hoan hỷ tăng vọt, bóng sáng dần rồi tan. Người chơi nhận thẻ *Hoan hỷ* và *Không tham*.
+
+**Biến thể nối với truyện Hạnh:** thọ thần ở gốc gạo là mẹ của Hạnh, đời trước sống ở làng; bà nhận ra người chơi và kể một mảnh chuyện về Hạnh.
+
+### Ranh giới
+
+- **Chư thiên không ban điều ước.** Họ giúp nhỏ (soi đường, xua chó, nhắc nhở), hoan hỷ khi thấy việc thiện, nhưng không cho tiền, may mắn, và không cầu xin được. Chỗ nương tựa là Tam Bảo; game cần làm rõ chỗ khác với tín ngưỡng dân gian.
+- **Không bói toán, không xem kiếp trước của người chơi thật.** "Đời trước là bà của bạn" chỉ là nhân vật trong truyện.
+- **Không xem chỉ số tâm của người chơi khác.** Người chơi thật chỉ hiện vòng màu; bảng cấu trúc tâm chỉ dành cho nhân vật trong game.
+- **Ghi rõ** đây là vũ trụ quan theo kinh điển Phật giáo, trong mô phỏng game, không phải khẳng định khoa học (lời nhắc ở chân bảng).
+- **Chư thiên hiếm:** chỉ xuất hiện khi tâm người chơi đủ sáng (Không sân và Tín cao), kèm hên xui; gặp nhiều sẽ mất huyền bí.
+- **Cách gọi:** dùng "thọ thần", "địa thần", "chư thiên" theo kinh, tránh pha thần linh dân gian.
+
+## 10. Mở khóa kiến thức
+
+- **Kiến thức mở bằng thẻ**, cho mọi vai (mục 4a). Không bắt đọc sách lý thuyết để mở khóa.
+- **Nhà sư** có thêm nhiệm vụ riêng (ngồi thiền, kinh hành, khất thực) nên gặp các thẻ Niệm, Định, Tuệ nhiều hơn; người dân gặp nhiều thẻ bố thí, giữ giới; hồn ma gặp nhiều thẻ Sân, Hối hận rồi đến Buông bỏ.
+- **Kinh ở tịnh thất vẫn giữ** để ai muốn thì đọc (thêm Tín, văn tuệ), nhưng không phải điều kiện mở bậc.
+- **Nghe pháp với sư** là một loại nhiệm vụ có đồng hồ, và cũng rơi ra thẻ.
+- **Mở khóa nơi chốn và cảnh:** ngồi ở nghĩa địa, nói chuyện với hồn ma.
+
+## 11. Ranh giới
+
+- Minh và Giải thoát **không bao giờ** là cấp độ hay phần thưởng. Cuối chuỗi giác chi chỉ là một cảnh lặng lúc rạng đông và một câu ngắn, kiểu *"đường còn dài, cứ biết từng hơi thở"*.
+- Không tiền công đức, không huy hiệu, không bảng xếp hạng, không so sánh người chơi.
+- Quả cầu đầy chỉ có nghĩa là xong nhiệm vụ.
+- Xả được thưởng hơn sự hăng hái; không khuyến khích đuổi theo con số.
+
+## 12. Rủi ro
+
+| Rủi ro | Cách giữ |
+|---|---|
+| Người mới bị ngợp thuật ngữ | ba lớp người chơi; 30 phút đầu không thuật ngữ; mỗi lần một khái niệm |
+| Đuổi theo con số | chỉ số ẩn mặc định; quả cầu tách khỏi thẻ chỉ số; hên xui |
+| Xếp tính cách bị xem là phán xét | gọi "thiên về"; cho làm lại; tính cách đổi dần |
+| Hiểu mô phỏng là thật | lời nhắc ở màn đầu, chân thẻ, trang giới thiệu |
+| Giản lược sai giáo lý | một nguồn chuẩn; thầy duyệt từng nhóm thẻ |
+| Khối lượng nội dung (52 thẻ × 4 mặt) | làm dần theo nhóm, bắt đầu từ những tâm sở hay gặp nhất |
+
+## 13. Cần thầy duyệt
+
+1. Cách gộp tâm sở vào 5 nhóm thiện và 3 gốc, và nội dung từng thẻ tâm sở.
+2. Bảng sáu hạng tính, cách khảo sát bằng việc làm, và đề mục gợi ý.
+3. Chữ trên thẻ ghi nhận, mô tả và điều kiện từng giác chi.
+4. Câu chữ lời nhắc "đây là mô phỏng".
+5. Cảnh kết, để không ngụ ý chứng đắc.
+6. Bảng thẻ hợp, kém hợp khi đối trị (mục 4b).
+7. Các loài, cấu trúc tâm tái tục của từng loài, cách hiện chư thiên và nhiệm vụ hồi hướng (mục 9a).
+
+## 14. Bản thử nhỏ nhất (MVP)
+
+1. Khảo sát bằng quét sân và nhận bát → nhóm tính → chỉ số random trong khung.
+2. Chuỗi "chó cắn → rửa ở giếng → hái rau → bố thí → ngồi với sư", có 2–3 nhánh.
+3. Quả cầu và đồng hồ khi ngồi; tốc độ theo nhóm tính, có hên xui.
+4. Thẻ bài sau nhiệm vụ: ba thẻ đầu tiên Sân, Không sân, Niệm (mặt trước và mặt "đặc tính"); album hai trang tốt, xấu; bảng chi tiết lớp Tò mò.
+5. Lời nhắc mô phỏng ở màn đầu và chân thẻ.
+
+Nếu vòng này vui thì mới mở rộng sang ngũ căn, giác chi, Bảng tâm. Truyện dài hiện có (m1–m6) sẽ dần chuyển thành các tình huống ngắn.
