@@ -71,11 +71,11 @@ window.Mind = (() => {
   // ---------- saved state ----------
   function fresh() { return { carita: null, stats: null, cards: {}, quest: { step: "start", hit: false }, items: [], deva: { pity: 0, last: 0, seen: 0 } }; }
   function load() {
-    try { const s = JSON.parse(localStorage.getItem(KEY) || "null"); if (s && s.cards) return { ...fresh(), ...s }; } catch {}
+    try { const s = JSON.parse(Save.get(KEY) || "null"); if (s && s.cards) return { ...fresh(), ...s }; } catch {}
     return fresh();
   }
   let S = load();
-  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch {} };
+  const save = () => Save.set(KEY, JSON.stringify(S));
 
   let api = null;          // callbacks from app.js
   let role = null;
@@ -137,13 +137,14 @@ window.Mind = (() => {
     const n = (prev ? prev.n : 0) + 1;
     S.cards[id] = { n, seen: [...(prev ? prev.seen : []), context].slice(-6) };
     save();
+    Save.log(n === 1 ? `Gặp thẻ ${def.name} lần đầu.` : `Gặp lại thẻ ${def.name} (lần ${n}).`);
     syncCardsBtn();
     showCard(id, { fresh: n === 1, opened: n >= 2 && n <= 5 ? n - 1 : 0, context, then });
   }
 
   function cardNode(id, opts = {}) {
     const def = CARDS[id];
-    const own = S.cards[id] || { n: 0, seen: [] };
+    const own = opts.own || S.cards[id] || { n: 0, seen: [] };
     const c = el("article", "mcard " + (def.good ? "good" : "bad"));
     c.appendChild(el("div", "mcard-kind", def.good ? "Tâm sở tốt" : "Tâm sở xấu"));
     c.appendChild(el("h3", "mcard-name", def.name));
@@ -167,7 +168,12 @@ window.Mind = (() => {
   const shortCtx = (s) => s.split(/[,.]/)[0].replace(/^(Bạn|Người này) /, "").toLowerCase();
 
   // Item helpers: S.items stays an array of id strings.
-  function giveItem(id) { if (!S.items.includes(id)) { S.items.push(id); return true; } return false; }
+  function giveItem(id) {
+    if (S.items.includes(id)) return false;
+    S.items.push(id);
+    Save.log(`Nhận vật phẩm: ${(window.Items && Items.def(id) && Items.def(id).name) || id}.`);
+    return true;
+  }
   function dropItem(id) { S.items = S.items.filter((x) => x !== id); }
   // Show the "item received" popup (if the item is new), then continue.
   function gotItem(id, then) {
@@ -175,12 +181,12 @@ window.Mind = (() => {
     else if (then) then();
   }
 
-  function showCard(id, { fresh, opened, context, then } = {}) {
+  function showCard(id, { fresh, opened, context, then, own } = {}) {
     open = true;
     const wrap = $("card-reveal");
     wrap.hidden = false;
     $("card-reveal-label").textContent = fresh ? "Bạn nhận được một thẻ mới" : opened ? "Gặp lại, hiểu thêm một chút" : "Thẻ tâm sở";
-    const slot = $("card-reveal-slot"); slot.replaceChildren(cardNode(id, { context, opened }));
+    const slot = $("card-reveal-slot"); slot.replaceChildren(cardNode(id, { context, opened, own }));
     slot.firstChild.classList.add("flip");
     $("card-reveal-ok").onclick = () => {
       wrap.hidden = true;
@@ -503,6 +509,7 @@ window.Mind = (() => {
     fx.devaAt = at; fx.devaT = 0; fx.devaFade = null;
     fx.flowers = Array.from({ length: 46 }, () => ({ x: at.x + rand(-170, 170), y: at.y - rand(120, 520), v: rand(16, 34), s: rand(2.4, 4.4), p: rand(0, 6), c: Math.random() < 0.5 ? "255,236,240" : "255,214,150" }));
     S.deva.seen++; S.deva.pity = 0; S.deva.last = Date.now(); save();
+    Save.log("Gặp chư thiên.");
     World.lookAt(at.y - 30, at.x);
     if (api.sound()) { NightAudio.bell(1); setTimeout(() => NightAudio.bell(0.6), 1400); }
     api.emit("deva");
@@ -718,16 +725,32 @@ window.Mind = (() => {
   }
   let albumTab = "cards";
   function openAlbum(tab) {
-    if (tab === "cards" || tab === "bag") albumTab = tab;
+    if (tab === "cards" || tab === "bag" || tab === "log") albumTab = tab;
     const panel = $("cards-panel");
     const list = $("cards-list"); list.replaceChildren();
     if (window.Items) {
       const tabs = el("div", "bag-tabs");
-      [["cards", "Thẻ tâm sở"], ["bag", `Túi đồ (${S.items.filter((i) => Items.def(i)).length})`]].forEach(([k, n]) => {
+      [["cards", "Thẻ tâm sở"], ["bag", `Túi đồ (${S.items.filter((i) => Items.def(i)).length})`], ["log", "Nhật ký"]].forEach(([k, n]) => {
         const t = el("button", "pill", n); t.type = "button"; t.setAttribute("aria-pressed", String(albumTab === k));
         t.addEventListener("click", () => openAlbum(k)); tabs.appendChild(t);
       });
       list.appendChild(tabs);
+      if (albumTab === "log") {
+        list.appendChild(el("h3", "album-title", "Nhật ký của nhân vật"));
+        const items = Save.history().slice(-30).reverse();
+        if (!items.length) list.appendChild(el("p", "hint", "Chưa có gì. Những thẻ gặp được, quà nhận được, những đêm đã qua sẽ được ghi ở đây."));
+        const ol = el("ol", "trace-list");
+        for (const h of items) {
+          const li = el("li"); li.appendChild(el("span", "dot"));
+          const body = el("div", null, h.text);
+          const d = new Date(h.at);
+          body.appendChild(el("span", "when", d.toLocaleString("vi-VN", { hour: "2-digit", minute: "2-digit", day: "2-digit", month: "2-digit" })));
+          li.appendChild(body); ol.appendChild(li);
+        }
+        list.appendChild(ol);
+        panel.hidden = false;
+        return;
+      }
       if (albumTab === "bag") {
         list.appendChild(el("h3", "album-title", "Túi đồ"));
         const box = el("div", "bag");
@@ -780,5 +803,15 @@ window.Mind = (() => {
     wipe() { S = fresh(); save(); syncCardsBtn(); api.toast("Đã xóa dữ liệu tâm và thẻ."); },
   };
 
-  return { init, onRoleStart, onRoleEnd, isOpen: () => open, bias, questInfo, renderStats, remote, openAlbum, dev, cardsChanged: syncCardsBtn };
+  // Load the progress of the character now being played (or the guest's).
+  function reload() { S = load(); syncCardsBtn(); }
+
+  // Read-only helpers for the profile screen (render any character's saved mind, not just the one in play).
+  const parts = {
+    CARDS, CARD_ORDER, GOOD, BAD, bar,
+    caritaName: (k) => (CARITA[k] ? CARITA[k].name : ""),
+    viewCard: (id, own) => showCard(id, { own, then: () => {} }),
+  };
+
+  return { parts, reload, init, onRoleStart, onRoleEnd, isOpen: () => open, bias, questInfo, renderStats, remote, openAlbum, dev, cardsChanged: syncCardsBtn };
 })();

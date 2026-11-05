@@ -4,6 +4,7 @@ const http = require("http");
 const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
+const auth = require("./auth");
 
 const PORT = Number(process.env.PORT) || 3000;
 const PUBLIC_DIR = path.join(__dirname, "public");
@@ -23,6 +24,7 @@ const MIME = {
   ".png": "image/png",
   ".mp3": "audio/mpeg",
   ".ogg": "audio/ogg",
+  ".webp": "image/webp",
 };
 
 // ---------- state ----------
@@ -272,6 +274,7 @@ const server = http.createServer(async (req, res) => {
       res.writeHead(200, { "Content-Type": "text/javascript; charset=utf-8", "Cache-Control": "no-store" });
       return res.end(`window.APP_CONFIG = { dev: ${dev} };`);
     }
+    if (await auth.handle(req, res, url)) return;
     if (req.method === "GET" && url.pathname === "/events") return handleEvents(req, res, url);
     if (req.method === "POST" && url.pathname === "/api/presence") return await handlePresence(req, res);
     if (req.method === "POST" && url.pathname === "/api/emit") return await handleEmit(req, res);
@@ -288,4 +291,5 @@ const server = http.createServer(async (req, res) => {
 server.listen(PORT, () => {
   console.log(`Một đêm đầu đà đang chạy ở http://localhost:${PORT}`);
   console.log("Mở nhiều tab hoặc nhiều máy cùng mạng LAN để chơi cùng nhau.");
+  console.log(`Tài khoản lưu ở: ${auth.storeKind() === "postgres" ? "Postgres (DATABASE_URL)" : "data/accounts.json (chỉ để thử)"}`);
 });

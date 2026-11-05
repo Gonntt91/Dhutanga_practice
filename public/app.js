@@ -54,24 +54,24 @@
   };
 
   function loadMem() {
-    try { return new Set(JSON.parse(localStorage.getItem(MEM_KEY) || "[]")); } catch { return new Set(); }
+    try { return new Set(JSON.parse(Save.get(MEM_KEY) || "[]")); } catch { return new Set(); }
   }
   function remember(key) {
     state.vars.add(key);
     const mem = loadMem(); mem.add(key);
-    try { localStorage.setItem(MEM_KEY, JSON.stringify([...mem])); } catch {}
+    Save.set(MEM_KEY, JSON.stringify([...mem]));
   }
   const clueCount = () => [...loadMem()].filter((k) => k.startsWith("c_")).length;
-  const runCount = () => { try { return Number(localStorage.getItem(RUNS_KEY)) || 0; } catch { return 0; } };
+  const runCount = () => Number(Save.get(RUNS_KEY)) || 0;
 
   function makeId() {
     try { return crypto.randomUUID(); } catch { return "p" + Math.random().toString(36).slice(2) + Date.now().toString(36); }
   }
   function loadCompleted() {
-    try { return JSON.parse(localStorage.getItem(STORE_KEY) || "{}") || {}; } catch { return {}; }
+    try { return JSON.parse(Save.get(STORE_KEY) || "{}") || {}; } catch { return {}; }
   }
   function saveCompleted() {
-    try { localStorage.setItem(STORE_KEY, JSON.stringify(state.completed)); } catch {}
+    Save.set(STORE_KEY, JSON.stringify(state.completed));
   }
 
   const currentScene = () => (state.role ? STORY[state.role].scenes[state.sceneId] : null);
@@ -389,14 +389,121 @@
       glyph.appendChild(el("span"));
       card.append(glyph, el("div", "rc-name", info.name), el("div", "rc-who", info.who), el("div", "rc-blurb", info.blurb));
       if (state.completed[role]) card.appendChild(el("div", "rc-done", "Đã đi qua đêm này"));
-      card.addEventListener("click", () => startRole(role));
+      card.addEventListener("click", () => playNew(role));
       list.appendChild(card);
     }
+    renderAccount();
     pushView();
   }
 
+  // ---------- account & characters (playing without an account always works) ----------
+  const ago = (iso) => (iso ? timeAgo(new Date(iso).getTime()) : "");
+  function loginButtons(box) {
+    const me = Save.me();
+    if (me.google) {
+      const g = el("button", "primary google-btn", "Đăng nhập bằng Google");
+      g.type = "button";
+      g.addEventListener("click", () => { Save.flush().finally(() => { location.href = "/auth/google"; }); });
+      box.appendChild(g);
+    }
+    if (me.devLogin) {
+      const d = el("button", "pill", "Đăng nhập thử (chỉ trên máy chạy thử)");
+      d.type = "button";
+      d.addEventListener("click", async () => {
+        const name = ($("nick").value || "").trim() || prompt("Tên tài khoản thử:", "Người thử") || "";
+        if (!name) return;
+        await Save.devLogin(name); state.completed = loadCompleted(); renderPicker();
+      });
+      box.appendChild(d);
+    }
+    if (!me.google && !me.devLogin) box.appendChild(el("p", "hint", "Đăng nhập chưa được bật trên máy chủ này."));
+  }
+  function renderAccount() {
+    const me = Save.me();
+    const box = $("account"); box.replaceChildren();
+    const chars = $("char-list"); chars.replaceChildren();
+    if (!me.user) {
+      chars.hidden = true;
+      box.appendChild(el("p", "hint", "Chơi ngay không cần đăng nhập. Khi muốn giữ lại nhân vật, thẻ và vật phẩm để chơi tiếp lần sau, hãy đăng nhập."));
+      const row = el("div", "account-actions"); loginButtons(row); box.appendChild(row);
+      $("new-title").textContent = "Chơi ngay";
+      $("nick-label").textContent = "Tên hiển thị (không bắt buộc)";
+      return;
+    }
+    const head = el("div", "account-head");
+    if (me.user.picture) { const img = el("img", "avatar"); img.src = me.user.picture; img.alt = ""; img.referrerPolicy = "no-referrer"; head.appendChild(img); }
+    head.appendChild(el("span", "account-name", `Xin chào, ${me.user.name || "bạn"}`));
+    const prof = el("button", "pill", "Nhân vật của tôi"); prof.type = "button";
+    prof.addEventListener("click", () => Profile.open());
+    head.appendChild(prof);
+    const out = el("button", "text-btn", "Đăng xuất"); out.type = "button";
+    out.addEventListener("click", async () => { await Save.logout(); Mind.reload(); state.completed = loadCompleted(); renderPicker(); });
+    head.appendChild(out);
+    box.appendChild(head);
+    if (me.storage === "file") box.appendChild(el("p", "hint", "Máy chủ đang lưu tài khoản vào file thử, dữ liệu có thể mất khi máy chủ khởi động lại."));
+    // progress played as a guest on this device can be moved into the account
+    const g = Save.guestProgress();
+    if (g) {
+      const imp = el("div", "quest-tip");
+      imp.appendChild(el("p", null, `Trên máy này có một lần chơi thử (${ROLE_INFO[g.role].name.toLowerCase()}, ${g.cards} thẻ, ${g.items} vật phẩm). Lưu thành một nhân vật trong tài khoản?`));
+      const b = el("button", "pill", "Lưu thành nhân vật"); b.type = "button";
+      b.addEventListener("click", async () => {
+        b.disabled = true;
+        try { await Save.importGuest(($("nick").value || "").trim() || "Nhân vật đầu tiên"); await Save.refresh(); Mind.reload(); state.completed = loadCompleted(); toast("Đã lưu lần chơi thử thành nhân vật."); }
+        catch (e) { toast(e.message === "too many characters" ? "Tài khoản đã đủ số nhân vật." : "Chưa lưu được, thử lại nhé."); }
+        renderPicker();
+      });
+      imp.appendChild(b);
+      box.appendChild(imp);
+    }
+    const list = me.characters || [];
+    chars.hidden = !list.length;
+    if (list.length) chars.appendChild(el("h2", "label new-title", "Nhân vật của bạn"));
+    for (const c of list) {
+      const info = ROLE_INFO[c.role];
+      const card = el("div", "char-card");
+      card.dataset.role = c.role;
+      const glyph = el("div", "glyph"); glyph.appendChild(el("span"));
+      const body = el("button", "char-body");
+      body.type = "button";
+      body.title = "Xem hồ sơ nhân vật";
+      body.addEventListener("click", () => Profile.open(c.id));
+      body.appendChild(el("div", "rc-name", c.name));
+      body.appendChild(el("div", "rc-who", `${info ? info.name : c.role} · ${c.cards || 0} thẻ · ${c.items || 0} vật phẩm${c.updatedAt ? " · " + ago(c.updatedAt) : ""}`));
+      const go = el("button", "primary", "Chơi tiếp"); go.type = "button";
+      go.addEventListener("click", () => playCharacter(c.id));
+      const del = el("button", "text-btn", "Xóa"); del.type = "button";
+      del.addEventListener("click", async () => {
+        if (!confirm(`Xóa nhân vật “${c.name}”? Thẻ, vật phẩm và nhật ký của nhân vật này sẽ mất.`)) return;
+        await Save.deleteCharacter(c.id).catch(() => toast("Chưa xóa được."));
+        renderPicker();
+      });
+      const actions = el("div", "char-actions"); actions.append(go, del);
+      card.append(glyph, body, actions);
+      chars.appendChild(card);
+    }
+    $("new-title").textContent = "Tạo nhân vật mới";
+    $("nick-label").textContent = "Tên nhân vật";
+  }
+  async function playNew(role) {
+    if (!Save.signedIn()) { Save.setGuestRole(role); Mind.reload(); return startRole(role); }
+    const name = ($("nick").value || "").replace(/\s+/g, " ").trim().slice(0, 24) || `${ROLE_INFO[role].name} ${(Save.me().characters || []).length + 1}`;
+    try { await Save.createCharacter(name, role); }
+    catch (e) { toast(e.message === "too many characters" ? "Tài khoản đã đủ 12 nhân vật. Xóa bớt một nhân vật để tạo mới." : "Chưa tạo được nhân vật, thử lại nhé."); return; }
+    $("nick").value = "";
+    Mind.reload();
+    startRole(role);
+  }
+  Profile.init({ play: (id) => playCharacter(id), changed: () => renderPicker() });
+  async function playCharacter(id) {
+    try { await Save.openCharacter(id); } catch { toast("Chưa mở được nhân vật này."); return; }
+    Mind.reload();
+    startRole(Save.character().role);
+  }
+
   function startRole(role) {
-    state.nick = $("nick").value.replace(/\s+/g, " ").trim().slice(0, 24);
+    state.nick = Save.character() ? Save.character().name : $("nick").value.replace(/\s+/g, " ").trim().slice(0, 24);
+    state.completed = loadCompleted();
     state.role = role;
     state.sceneId = STORY[role].start;
     state.sceneOpen = false;
@@ -431,6 +538,7 @@
 
   function leaveRole() {
     Mind.onRoleEnd();
+    Save.closeCharacter().then(() => Save.refresh()).then(() => { if (!state.role) renderPicker(); });
     state.mindPose = null;
     stopWatch();
     closeFind(true);
@@ -773,7 +881,8 @@
     if (ending.trace) leaveTrace(ending.trace);
     state.completed[state.role] = true;
     saveCompleted();
-    try { localStorage.setItem(RUNS_KEY, String(runCount() + 1)); } catch {}
+    Save.set(RUNS_KEY, String(runCount() + 1));
+    Save.log(`Đi qua một đêm (${ROLE_INFO[state.role].name.toLowerCase()}).`);
     const roles = ["monk", "ghost", "villager"];
     if (roles.every((r) => state.completed[r])) {
       const box = el("div", "true-ending");
@@ -1054,12 +1163,12 @@
     btn(data, "Mở khóa hết", () => {
       state.completed = { monk: true, ghost: true, villager: true }; saveCompleted();
       ["c_non", "c_dep", "c_bat", "c_vo", "c_anh"].forEach(remember);
-      try { localStorage.setItem(RUNS_KEY, "3"); } catch {}
+      Save.set(RUNS_KEY, "3");
       toast("Đã mở khóa: 3 vai xong, đủ 5 manh mối.");
     });
     btn(data, "Hiện hết vật", () => { state.devAllFinds = !state.devAllFinds; refreshFinds(); toast(state.devAllFinds ? "Hiện tất cả vật bị bỏ quên" : "Ẩn bớt theo số đêm"); });
     btn(data, "Xóa dữ liệu", () => {
-      try { [STORE_KEY, MEM_KEY, RUNS_KEY].forEach((k) => localStorage.removeItem(k)); } catch {}
+      [STORE_KEY, MEM_KEY, RUNS_KEY].forEach((k) => Save.remove(k));
       state.completed = {}; state.vars = new Set(); toast("Đã xóa dữ liệu đã lưu.");
     });
 
@@ -1151,10 +1260,15 @@
     $("quest-tip").textContent = "Lòng thầy đang xao động, thiếu vững tin. Trong tịnh thất có kệ kinh và bàn thờ Đức Phật; đọc vài trang có thể giúp tâm vững lại.";
     $("quest-tip-go").hidden = !low;
     $("quest-cancel").hidden = !state.detour;
+    $("quest-save").hidden = Save.signedIn() || !(Save.me().google || Save.me().devLogin);
     const side = Mind.questInfo();
     $("quest-side").hidden = !side;
     if (side) { $("quest-side-title").textContent = side.title; $("quest-side-body").textContent = side.body; }
   }
+  $("quest-login").addEventListener("click", () => {
+    if (Save.me().google) { Save.flush().finally(() => { location.href = "/auth/google"; }); return; }
+    $("quest-panel").hidden = true; leaveRole(); toast("Đăng nhập thử ở màn hình chọn vai, rồi lưu lần chơi này thành nhân vật.");
+  });
   $("quest-side-go").addEventListener("click", () => {
     const side = Mind.questInfo();
     if (!side) return;
@@ -1306,4 +1420,13 @@
 
   renderPicker();
   connect();
+  Save.refresh().then(() => {
+    state.completed = loadCompleted();
+    if (!state.role) renderPicker();
+    const login = new URLSearchParams(location.search).get("login");
+    if (login) {
+      toast(login === "ok" ? "Đã đăng nhập. Nhân vật của bạn ở màn hình chọn vai." : login === "cancelled" ? "Đã hủy đăng nhập." : "Đăng nhập chưa thành công, thử lại nhé.");
+      const u = new URL(location.href); u.searchParams.delete("login"); history.replaceState(null, "", u);
+    }
+  });
 })();

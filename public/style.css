@@ -476,3 +476,58 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--lantern); o
   .kbd-hint .text-btn { padding: 0; font-size: 12px; flex: none; }
 }
 @media (min-width: 1280px) { .kbd-hint { top: 14px; } }
+
+/* ---------- account & characters on the picker ---------- */
+.account { margin: 0 0 16px; }
+.account .hint { margin-bottom: 10px; }
+.account-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.account-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.account-name { flex: 1; min-width: 0; font: 600 18px/1.2 var(--font-display); }
+.avatar { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--line); }
+.new-title { margin: 18px 0 8px; }
+.char-list { display: grid; gap: 10px; margin-bottom: 6px; }
+.char-card { display: grid; grid-template-columns: 36px minmax(0, 1fr) auto; gap: 12px; align-items: center;
+  background: var(--night-2); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
+.char-card .glyph { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; background: rgba(255,255,255,0.04); }
+.char-card .glyph span { width: 11px; height: 11px; border-radius: 50%; }
+.char-card[data-role="monk"] .glyph span { background: var(--ember); box-shadow: 0 0 10px var(--ember); }
+.char-card[data-role="ghost"] .glyph span { background: var(--jade); box-shadow: 0 0 10px var(--jade); }
+.char-card[data-role="villager"] .glyph span { background: var(--lantern); box-shadow: 0 0 10px var(--lantern); }
+.char-body { min-width: 0; }
+.char-body .rc-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.char-actions { display: grid; justify-items: end; gap: 2px; }
+.char-actions .primary { padding: 8px 14px; font-size: 13px; }
+
+/* ---------- profile: my characters ---------- */
+.profile-user { margin-left: 6px; color: var(--ash); text-transform: none; letter-spacing: 0; }
+.profile-body { display: grid; gap: 14px; }
+.profile-list { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: thin; }
+.profile-chip { display: flex; align-items: center; gap: 8px; flex: none; max-width: 220px; padding: 8px 12px 8px 8px; text-align: left;
+  background: var(--night-2); border: 1px solid var(--line); border-radius: 12px; }
+.profile-chip[aria-pressed="true"] { border-color: var(--lantern); box-shadow: 0 0 0 1px var(--lantern) inset; }
+.profile-chip .glyph, .profile-head .glyph { width: 28px; height: 28px; flex: none; border-radius: 50%; display: grid; place-items: center; background: rgba(255,255,255,0.04); }
+.profile-chip .glyph span, .profile-head .glyph span { width: 9px; height: 9px; border-radius: 50%; background: var(--ash-dim); }
+.profile-head .glyph { width: 44px; height: 44px; }
+.profile-head .glyph span { width: 13px; height: 13px; }
+[data-role="monk"] > .glyph span { background: var(--ember); box-shadow: 0 0 10px var(--ember); }
+[data-role="ghost"] > .glyph span { background: var(--jade); box-shadow: 0 0 10px var(--jade); }
+[data-role="villager"] > .glyph span { background: var(--lantern); box-shadow: 0 0 10px var(--lantern); }
+.chip-text { display: grid; min-width: 0; line-height: 1.25; }
+.chip-text b { font: 600 16px/1.2 var(--font-display); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chip-text small { font: 11px/1.3 var(--font-ui); color: var(--ash-dim); white-space: nowrap; }
+.profile-head { display: flex; gap: 12px; align-items: flex-start; }
+.profile-who { min-width: 0; }
+.profile-name { margin: 0; font: 600 28px/1.15 var(--font-display); }
+.profile-who .rc-who { margin: 2px 0 6px; }
+.profile-actions { display: flex; align-items: center; gap: 16px; margin: 12px 0 4px; }
+.profile-sec { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); }
+.profile-sec-title { margin: 0 0 10px; font: 600 18px/1.2 var(--font-display); }
+.profile-sec-title .count { font: 500 12px var(--font-ui); }
+.album-slot:disabled { cursor: default; }
+.char-body { background: none; border: 0; padding: 0; text-align: left; color: inherit; cursor: pointer; }
+@media (min-width: 900px) {
+  .panel.profile { width: min(940px, calc(100% - 48px)); max-height: 86vh; }
+  .profile-body { grid-template-columns: 240px minmax(0, 1fr); align-items: start; gap: 24px; }
+  .profile-list { flex-direction: column; overflow: visible; position: sticky; top: 0; }
+  .profile-chip { max-width: none; }
+}

@@ -126,3 +126,29 @@ Thiết kế đầy đủ ở [docs/he-thong-tam.md](docs/he-thong-tam.md). Bả
 - Dev (`?dev`): mục "Tâm và thẻ" để khảo sát lại, nhảy tới chỗ chó hoặc chỗ sư, gọi chư thiên, xóa dữ liệu tâm.
 
 Mọi chỉ số là mô phỏng để chơi. Nội dung thẻ và cấu trúc tâm của chư thiên cần thầy Theravāda duyệt.
+
+### Tài khoản và nhân vật
+
+- Vào game là **chơi ngay**, không cần đăng nhập. Tiến trình của khách nằm trong trình duyệt (localStorage).
+- Khi **đăng nhập bằng Google**, người chơi có thể:
+  - lưu lần chơi thử trên máy thành một nhân vật;
+  - tạo tối đa 12 nhân vật, mỗi nhân vật một vai và mang tâm, thẻ, vật phẩm, nhật ký riêng;
+  - quay lại bất kỳ nhân vật nào để chơi tiếp.
+- Ký ức câu chuyện (manh mối, sách đã đọc), số đêm đã qua và các vai đã đi qua đêm là **chung cho cả tài khoản**.
+- Nút "Đăng nhập để lưu" nằm trong bảng Nhiệm vụ khi đang chơi thử.
+
+Code: `auth.js` (Google OAuth, phiên đăng nhập bằng cookie HttpOnly, API `/api/me`, `/api/account`, `/api/characters`), `store.js` (Postgres hoặc file JSON), `public/save.js` (lớp lưu phía trình duyệt).
+
+**Cấu hình trên Render** (biến môi trường của web service):
+
+1. **Neon:** tạo project miễn phí tại neon.tech, copy connection string (dạng `postgresql://…?sslmode=require`) vào `DATABASE_URL`. Bảng được tạo tự động khi server khởi động.
+2. **Google Cloud Console:** APIs & Services → Credentials → Create OAuth client ID → Web application.
+   - Authorized redirect URI: `https://<tên-app>.onrender.com/auth/google/callback`.
+   - Đặt `GOOGLE_CLIENT_ID` và `GOOGLE_CLIENT_SECRET`.
+   - Màn hình OAuth consent: chọn External, thêm email của bạn làm test user, hoặc publish app.
+3. Build command phải là `npm install` (đã có thư viện `pg`). Nếu service tạo từ dashboard với "echo no build step" thì sửa lại.
+4. Tùy chọn `PUBLIC_URL=https://<tên-app>.onrender.com` nếu redirect URI tự suy ra bị sai.
+
+**Chạy trên máy:** không cần cấu hình gì. Tài khoản lưu vào `data/accounts.json`, và màn chọn vai có nút "Đăng nhập thử" (tắt khi `NODE_ENV=production`).
+
+**Màn "Nhân vật của tôi"** (`public/profile.js`): khi đã đăng nhập, bấm vào tên một nhân vật ở màn chọn vai, hoặc bấm nút "Nhân vật của tôi", sẽ thấy tính cách, chỉ số tâm, thẻ tâm sở, túi đồ và nhật ký của nhân vật đó. Từ đây có thể chơi tiếp hoặc xóa nhân vật. Sau này phần trang phục (quần áo, tóc…) sẽ nằm ở màn này.

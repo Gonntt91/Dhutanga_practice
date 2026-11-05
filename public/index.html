@@ -56,6 +56,11 @@
       <p id="quest-side-body" class="hint"></p>
       <button id="quest-side-go" class="pill" type="button">Đưa tôi tới đó</button>
     </div>
+    <div id="quest-save" class="quest-side" hidden>
+      <p class="label">Lưu nhân vật</p>
+      <p class="hint">Bạn đang chơi thử, tiến trình chỉ nằm trên máy này. Đăng nhập để lưu nhân vật và chơi tiếp lần sau, ở máy nào cũng được.</p>
+      <button id="quest-login" class="pill" type="button">Đăng nhập để lưu</button>
+    </div>
     <p class="hint">Bạn có thể đi dạo và khám phá tự do bất cứ lúc nào. Việc đang chờ vẫn ở đây.</p>
   </section>
   <div id="toast" class="toast" aria-live="polite"></div>
@@ -221,12 +226,27 @@
       <h1 class="display">Đêm nay, bạn là ai?</h1>
       <p class="lede">Một đêm ở nghĩa địa đầu làng, nhìn qua ba đôi mắt. Người khác đang chơi cùng lúc sẽ hiện lên trong cảnh, và việc họ làm có thể đổi điều bạn thấy.</p>
       <p id="night-note" class="hint" hidden></p>
-      <label class="label" for="nick">Tên hiển thị (không bắt buộc)</label>
+      <div id="account" class="account"></div>
+      <div id="char-list" class="char-list" hidden></div>
+      <h2 id="new-title" class="label new-title">Chơi ngay</h2>
+      <label id="nick-label" class="label" for="nick">Tên hiển thị (không bắt buộc)</label>
       <input id="nick" maxlength="24" autocomplete="off" placeholder="Một người lạ">
       <div id="role-list" class="roles"></div>
       <p class="disclaimer credits">Tiếng gà, quạ, chó, cú, chim là ghi âm thật từ Wikimedia Commons (alys, National Park Service, Amada44, Vianney Bajart, L. Shyamal, Saurmandal, V. Arkhipov, Ashwin Baindur). Chi tiết giấy phép trong sounds/CREDITS.md.</p>
       <p class="disclaimer">Các chỉ số tâm trong game là mô phỏng để chơi, không phải thước đo tâm thật.</p>
       <p class="disclaimer">Đây là trải nghiệm mô phỏng để chiêm nghiệm hạnh đầu đà. Xin đừng tự ý ngủ ở nghĩa địa hay nhà hoang ngoài đời thật.</p>
+    </div>
+  </section>
+
+  <!-- profile: the signed-in player's characters -->
+  <section id="profile" class="panel profile" hidden aria-label="Nhân vật của tôi">
+    <div class="panel-head">
+      <h2 class="label">Nhân vật của tôi <span id="profile-user" class="profile-user"></span></h2>
+      <button id="profile-close" class="text-btn" type="button">Đóng</button>
+    </div>
+    <div class="profile-body">
+      <nav id="profile-list" class="profile-list" aria-label="Danh sách nhân vật"></nav>
+      <div id="profile-detail" class="profile-detail"></div>
     </div>
   </section>
 
@@ -249,7 +269,9 @@
 <script src="buddha.js"></script>
 <script src="room.js"></script>
 <script src="items.js"></script>
+<script src="save.js"></script>
 <script src="mind.js"></script>
+<script src="profile.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
