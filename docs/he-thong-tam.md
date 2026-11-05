@@ -1,6 +1,28 @@
 # Hệ thống tâm: học Vi Diệu Pháp qua trải nghiệm
 
-> Trạng thái: **bản thiết kế, chưa code.** Nội dung giáo lý (nhóm tâm sở, thẻ tâm sở, gợi ý tu tập, cách hiện giác chi) **cần thầy Theravāda duyệt** trước khi đưa vào game.
+> Trạng thái: **tài liệu thiết kế, một phần đã có trong game** (xem bảng *Trạng thái triển khai* bên dưới). Nội dung giáo lý (nhóm tâm sở, thẻ tâm sở, gợi ý tu tập, cách hiện giác chi) **cần thầy Theravāda duyệt** trước khi đưa vào game.
+
+## Trạng thái triển khai
+
+| Hạng mục | Mục trong tài liệu | Trạng thái | Ghi chú |
+|---|---|---|---|
+| Khảo sát tính cách bằng việc làm (quét lá, nhận bát), sáu hạng tính | mục 5 | **Đã có** | — |
+| Chỉ số tâm ngầm, quả cầu tâm đầy khi ngồi | mục 6 | **Đã có** | — |
+| Chuỗi "chó cắn" | mục 7 | **Đã có** | — |
+| Thẻ tâm sở, mở mặt khi gặp lại, album | mục 4a | **Một phần** | Có 10 thẻ (Sân, Hối hận, Tham, Không sân, Không tham, Niệm, Hỷ, Bỏn xẻn, Bi, Tùy hỷ); album chưa tự xếp lại theo nhóm |
+| Ra thẻ đối trị, cấp thẻ kiểu FIFA | mục 4b | **Đề xuất** | — |
+| Bộ bài tâm | mục 4c | **Đề xuất** | — |
+| Ngồi thiền và thất giác chi | mục 9 | **Một phần** | Có ngồi và quả cầu, chưa có giác chi |
+| Chư thiên, thọ thần, địa thần, ngạ quỷ, người thân | mục 9a | **Một phần** | Có chư thiên, thọ thần (chuỗi bé Na), địa thần, ngạ quỷ bà cụ (hồi hướng); bảng cấu trúc tâm của loài đã có |
+| Thiên cung (gò tháp) | mục 9b | **Một phần** | Có cảnh cung điện và luật ở lại/tan |
+| Hang đá ẩn sau tảng đá, các buồng trong hang | mục 9b, 15.2 | **Một phần** | Có, nhưng chưa phải thế giới riêng nhiều tầng |
+| Ao sen đêm trăng, xe ngựa trên đường, tin đồn | mục 9b | **Đã có** | — |
+| Sổ khám phá, dấu hỏi trên bản đồ | — | **Đã có** | — |
+| Vật phẩm có hình minh họa, túi đồ | — | **Đã có** | — |
+| Tài khoản Google, nhiều nhân vật, hồ sơ nhân vật | — | **Đã có** | Không thuộc tài liệu này, xem README |
+| Thẻ bất thiện 3 lần rồi "đã hiểu", album hai phần | mục 15.1 | **Đã có** | 4 thẻ bất thiện; câu đối trị cần thầy duyệt |
+| Phận sự tịnh xá, 13 hạnh đầu đà, năm triền cái | mục 15.3–15.5 | **Đề xuất** | — |
+| Vòng ngày, quán xét cuối ngày, việc khi vắng, cột mốc | mục 16 | **Một phần** | Có lưu tiến độ, quán xét cuối đêm, hồi hướng, câu hẹn ngày mai, việc khi vắng, "Trong lúc vắng", cột mốc và trang Dấu mốc; chưa có các buổi trong ngày |
 
 ## 0. Mục đích và tinh thần
 

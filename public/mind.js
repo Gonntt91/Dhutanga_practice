@@ -21,16 +21,19 @@ window.Mind = (() => {
     san: {
       name: "Sân", good: false, pali: "dosa", plain: "Cái nóng trong lòng khi bị trái ý.",
       tip: "Khi nóng lên, thử biết “nóng, nóng” rồi thở một hơi.", where: "Có lẽ gặp ở ngõ làng.",
+      cure: { card: "khong_san", text: "Không sân là pháp đối trị của Sân. Lần tới khi nóng lên, thử làm dịu nó: rửa vết thương, nói một lời hiền." },
       faces: [["Đặc tính", "Hung bạo, dữ dội."], ["Phận sự", "Lan ra như thuốc độc, đốt cháy chính chỗ nó nương."], ["Biểu hiện", "Làm hư hỏng, phá hoại."], ["Nhân gần", "Đối tượng gây bực bội."]],
     },
     hoi_han: {
       name: "Hối hận", good: false, pali: "kukkucca", plain: "Ray rứt về điều mình đã làm.",
       tip: "Biết mình đang hối, rồi làm điều tốt tiếp theo.", where: "Có lẽ gặp sau một lúc nóng giận.",
+      cure: { card: "niem", text: "Đừng nuôi ray rứt. Sửa điều còn sửa được, rồi trở về với hơi thở: đó là Niệm." },
       faces: [["Đặc tính", "Hối tiếc sau khi làm."], ["Phận sự", "Sầu muộn về việc đã làm và chưa làm."], ["Biểu hiện", "Ăn năn."], ["Nhân gần", "Việc đã làm và việc chưa làm."]],
     },
     tham: {
       name: "Tham", good: false, pali: "lobha", plain: "Muốn giữ lấy cho mình.",
       tip: "Thấy mình muốn giữ, thử cho đi một chút.", where: "Có lẽ gặp khi có thứ ngon trong tay.",
+      cure: { card: "khong_tham", text: "Không tham là pháp đối trị của Tham. Thử cho đi một thứ mình đang giữ." },
       faces: [["Đặc tính", "Nắm giữ đối tượng, như nhựa bẫy khỉ."], ["Phận sự", "Bám dính, như thịt bỏ vào chảo nóng."], ["Biểu hiện", "Không chịu buông."], ["Nhân gần", "Thấy thích thú nơi những gì trói buộc mình."]],
     },
     khong_san: {
@@ -58,6 +61,7 @@ window.Mind = (() => {
     bon_xen: {
       name: "Bỏn xẻn", good: false, pali: "macchariya", plain: "Tiếc của, không muốn chia cho ai.",
       tip: "Khi thấy mình tiếc, thử chia một phần nhỏ thôi.", where: "Có lẽ gặp ở nghĩa địa, nơi có người đói lâu năm.",
+      cure: { card: "khong_tham", text: "Cho đi là pháp đối trị của Bỏn xẻn. Thử chia phần mình cho người đang đói." },
       faces: [["Đặc tính", "Che giấu điều mình có hoặc sẽ có."], ["Phận sự", "Không chịu để người khác cùng có."], ["Biểu hiện", "Co rút lại, keo kiệt."], ["Nhân gần", "Điều tốt của chính mình."]],
     },
     bi: {
@@ -86,13 +90,15 @@ window.Mind = (() => {
   const BAD = [["tham", "Tham"], ["san", "Sân"], ["si", "Si"]];
 
   // ---------- saved state ----------
-  function fresh() { return { carita: null, stats: null, cards: {}, quest: { step: "start", hit: false }, q: {}, items: [], deva: { pity: 0, last: 0, seen: 0 } }; }
+  function fresh() { return { carita: null, stats: null, cards: {}, quest: { step: "start", hit: false }, q: {}, items: [], deva: { pity: 0, last: 0, seen: 0 }, milestones: {}, msCounts: {} }; }
   function load() {
     try { const s = JSON.parse(Save.get(KEY) || "null"); if (s && s.cards) return { ...fresh(), ...s }; } catch {}
     return fresh();
   }
+  // Older saves lack the milestone maps.
+  const ensure = () => { if (!S.q) S.q = {}; if (!S.milestones) S.milestones = {}; if (!S.msCounts) S.msCounts = {}; };
   let S = load();
-  if (!S.q) S.q = {};
+  ensure();
   const save = () => Save.set(KEY, JSON.stringify(S));
 
   let api = null;          // callbacks from app.js
@@ -149,39 +155,59 @@ window.Mind = (() => {
   }
 
   // ---------- awarding a card ----------
+  const MS = () => window.Milestones;
   function award(id, context, then) {
     const def = CARDS[id];
     const prev = S.cards[id];
-    const n = (prev ? prev.n : 0) + 1;
-    S.cards[id] = { n, seen: [...(prev ? prev.seen : []), context].slice(-6) };
-    save();
-    Save.log(n === 1 ? `Gặp thẻ ${def.name} lần đầu.` : `Gặp lại thẻ ${def.name} (lần ${n}).`);
-    syncCardsBtn();
-    showCard(id, { fresh: n === 1, opened: n >= 2 && n <= 5 ? n - 1 : 0, context, then });
+    const step = MS().rules.cardStep(def, prev ? prev.n : 0);
+    if (step.show) {
+      S.cards[id] = { n: step.n, seen: [...(prev ? prev.seen : []), context].slice(-6) };
+      save();
+      Save.log(step.understood ? `Đã hiểu thẻ ${def.name}.` : step.n === 1 ? `Gặp thẻ ${def.name} lần đầu.` : `Gặp lại thẻ ${def.name} (lần ${step.n}).`);
+      syncCardsBtn();
+    }
+    // Milestones wait until the card popup is closed and the story callback has run.
+    const got = MS().notify("card", { id, n: step.n, good: def.good, understood: step.understood }, { quiet: true });
+    const after = () => {
+      if (then) then(); else if ($("mind-card").hidden) { cooldownUntil = Date.now() + 2500; api && api.refresh(); }
+      if (got.length) MS().reveal(got);
+    };
+    if (!step.show) return after();
+    showCard(id, { fresh: step.n === 1, opened: step.opened, understood: step.understood, context, then: after });
   }
 
   function cardNode(id, opts = {}) {
-    const def = CARDS[id];
+    const def = CARDS[id], R = MS().rules;
     const own = opts.own || S.cards[id] || { n: 0, seen: [] };
-    const c = el("article", "mcard " + (def.good ? "good" : "bad"));
-    c.appendChild(el("div", "mcard-kind", def.good ? "Tâm sở tốt" : "Tâm sở xấu"));
+    const n = R.effN(def, own.n), done = R.isUnderstood(def, own.n);
+    const c = el("article", "mcard " + (def.good ? "good" : "bad") + (done ? " understood" : ""));
+    c.appendChild(el("div", "mcard-kind", def.good ? "Tâm đang tu" : "Tâm để hiểu"));
+    if (done) c.appendChild(el("span", "mcard-badge", "Đã hiểu"));
     c.appendChild(el("h3", "mcard-name", def.name));
     c.appendChild(el("p", "mcard-plain", def.plain));
     if (opts.context) c.appendChild(el("p", "mcard-ctx", "Lúc nãy: " + opts.context));
     c.appendChild(el("p", "mcard-tip", def.tip));
     const faces = el("dl", "mcard-faces");
     def.faces.forEach(([h, t], i) => {
-      const unlocked = own.n >= i + 2;
+      const at = R.faceUnlockN(def, i), unlocked = n >= at;
       const dt = el("dt", unlocked ? null : "locked", h);
-      const dd = el("dd", unlocked ? null : "locked", unlocked ? t : `Gặp thêm ${i + 2 - own.n} lần để mở`);
-      if (opts.opened === i + 1) { dt.classList.add("new"); dd.classList.add("new"); }
+      const dd = el("dd", unlocked ? null : "locked", unlocked ? t : `Gặp thêm ${at - n} lần để mở`);
+      if (opts.opened && at === opts.opened + 1) { dt.classList.add("new"); dd.classList.add("new"); }
       faces.append(dt, dd);
     });
     c.appendChild(faces);
-    if (own.n >= 5) c.appendChild(el("p", "mcard-pali", `Tên Pāli: ${def.pali}`));
-    if (own.n > 1) c.appendChild(el("p", "mcard-count", `Người này đã gặp ${def.name} ${own.n} lần: ${own.seen.slice(-3).map(shortCtx).join("; ")}.`));
+    if (n >= (def.good ? 5 : 3)) c.appendChild(el("p", "mcard-pali", `Tên Pāli: ${def.pali}`));
+    if (done && def.cure) c.appendChild(cureNode(def, opts.owned || S.cards));
+    if (n > 1) c.appendChild(el("p", "mcard-count", `Người này đã gặp ${def.name} ${n} lần: ${own.seen.slice(-3).map(shortCtx).join("; ")}.`));
     c.appendChild(el("p", "mcard-note", SIM_NOTE));
     return c;
+  }
+  // Antidote line: the wholesome card that softens this one, and where to meet it if not yet owned.
+  function cureNode(def, owned) {
+    const good = CARDS[def.cure.card], box = el("div", "mcard-cure");
+    box.appendChild(el("p", null, def.cure.text));
+    box.appendChild(el("p", "mcard-cure-card", `Thẻ đối trị: ${good.name}` + (owned[def.cure.card] ? "." : `. Chưa gặp thẻ này. ${good.where}`)));
+    return box;
   }
   const shortCtx = (s) => s.split(/[,.]/)[0].replace(/^(Bạn|Người này) /, "").toLowerCase();
 
@@ -199,12 +225,12 @@ window.Mind = (() => {
     else if (then) then();
   }
 
-  function showCard(id, { fresh, opened, context, then, own } = {}) {
+  function showCard(id, { fresh, opened, understood, context, then, own, owned } = {}) {
     open = true;
     const wrap = $("card-reveal");
     wrap.hidden = false;
-    $("card-reveal-label").textContent = fresh ? "Bạn nhận được một thẻ mới" : opened ? "Gặp lại, hiểu thêm một chút" : "Thẻ tâm sở";
-    const slot = $("card-reveal-slot"); slot.replaceChildren(cardNode(id, { context, opened, own }));
+    $("card-reveal-label").textContent = fresh ? "Bạn nhận được một thẻ mới" : understood ? "Đã hiểu thẻ này" : opened ? "Gặp lại, hiểu thêm một chút" : "Thẻ tâm sở";
+    const slot = $("card-reveal-slot"); slot.replaceChildren(cardNode(id, { context, opened, own, owned }));
     slot.firstChild.classList.add("flip");
     $("card-reveal-ok").onclick = () => {
       wrap.hidden = true;
@@ -537,6 +563,7 @@ window.Mind = (() => {
     fx.flowers = Array.from({ length: 46 }, () => ({ x: at.x + rand(-170, 170), y: at.y - rand(120, 520), v: rand(16, 34), s: rand(2.4, 4.4), p: rand(0, 6), c: Math.random() < 0.5 ? "255,236,240" : "255,214,150" }));
     S.deva.seen++; S.deva.pity = 0; S.deva.last = Date.now(); save();
     Save.log("Gặp chư thiên.");
+    MS().notify("deva", {}); // shown once the visit's sheets close
     World.lookAt(at.y - 30, at.x);
     if (api.sound()) { NightAudio.bell(1); setTimeout(() => NightAudio.bell(0.6), 1400); }
     api.emit("deva");
@@ -751,6 +778,20 @@ window.Mind = (() => {
     container.appendChild(btn);
     container.appendChild(el("p", "hint", "Chỉ số là mô phỏng để chơi, có lên có xuống, xoay quanh một mốc. Không phải thước đo tâm thật."));
   }
+  // Two sections for the album and the profile: wholesome cards being practised, unwholesome ones being understood.
+  function cardSections(owned) {
+    const R = MS().rules, mk = (id) => {
+      const def = CARDS[id], own = owned[id], n = own ? R.effN(def, own.n) : 0;
+      const sub = def.good ? `gặp ${n} lần` : n >= R.UNDERSTAND_AT ? "Đã hiểu" : `hiểu ${n}/${R.UNDERSTAND_AT}`;
+      return { id, own, cls: own ? (def.good ? "good" : "bad") : "empty", sub };
+    };
+    const good = CARD_ORDER.filter((k) => CARDS[k].good), bad = CARD_ORDER.filter((k) => !CARDS[k].good);
+    const understood = bad.filter((k) => owned[k] && R.isUnderstood(CARDS[k], owned[k].n)).length;
+    return [
+      { key: "good", title: "Tâm đang tu", extra: "", items: good.map(mk) },
+      { key: "bad", title: "Tâm đã hiểu", extra: `${understood}/${bad.length} đã hiểu`, items: bad.map(mk) },
+    ];
+  }
   let albumTab = "cards";
   function openAlbum(tab) {
     if (tab === "cards" || tab === "bag" || tab === "log") albumTab = tab;
@@ -788,15 +829,16 @@ window.Mind = (() => {
         return;
       }
     }
-    for (const [good, title] of [[true, "Tâm sở tốt"], [false, "Tâm sở xấu"]]) {
-      list.appendChild(el("h3", "album-title", title));
+    for (const sec of cardSections(S.cards)) {
+      const h = el("h3", "album-title", sec.title);
+      if (sec.extra) h.appendChild(el("span", "album-extra", sec.extra));
+      list.appendChild(h);
       const grid = el("div", "album-grid");
-      for (const id of CARD_ORDER.filter((k) => CARDS[k].good === good)) {
-        const own = S.cards[id];
-        const b = el("button", "album-slot " + (own ? (good ? "good" : "bad") : "empty"));
+      for (const it of sec.items) {
+        const b = el("button", "album-slot " + it.cls);
         b.type = "button";
-        if (own) { b.appendChild(el("b", null, CARDS[id].name)); b.appendChild(el("span", null, `gặp ${own.n} lần`)); b.addEventListener("click", () => showCard(id)); }
-        else { b.appendChild(el("b", null, "?")); b.appendChild(el("span", null, CARDS[id].where)); }
+        if (it.own) { b.appendChild(el("b", null, CARDS[it.id].name)); b.appendChild(el("span", null, it.sub)); b.addEventListener("click", () => showCard(it.id)); }
+        else { b.appendChild(el("b", null, "?")); b.appendChild(el("span", null, CARDS[it.id].where)); }
         grid.appendChild(b);
       }
       list.appendChild(grid);
@@ -807,6 +849,7 @@ window.Mind = (() => {
   // ---------- public ----------
   function init(callbacks) {
     api = callbacks;
+    backfillMilestones();
     World.setFx(drawFx);
     setInterval(loop, 250);
     $("cards-close").addEventListener("click", () => ($("cards-panel").hidden = true));
@@ -851,16 +894,20 @@ window.Mind = (() => {
   };
 
   // Load the progress of the character now being played (or the guest's).
-  function reload() { S = load(); if (!S.q) S.q = {}; syncCardsBtn(); }
+  const backfillMilestones = () => { if (MS() && MS().backfill) MS().backfill(S.cards); };
+  function reload() { S = load(); ensure(); backfillMilestones(); syncCardsBtn(); }
 
   // Read-only helpers for the profile screen (render any character's saved mind, not just the one in play).
   const parts = {
     CARDS, CARD_ORDER, GOOD, BAD, bar,
     caritaName: (k) => (CARITA[k] ? CARITA[k].name : ""),
-    viewCard: (id, own) => showCard(id, { own, then: () => {} }),
+    viewCard: (id, own, owned) => showCard(id, { own, owned, then: () => {} }),
+    cardSections,
+    cardStep: (id, prevN) => MS().rules.cardStep(CARDS[id], prevN),
+    milestoneState: () => { ensure(); return { got: S.milestones, counts: S.msCounts, save }; },
     current: () => JSON.parse(JSON.stringify(S)),
     suggestion: () => (S.stats ? suggestion() : ""),
   };
 
-  return { register, kit, questList, parts, reload, init, onRoleStart, onRoleEnd, isOpen: () => open, bias, questInfo, renderStats, remote, openAlbum, dev, cardsChanged: syncCardsBtn };
+  return { soundOn: () => !api || api.sound(), register, kit, questList, parts, reload, init, onRoleStart, onRoleEnd, isOpen: () => open, bias, questInfo, renderStats, remote, openAlbum, dev, cardsChanged: syncCardsBtn };
 })();

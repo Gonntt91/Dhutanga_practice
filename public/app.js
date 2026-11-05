@@ -4,6 +4,7 @@
   const ARRIVE_DIST = 46;
   const STORE_KEY = "dhutanga.completed";
   const MEM_KEY = "dhutanga.memory";   // things remembered across nights (clues, kindnesses)
+  const PROGRESS_KEY = "dhutanga.progress"; // checkpoint of the night in progress, per character
   const RUNS_KEY = "dhutanga.runs";    // how many nights have been finished
   const FIND_DIST = 34;
   const IDLE_HINT_MS = 9000; // standing still this long shows the "go this way" hint
@@ -47,6 +48,7 @@
     lowSince: 0, lastSuggest: 0,
     moodShift: 0,           // temporary swing of the mind colour (decays back to the baseline)
     readTonight: new Set(), // books read tonight (each calms the mind once per night)
+    cp: null,               // current checkpoint (Progress shape): runId, day, endedRunId...
     findTarget: null,     // find the player is walking towards
     findOpen: null,       // { find, step } while the card is showing
     lastTouch: Date.now(),
@@ -72,6 +74,40 @@
   }
   function saveCompleted() {
     Save.set(STORE_KEY, JSON.stringify(state.completed));
+  }
+
+  // ---------- night checkpoint ----------
+  let lastCpJson = "", lastPos = "", lastPosAt = 0;
+  const POS_SAVE_MS = 20000; // position alone is saved at most this often (each save sends the whole character)
+  const cpJson = (cp) => JSON.stringify(cp, (k, v) => (k === "savedAt" || k === "x" || k === "y" ? undefined : v));
+  function loadCheckpoint() {
+    try { return JSON.parse(Save.get(PROGRESS_KEY) || "null"); } catch { return null; }
+  }
+  function saveProgress() {
+    if (!state.role || !state.cp) return;
+    const p = World.getPlayer();
+    const nightVars = [...state.vars].filter((k) => !loadMem().has(k)); // account memory is saved elsewhere
+    state.cp = Progress.snapshot(state.cp, { sceneId: state.sceneId, meter: state.meter, found: state.found, readTonight: state.readTonight, x: p.x, y: p.y, nightVars });
+    const json = cpJson(state.cp);
+    const pos = state.cp.x + "," + state.cp.y;
+    if (json === lastCpJson && (pos === lastPos || Date.now() - lastPosAt < POS_SAVE_MS)) return;
+    lastCpJson = json; lastPos = pos; lastPosAt = Date.now();
+    Save.set(PROGRESS_KEY, JSON.stringify(state.cp));
+  }
+  const endingFor = (scene) => scene.endings.find((e) => state.meter <= e.max) || scene.endings[scene.endings.length - 1];
+  // Records the finished night once per runId; rendering the ending only reads state.
+  function completeRun(scene) {
+    const r = Progress.complete(state.cp);
+    if (!r.first) return;
+    state.cp = r.cp;
+    const ending = endingFor(scene);
+    if (ending.trace) leaveTrace(ending.trace);
+    state.completed[state.role] = true;
+    saveCompleted();
+    Save.set(RUNS_KEY, String(runCount() + 1));
+    Save.log(`Đi qua một đêm (${ROLE_INFO[state.role].name.toLowerCase()}).`);
+    lastCpJson = "";
+    saveProgress();
   }
 
   const currentScene = () => (state.role ? STORY[state.role].scenes[state.sceneId] : null);
@@ -522,13 +558,16 @@
     state.nick = Save.character() ? Save.character().name : $("nick").value.replace(/\s+/g, " ").trim().slice(0, 24);
     state.completed = loadCompleted();
     state.role = role;
-    state.sceneId = STORY[role].start;
+    const spawn = World.SPAWN[role];
+    const plan = Progress.decide(loadCheckpoint(), role, STORY[role], spawn, { minX: 12, maxX: World.W - 12, minY: 60, maxY: World.H });
+    state.cp = plan.cp;
+    state.sceneId = plan.cp.sceneId;
     state.sceneOpen = false;
-    state.meter = STORY[role].meterStart;
+    state.meter = plan.cp.meter;
     state.liveFlags.clear();
-    state.vars = loadMem();
-    state.found = new Set();
-    state.readTonight = new Set();
+    state.vars = new Set([...loadMem(), ...plan.cp.vars]);
+    state.found = new Set(plan.cp.found);
+    state.readTonight = new Set(plan.cp.readTonight);
     state.leftScene = false; state.detour = null; state.lowSince = 0;
     state.findTarget = null;
     closeFind(true);
@@ -545,15 +584,30 @@
     $("meter-name").textContent = ROLE_INFO[role].meter;
     $("gesture").textContent = ROLE_INFO[role].gesture.label;
     $("gesture-walk").textContent = ROLE_INFO[role].gesture.label;
-    const spawn = World.SPAWN[role];
-    World.setPlayer(spawn.x, spawn.y);
+    World.setPlayer(plan.cp.x, plan.cp.y);
+    lastCpJson = "";
+    saveProgress();
     pushView();
     sendPresence(true);
     // first time ever: a short survey of temperament before the night begins
-    if (!Mind.onRoleStart(role, () => { if (state.role === role) showWalkOrScene(); })) showWalkOrScene();
+    const begin = () => { if (!Mind.onRoleStart(role, () => { if (state.role === role) showWalkOrScene(); })) showWalkOrScene(); };
+    const back = plan.cp.returnFrom;
+    if (back && window.NightReflect && NightReflect.showAway) {
+      // narrative only; shown once, cleared when the player presses start
+      NightReflect.showAway({
+        role, away: back, now: Date.now(), runId: plan.cp.runId,
+        onStart: () => {
+          if (state.role !== role) return;
+          const { returnFrom, ...rest } = state.cp;
+          state.cp = rest; lastCpJson = ""; saveProgress();
+          begin();
+        },
+      });
+    } else begin();
   }
 
   function leaveRole() {
+    lastPosAt = 0; saveProgress();
     Mind.onRoleEnd();
     const closing = Save.closeCharacter().then(() => Save.refresh()).then(() => { if (!state.role) renderPicker(); });
     state.mindPose = null;
@@ -659,7 +713,7 @@
       setTimeout(() => NightAudio.rooster(), 900);
     }
     if (scene.end && scene.epilogue) return renderEpilogue(scene);
-    if (scene.end) return renderEnding(scene);
+    if (scene.end) { completeRun(scene); return renderEnding(scene); }
     if (scene.watch) return renderWatch(scene);
 
     let i = 0;
@@ -689,6 +743,7 @@
     if (c.set) state.vars.add(c.set);
     if (c.remember) remember(c.remember);
     state.sceneId = c.next;
+    saveProgress();
     $("whispers").replaceChildren();
     showWalkOrScene();
     sendPresence(true);
@@ -897,21 +952,40 @@
       lines.appendChild(p);
     }
     remember("epilogue_done");
-    const again = el("button", "choice", "Chọn một vai khác");
+    addEndButtons();
+  }
+
+  // End of a night: the reflection is the main way on; picking another role stays as a quiet option.
+  function addEndButtons() {
+    const reflect = el("button", "choice primary", "Quán xét cuối đêm");
+    reflect.type = "button";
+    reflect.addEventListener("click", openReflection);
+    $("choices").appendChild(reflect);
+    const again = el("button", "choice rf-secondary", "Chọn một vai khác");
     again.type = "button";
     again.addEventListener("click", leaveRole);
     $("choices").appendChild(again);
   }
 
+  function openReflection() {
+    if (!state.role || !(window.NightReflect && NightReflect.open)) return;
+    const role = state.role;
+    NightReflect.open({
+      role,
+      getCp: () => state.cp,
+      setCp: (cp) => { state.cp = cp; lastCpJson = ""; saveProgress(); },
+      history: () => Save.history(),
+      log: (t) => Save.log(t),
+      flush: () => { lastCpJson = ""; saveProgress(); return Save.flush(); },
+      newNight: () => { if (state.role === role) { lastCpJson = ""; saveProgress(); startRole(role); } },
+      leave: () => leaveRole(),
+    });
+  }
+
   function renderEnding(scene) {
-    const ending = scene.endings.find((e) => state.meter <= e.max) || scene.endings[scene.endings.length - 1];
+    const ending = endingFor(scene);
     const lines = $("lines");
     lines.appendChild(el("p", "ending", ending.text));
-    if (ending.trace) leaveTrace(ending.trace);
-    state.completed[state.role] = true;
-    saveCompleted();
-    Save.set(RUNS_KEY, String(runCount() + 1));
-    Save.log(`Đi qua một đêm (${ROLE_INFO[state.role].name.toLowerCase()}).`);
     const roles = ["monk", "ghost", "villager"];
     if (roles.every((r) => state.completed[r])) {
       const box = el("div", "true-ending");
@@ -943,10 +1017,7 @@
       });
       $("choices").appendChild(up);
     }
-    const again = el("button", "choice", "Chọn một vai khác");
-    again.type = "button";
-    again.addEventListener("click", leaveRole);
-    $("choices").appendChild(again);
+    addEndButtons();
   }
 
   // ---------- gestures & sound ----------
@@ -1216,7 +1287,7 @@
     });
     btn(data, "Hiện hết vật", () => { state.devAllFinds = !state.devAllFinds; refreshFinds(); toast(state.devAllFinds ? "Hiện tất cả vật bị bỏ quên" : "Ẩn bớt theo số đêm"); });
     btn(data, "Xóa dữ liệu", () => {
-      [STORE_KEY, MEM_KEY, RUNS_KEY].forEach((k) => Save.remove(k));
+      [STORE_KEY, MEM_KEY, RUNS_KEY, PROGRESS_KEY].forEach((k) => Save.remove(k));
       state.completed = {}; state.vars = new Set(); toast("Đã xóa dữ liệu đã lưu.");
     });
 
@@ -1464,6 +1535,23 @@
     }
     sendPresence(false);
   }, 200);
+
+  // keep the checkpoint fresh while walking, and write it just before the page goes away
+  setInterval(saveProgress, 2000);
+  const saveNow = () => { lastPosAt = 0; saveProgress(); Save.flush(true); };
+  window.addEventListener("pagehide", saveNow);
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") saveNow(); });
+
+  // save status: one toast when it turns unsynced, one when it recovers; a line in the profile header
+  const STATUS_TEXT = { saved: "Đã lưu", saving: "Đang lưu…", offline: "Chưa đồng bộ" };
+  let wasOffline = false;
+  Save.onStatus((s) => {
+    const line = $("save-status");
+    if (line) line.textContent = STATUS_TEXT[s];
+    if (s === "offline" && !wasOffline) { wasOffline = true; toast("Chưa lưu được, sẽ thử lại khi có mạng."); }
+    else if (s === "saved" && wasOffline) { wasOffline = false; toast("Đã lưu lại."); }
+  });
+  if ($("save-status")) $("save-status").textContent = STATUS_TEXT[Save.status()];
 
   // any touch, click or key counts as "still playing" and hides the hint
   const touch = () => { state.lastTouch = Date.now(); };

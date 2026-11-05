@@ -8,6 +8,8 @@ const crypto = require("crypto");
 
 const SESSION_DAYS = 60;
 const MAX_CHARACTERS = 12;
+const MAX_TRACES = 500;
+const PRUNE_EVERY = 50; // pg: trim old traces on every Nth insert, not each time
 const newId = () => crypto.randomUUID();
 const hashToken = (t) => crypto.createHash("sha256").update(t).digest("hex");
 
@@ -21,9 +23,12 @@ function summary(c) {
 }
 
 // ---------- Postgres ----------
-function pgStore(url) {
-  const { Pool } = require("pg");
-  const pool = new Pool({ connectionString: url, ssl: /localhost|127\.0\.0\.1/.test(url) ? false : { rejectUnauthorized: false }, max: 5 });
+function pgStore(url, injectedPool) {
+  let pool = injectedPool;
+  if (!pool) {
+    const { Pool } = require("pg");
+    pool = new Pool({ connectionString: url, ssl: /localhost|127\.0\.0\.1/.test(url) ? false : { rejectUnauthorized: false }, max: 5 });
+  }
   const q = (text, params) => pool.query(text, params);
   const ready = q(`
     create table if not exists users (
@@ -37,10 +42,26 @@ function pgStore(url) {
       name text not null, role text not null, data jsonb not null default '{}'::jsonb,
       created_at timestamptz not null default now(), updated_at timestamptz not null default now());
     create index if not exists characters_user on characters(user_id);
+    create table if not exists traces (
+      seq bigserial primary key, id text not null, kind text not null, variant int not null default 0,
+      role text, nick text, at bigint not null);
   `);
   const wait = async () => { await ready; };
+  let inserts = 0;
   return {
     kind: "postgres",
+    async loadTraces(limit) {
+      await wait();
+      const r = await q("select id, kind, variant, role, nick, at from traces order by seq desc limit $1", [limit]);
+      return r.rows.reverse().map((t) => ({ id: t.id, kind: t.kind, variant: Number(t.variant), role: t.role, nick: t.nick, at: Number(t.at) }));
+    },
+    async addTrace(t) {
+      await wait();
+      await q("insert into traces (id, kind, variant, role, nick, at) values ($1,$2,$3,$4,$5,$6)", [t.id, t.kind, t.variant, t.role, t.nick, t.at]);
+      if (inserts++ % PRUNE_EVERY === 0) {
+        await q("delete from traces where seq <= (select seq from traces order by seq desc offset $1 limit 1)", [MAX_TRACES]);
+      }
+    },
     async upsertUser(sub, profile) {
       await wait();
       const r = await q(
@@ -96,7 +117,17 @@ function pgStore(url) {
 }
 
 // ---------- JSON file (local testing) ----------
-function fileStore(file) {
+function fileStore(file, tracesFile) {
+  let traces = [];
+  try { const l = JSON.parse(fs.readFileSync(tracesFile, "utf8")); if (Array.isArray(l)) traces = l.slice(-MAX_TRACES); } catch {}
+  let tracesTimer = null;
+  const persistTraces = () => {
+    clearTimeout(tracesTimer);
+    tracesTimer = setTimeout(() => {
+      fs.mkdirSync(path.dirname(tracesFile), { recursive: true });
+      fs.writeFile(tracesFile, JSON.stringify(traces, null, 1), (err) => err && console.error("save traces failed:", err.message));
+    }, 500);
+  };
   let db = { users: {}, sessions: {}, characters: {} };
   try { db = { ...db, ...JSON.parse(fs.readFileSync(file, "utf8")) }; } catch {}
   let timer = null;
@@ -110,6 +141,12 @@ function fileStore(file) {
   const now = () => new Date().toISOString();
   return {
     kind: "file",
+    async loadTraces(limit) { return limit > 0 ? traces.slice(-limit) : []; },
+    async addTrace(t) {
+      traces.push(t);
+      if (traces.length > MAX_TRACES) traces = traces.slice(-MAX_TRACES);
+      persistTraces();
+    },
     async upsertUser(sub, profile) {
       let u = Object.values(db.users).find((x) => x.provider_sub === sub);
       if (!u) { u = { id: newId(), provider_sub: sub, account: {}, created_at: now() }; db.users[u.id] = u; }
@@ -158,9 +195,15 @@ function fileStore(file) {
   };
 }
 
-function createStore() {
-  if (process.env.DATABASE_URL) return pgStore(process.env.DATABASE_URL);
-  return fileStore(path.join(__dirname, "data", "accounts.json"));
+function createStore(opts = {}) {
+  if (opts.pool) return pgStore(null, opts.pool);
+  if (process.env.DATABASE_URL && !opts.accountsFile) return pgStore(process.env.DATABASE_URL);
+  const dir = path.join(__dirname, "data");
+  return fileStore(opts.accountsFile || path.join(dir, "accounts.json"), opts.tracesFile || path.join(dir, "traces.json"));
 }
 
-module.exports = { createStore, MAX_CHARACTERS };
+// One store (and one pg pool) for the whole process, shared by auth.js and server.js.
+let shared = null;
+const getStore = () => shared || (shared = createStore());
+
+module.exports = { createStore, getStore, MAX_CHARACTERS, MAX_TRACES };

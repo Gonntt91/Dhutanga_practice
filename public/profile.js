@@ -171,18 +171,22 @@ window.Profile = (() => {
 
     // cards
     const owned = mind.cards || {};
-    const cs = section("Thẻ tâm sở", `${Object.keys(owned).length}/${P.CARD_ORDER.length}`);
-    const grid = el("div", "album-grid");
-    for (const cid of P.CARD_ORDER) {
-      const def = P.CARDS[cid], own = owned[cid];
-      const t = el("button", "album-slot " + (own ? (def.good ? "good" : "bad") : "empty"));
-      t.type = "button";
-      if (own) { t.appendChild(el("b", null, def.name)); t.appendChild(el("span", null, `gặp ${own.n} lần`)); t.addEventListener("click", () => P.viewCard(cid, own)); }
-      else { t.appendChild(el("b", null, "?")); t.appendChild(el("span", null, "chưa gặp")); t.disabled = true; }
-      grid.appendChild(t);
+    for (const sec of P.cardSections(owned)) {
+      const cs = section(sec.title, sec.extra);
+      const grid = el("div", "album-grid");
+      for (const it of sec.items) {
+        const t = el("button", "album-slot " + it.cls);
+        t.type = "button";
+        if (it.own) { t.appendChild(el("b", null, P.CARDS[it.id].name)); t.appendChild(el("span", null, it.sub)); t.addEventListener("click", () => P.viewCard(it.id, it.own, owned)); }
+        else { t.appendChild(el("b", null, "?")); t.appendChild(el("span", null, "chưa gặp")); t.disabled = true; }
+        grid.appendChild(t);
+      }
+      cs.appendChild(grid);
+      box.appendChild(cs);
     }
-    cs.appendChild(grid);
-    box.appendChild(cs);
+
+    // milestones (private; hidden ones stay unlisted until reached)
+    box.appendChild(milestoneSection(mind));
 
     // bag
     const items = (mind.items || []).filter((i) => window.Items && Items.def(i));
@@ -205,6 +209,27 @@ window.Profile = (() => {
       ds.appendChild(ol);
     }
     box.appendChild(ds);
+  }
+
+  function milestoneSection(mind) {
+    const sec = section("Dấu mốc");
+    const got = mind.milestones || {};
+    const defs = (window.Milestones && Milestones.defs) || [];
+    const reached = defs.filter((d) => got[d.id]).sort((a, b) => got[b.id].at - got[a.id].at);
+    if (!reached.length) sec.appendChild(el("p", "hint", "Chưa có dấu mốc nào."));
+    const ol = el("ol", "ms-list");
+    for (const d of reached) {
+      const name = got[d.id].ctx && got[d.id].ctx.name || "";
+      const fill = (t) => t.replace(/\{Tên\}/g, name);
+      const li = el("li", "ms-item");
+      li.appendChild(Milestones.emblem(30));
+      const body = el("div", "ms-body");
+      body.append(el("b", null, fill(d.title)), el("p", null, fill(d.text)), el("span", "when", new Date(got[d.id].at).toLocaleDateString("vi-VN")));
+      li.appendChild(body); ol.appendChild(li);
+    }
+    if (reached.length) sec.appendChild(ol);
+    if (defs.some((d) => d.hidden && !got[d.id])) sec.appendChild(el("p", "hint ms-more", "Còn những dấu mốc chưa lộ diện."));
+    return sec;
   }
 
   // Opened from the mind orb while playing: the character in play first (guests too).

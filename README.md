@@ -16,7 +16,7 @@ Màn hình dọc, nghĩa địa nhìn chéo từ trên xuống. Chạm vào đâ
 
 ## Chạy
 
-Cần Node 18 trở lên, không cần `npm install`.
+Cần Node 18 trở lên. Chạy `npm install` một lần để có gói `pg` (dùng cho Postgres).
 
 ```bash
 npm start          # http://localhost:3000
@@ -25,13 +25,23 @@ PORT=8080 npm start
 
 Muốn chơi cùng nhau: mở nhiều tab, hoặc cho máy khác trong cùng mạng LAN vào `http://<IP-máy-bạn>:3000`.
 
+## Kiểm thử
+
+```bash
+npm test
+```
+
+Chạy bằng test runner có sẵn của Node. Các file test nằm trong `test/`.
+
 ## Nhiều người chơi hoạt động thế nào
 
 | Thứ | Cách đồng bộ | Lưu lại? |
 |---|---|---|
 | Ai đang ở nghĩa địa, vai gì | `presence` qua SSE (`/events`) | Không, rời trang là mất |
 | Khoảnh khắc: chuông, thở dài, đèn lồng | `moment`, gửi `/api/emit` | Không |
-| Dấu vết: thí thực, tụng kinh, thắp nhang… | `trace`, gửi `/api/trace` | Có, trong `data/traces.json` (giữ 500 cái gần nhất) |
+| Dấu vết: thí thực, tụng kinh, thắp nhang… | `trace`, gửi `/api/trace` | Có, trong Postgres khi có `DATABASE_URL`, không thì `data/traces.json` (giữ 500 cái gần nhất) |
+
+Khi có `DATABASE_URL` thì tài khoản, nhân vật và dấu vết nằm trong Postgres. Không có thì chúng nằm trong file ở `data/`, và Render sẽ xóa các file này mỗi lần deploy hoặc khởi động lại.
 
 Việc người khác làm trong 12 giờ gần nhất sẽ thành *flag* và đổi câu chuyện của bạn. Ví dụ:
 
@@ -39,12 +49,14 @@ Việc người khác làm trong 12 giờ gần nhất sẽ thành *flag* và đ
 - Hồn ma thở dài (`sigh`), thì nhà sư nghe tiếng thở dài thật, người dân thấy vệt sáng.
 - Nhà sư tụng kinh hồi hướng (`chant`), thì hồn ma có lựa chọn ngồi nghe kinh để buông.
 
-Người chơi chỉ chọn từ câu có sẵn, không gõ chữ tự do (trừ tên hiển thị tối đa 24 ký tự), nên không cần kiểm duyệt nội dung.
+Ngoài các câu có sẵn, người chơi có thể gõ **chat** tự do. Chat chỉ tới những người chơi ở gần trong thế giới (`CHAT_RANGE` trong `server.js`, hiện 260 đơn vị), tối đa 80 ký tự, và không lưu lại ở đâu. Trước khi gửi, server có một bộ lọc nhẹ: chặn link, dãy số dài như số điện thoại, lặp ký tự kiểu spam, và một danh sách từ tục, xúc phạm (`chatRejected` trong `server.js`). Mỗi người chỉ gửi được một tin sau khoảng 1,5 giây. Đây là bộ lọc cơ bản, không phải kiểm duyệt đầy đủ: các từ bị chặn vẫn có thể bị lách.
 
 ## Cấu trúc
 
 ```
-server.js          # static + SSE + API, không phụ thuộc gói ngoài
+server.js          # static + SSE + API + chat gần
+auth.js            # đăng nhập Google, phiên, API tài khoản và nhân vật
+store.js           # Postgres (DATABASE_URL) hoặc file JSON trong data/
 public/index.html  # khung trang
 public/style.css   # giao diện dọc cho điện thoại
 public/world.js    # thế giới 2D vẽ bằng canvas: đường, mộ, tre, cây gạo, ánh sáng, sương
@@ -137,7 +149,7 @@ Mọi chỉ số là mô phỏng để chơi. Nội dung thẻ và cấu trúc t
 - Ký ức câu chuyện (manh mối, sách đã đọc), số đêm đã qua và các vai đã đi qua đêm là **chung cho cả tài khoản**.
 - Nút "Đăng nhập để lưu" nằm trong bảng Nhiệm vụ khi đang chơi thử.
 
-Code: `auth.js` (Google OAuth, phiên đăng nhập bằng cookie HttpOnly, API `/api/me`, `/api/account`, `/api/characters`), `store.js` (Postgres hoặc file JSON), `public/save.js` (lớp lưu phía trình duyệt).
+Code: `auth.js` (đăng nhập Google qua OAuth, phiên đăng nhập bằng cookie HttpOnly, API `/api/me`, `/api/account`, `/api/characters`), `store.js` (Postgres khi có `DATABASE_URL`, không thì file JSON trong `data/`), `public/save.js` (lớp lưu phía trình duyệt).
 
 **Cấu hình trên Render** (biến môi trường của web service):
 
@@ -148,6 +160,7 @@ Code: `auth.js` (Google OAuth, phiên đăng nhập bằng cookie HttpOnly, API 
    - Màn hình OAuth consent: chọn External, thêm email của bạn làm test user, hoặc publish app.
 3. Build command phải là `npm install` (đã có thư viện `pg`). Nếu service tạo từ dashboard với "echo no build step" thì sửa lại.
 4. Tùy chọn `PUBLIC_URL=https://<tên-app>.onrender.com` nếu redirect URI tự suy ra bị sai.
+5. Health check: `GET /healthz` trả về `ok`, không đụng tới đĩa hay database. Render và các dịch vụ ping uptime dùng endpoint này để kiểm tra server còn chạy.
 
 **Chạy trên máy:** không cần cấu hình gì. Tài khoản lưu vào `data/accounts.json`, và màn chọn vai có nút "Đăng nhập thử" (tắt khi `NODE_ENV=production`).
 

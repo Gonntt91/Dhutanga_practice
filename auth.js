@@ -2,9 +2,9 @@
 // and the account / character API. Playing without signing in still works: guests keep progress in
 // their browser and can save it into an account later.
 const crypto = require("crypto");
-const { createStore } = require("./store");
+const { getStore } = require("./store");
 
-const store = createStore();
+const store = getStore();
 const COOKIE = "dh_sess";
 const STATE_COOKIE = "dh_oauth";
 const ROLES = ["monk", "ghost", "villager"];
@@ -181,4 +181,4 @@ async function handle(req, res, url) {
   return true;
 }
 
-module.exports = { handle, storeKind: () => store.kind };
+module.exports = { handle, store, storeKind: () => store.kind };

@@ -1,5 +1,5 @@
-// Dhutanga night – zero-dependency multiplayer server.
-// Static files + Server-Sent Events for live presence/moments + JSON-file traces.
+// Dhutanga night – multiplayer server.
+// Static files + Server-Sent Events for live presence/moments + traces in the shared store.
 const http = require("http");
 const fs = require("fs");
 const path = require("path");
@@ -8,7 +8,6 @@ const auth = require("./auth");
 
 const PORT = Number(process.env.PORT) || 3000;
 const PUBLIC_DIR = path.join(__dirname, "public");
-const DATA_FILE = path.join(__dirname, "data", "traces.json");
 const MAX_TRACES = 500;
 
 const ROLES = ["monk", "ghost", "villager"];
@@ -30,26 +29,12 @@ const MIME = {
 // ---------- state ----------
 /** @type {Map<string, {res: http.ServerResponse, presence: object, lastEmit: number, lastTrace: number}>} */
 const peers = new Map();
-let traces = loadTraces();
-let saveTimer = null;
+let traces = [];
 
-function loadTraces() {
-  try {
-    const list = JSON.parse(fs.readFileSync(DATA_FILE, "utf8"));
-    return Array.isArray(list) ? list.slice(-MAX_TRACES) : [];
-  } catch {
-    return [];
-  }
-}
-
-function scheduleSave() {
-  clearTimeout(saveTimer);
-  saveTimer = setTimeout(() => {
-    fs.mkdirSync(path.dirname(DATA_FILE), { recursive: true });
-    fs.writeFile(DATA_FILE, JSON.stringify(traces, null, 1), (err) => {
-      if (err) console.error("save traces failed:", err.message);
-    });
-  }, 500);
+// Load recent traces from the shared store; a failure just means starting empty.
+async function restoreTraces() {
+  try { traces = [...(await auth.store.loadTraces(MAX_TRACES)), ...traces].slice(-MAX_TRACES); } // keep any left while loading
+  catch (err) { console.error("load traces failed:", err.message); }
 }
 
 // ---------- helpers ----------
@@ -238,7 +223,7 @@ async function handleTrace(req, res) {
   };
   traces.push(trace);
   if (traces.length > MAX_TRACES) traces = traces.slice(-MAX_TRACES);
-  scheduleSave();
+  auth.store.addTrace(trace).catch((err) => console.error("save trace failed:", err.message));
   broadcast("trace", trace);
   json(res, 200, { ok: true, trace });
 }
@@ -288,6 +273,7 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
+restoreTraces();
 server.listen(PORT, () => {
   console.log(`Một đêm đầu đà đang chạy ở http://localhost:${PORT}`);
   console.log("Mở nhiều tab hoặc nhiều máy cùng mạng LAN để chơi cùng nhau.");

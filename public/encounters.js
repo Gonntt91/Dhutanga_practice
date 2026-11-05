@@ -174,6 +174,7 @@
           setTimeout(() => {
             api().setPose && api().setPose(null);
             q.found = true; K.save(); syncCave();
+            window.Milestones && Milestones.notify("cave", {});
             if (sound()) NightAudio.sigh && NightAudio.sigh();
             World.lookAt(place("hang").y - 30, place("hang").x);
             K.showSheet({
@@ -286,6 +287,7 @@
         q.visits = (q.visits || 0) + 1;
         if (outcome === "stay") {
           q.step = "done"; K.grow("tin", 2); K.grow("san", -1); K.save();
+          window.Milestones && Milestones.notify("palace", { outcome });
           setTimeout(() => { K.award("tuy_hy", "Người này thấy vị thiên an vui nhờ việc thiện nhỏ, và vui theo.", () => { K.setOpen(false); K.cooldown(4000); }); }, 400);
         } else if (outcome === "fade") {
           K.grow("san", 2); K.save();
