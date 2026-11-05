@@ -173,15 +173,7 @@ window.Profile = (() => {
     const owned = mind.cards || {};
     for (const sec of P.cardSections(owned)) {
       const cs = section(sec.title, sec.extra);
-      const grid = el("div", "album-grid");
-      for (const it of sec.items) {
-        const t = el("button", "album-slot " + it.cls);
-        t.type = "button";
-        if (it.own) { t.appendChild(el("b", null, P.CARDS[it.id].name)); t.appendChild(el("span", null, it.sub)); t.addEventListener("click", () => P.viewCard(it.id, it.own, owned)); }
-        else { t.appendChild(el("b", null, "?")); t.appendChild(el("span", null, "chưa gặp")); t.disabled = true; }
-        grid.appendChild(t);
-      }
-      cs.appendChild(grid);
+      cs.appendChild(P.cardGrid(sec, (cid) => P.viewCard(cid, owned[cid], owned)));
       box.appendChild(cs);
     }
 

@@ -548,11 +548,18 @@ window.World = (() => {
   // ---------- public controls ----------
   function setView(patch) { Object.assign(view, patch); }
   function setPlayer(x, y) { look.on = false; player.x = x; player.y = y; player.tx = null; player.moving = false; camY = clampCam(y - viewH * view.anchor); camX = clampCamX(x - viewW / 2); }
-  function walkTo(x, y) {
+  let lastWalkAt = -1e9;
+  // steady: a held key re-aims every few frames, which must not count as tapping again.
+  function walkTo(x, y, steady) {
+    if (!steady) {
+      const now = performance.now();
+      player.hurry = hurryNext(player.hurry, now - lastWalkAt, player.tx != null);
+      lastWalkAt = now;
+    }
     player.tx = Math.max(12, Math.min(W - 12, x));
     player.ty = Math.max(60, Math.min(2340, y));
   }
-  function stop() { player.tx = null; player.moving = false; }
+  function stop() { player.tx = null; player.moving = false; player.hurry = 0; }
   function getPlayer() { return { x: player.x, y: player.y, moving: player.moving, nx: player.x / W, ny: player.y / H }; }
 
   function setOthers(list) {
@@ -599,6 +606,24 @@ window.World = (() => {
     };
   }
 
+  // ---------- walking pace ----------
+  // A calm walk near the destination; long trips speed up in the middle so travel stays short.
+  // An agitated mind hurries a little, a clear one slows a little.
+  const NEAR = 140, FAR = 420, FAR_BOOST = 1.3;
+  // Tapping again quickly (double tap, or tapping on) hurries the walk; the hurry lasts until the walk ends.
+  const HURRY_GAP = 450, HURRY_MAX = 3, HURRY_MULT = [1, 1.6, 2.1, 2.5];
+  function hurryNext(level, gapMs, moving) {
+    if (gapMs <= HURRY_GAP) return Math.min(HURRY_MAX, (level || 0) + 1);
+    return moving ? level || 0 : 0;
+  }
+  function walkSpeed(role, remaining, mood, hurry) {
+    const base = role === "ghost" ? 48 : 58;
+    const t = Math.max(0, Math.min(1, ((remaining || 0) - NEAR) / (FAR - NEAR)));
+    let m = 1;
+    if (typeof mood === "number") m = mood < 0.35 ? 1 + (0.35 - mood) * 0.6 : mood > 0.74 ? 1 - (mood - 0.74) * 0.5 : 1;
+    return base * (1 + t * FAR_BOOST) * m * (HURRY_MULT[hurry || 0] || 1);
+  }
+
   // ---------- update ----------
   function update(dt) {
     time += dt;
@@ -609,15 +634,16 @@ window.World = (() => {
       const dx = player.tx - player.x;
       const dy = player.ty - player.y;
       const d = Math.hypot(dx, dy);
-      const speed = view.role === "ghost" ? 70 : 88;
-      if (d < 2) { player.tx = null; player.moving = false; }
+      const target = walkSpeed(view.role, d, view.mood, player.hurry);
+      player.v = (player.v || 0) + (target - (player.v || 0)) * Math.min(1, dt * 3); // ease in and out
+      if (d < 2) { player.tx = null; player.moving = false; player.v = 0; player.hurry = 0; }
       else {
-        const step = Math.min(d, speed * dt);
+        const step = Math.min(d, Math.max(20, player.v) * dt);
         player.x += (dx / d) * step;
         player.y += (dy / d) * step;
         if (Math.abs(dx) > 1) player.facing = dx > 0 ? 1 : -1;
         player.moving = true;
-        player.phase += dt * 9;
+        player.phase += dt * 9 * Math.min(2, Math.max(0.55, player.v / 70)); // steps follow the pace
       }
     }
     if (Math.abs(zoomTarget - zoom) > 0.0005) { zoom += (zoomTarget - zoom) * Math.min(1, dt * 9); applyZoom(); }
@@ -1792,5 +1818,5 @@ window.World = (() => {
     return role && window.ROLE_INFO ? ROLE_INFO[role].name : "";
   }
 
-  return { setActors, setFx, snapshot, moodRgb, zoomBy, say, setFinds, lookAt, resetLook, isLooking, getMap, W, H, PLACES, SPAWN, init, setView, setPlayer, walkTo, stop, getPlayer, setOthers, ripple };
+  return { walkSpeed, hurryNext, HURRY_MAX, setActors, setFx, snapshot, moodRgb, zoomBy, say, setFinds, lookAt, resetLook, isLooking, getMap, W, H, PLACES, SPAWN, init, setView, setPlayer, walkTo, stop, getPlayer, setOthers, ripple };
 })();

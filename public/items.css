@@ -3,7 +3,7 @@
 .item-art.glow { filter: drop-shadow(0 0 8px rgba(230,197,111,0.45)); }
 .item-art .item-svg { display: block; max-width: 100%; height: auto; }
 
-.bag-tabs { display: flex; gap: 6px; margin: 10px 0 4px; }
+.bag-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 4px; }
 .bag-tabs .pill[aria-pressed="true"] { border-color: var(--lantern); color: var(--lantern); }
 .bag-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 8px; margin-top: 10px; }
 .bag-tile { display: grid; justify-items: center; align-content: center; gap: 6px; min-height: 112px; padding: 10px 6px 8px; text-align: center;

@@ -1355,12 +1355,12 @@
       state.leftScene = true;
       showWalkBar();
       state.findTarget = near;
-      if (near) World.walkTo(near.x, near.y + 8); else World.walkTo(x, y);
+      if (near) World.walkTo(near.x, near.y + 8); else World.walkTo(x, y, fromKey);
       return;
     }
     const hit = fromKey ? null : nearestFind(x, y);
     state.findTarget = hit;
-    if (hit) World.walkTo(hit.x, hit.y + 8); else World.walkTo(x, y);
+    if (hit) World.walkTo(hit.x, hit.y + 8); else World.walkTo(x, y, fromKey);
   };
   World.init($("world"), onWorldTap);
 

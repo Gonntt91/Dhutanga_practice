@@ -183,7 +183,17 @@ window.Mind = (() => {
     const c = el("article", "mcard " + (def.good ? "good" : "bad") + (done ? " understood" : ""));
     c.appendChild(el("div", "mcard-kind", def.good ? "Tâm đang tu" : "Tâm để hiểu"));
     if (done) c.appendChild(el("span", "mcard-badge", "Đã hiểu"));
+    const cz = window.Cetasika && Cetasika.byGame(id);
+    const hero = el("div", "cz-hero" + (opts.draw ? " cz-reveal" : ""));
+    if (cz) hero.style.setProperty("--tint", glowOf(cz));
+    hero.innerHTML = window.CetasikaArt ? CetasikaArt.svg(id, 110) : "";
+    if (hero.innerHTML) c.appendChild(hero);
     c.appendChild(el("h3", "mcard-name", def.name));
+    if (cz) {
+      if (cz.name !== def.name) c.appendChild(el("p", "cz-chartname", `Trong bảng Vi Diệu Pháp: ${cz.name}`));
+      c.appendChild(feelingLine(cz));
+      if (n >= 2) c.appendChild(el("p", "cz-group", Cetasika.groupLine(cz)));
+    }
     c.appendChild(el("p", "mcard-plain", def.plain));
     if (opts.context) c.appendChild(el("p", "mcard-ctx", "Lúc nãy: " + opts.context));
     c.appendChild(el("p", "mcard-tip", def.tip));
@@ -201,6 +211,20 @@ window.Mind = (() => {
     if (n > 1) c.appendChild(el("p", "mcard-count", `Người này đã gặp ${def.name} ${n} lần: ${own.seen.slice(-3).map(shortCtx).join("; ")}.`));
     c.appendChild(el("p", "mcard-note", SIM_NOTE));
     return c;
+  }
+  // "Đi cùng cảm giác: vui (thọ hỷ) · bình thản (thọ xả)": plain words first, the term in brackets.
+  function feelingLine(cz) {
+    const p = el("p", "cz-feel");
+    p.appendChild(el("span", "cz-feel-lead", "Đi cùng cảm giác: "));
+    Cetasika.ORDER.filter((k) => cz.feelings.includes(k)).forEach((k, i) => {
+      const f = Cetasika.FEELINGS[k];
+      if (i) p.appendChild(el("span", "cz-sep", " · "));
+      const w = el("span", "cz-feel-item");
+      const dot = el("i", "cz-dot cz-" + k); dot.setAttribute("aria-hidden", "true");
+      w.append(dot, document.createTextNode(`${f.plain} (${f.name.toLowerCase()})`));
+      p.appendChild(w);
+    });
+    return p;
   }
   // Antidote line: the wholesome card that softens this one, and where to meet it if not yet owned.
   function cureNode(def, owned) {
@@ -230,7 +254,7 @@ window.Mind = (() => {
     const wrap = $("card-reveal");
     wrap.hidden = false;
     $("card-reveal-label").textContent = fresh ? "Bạn nhận được một thẻ mới" : understood ? "Đã hiểu thẻ này" : opened ? "Gặp lại, hiểu thêm một chút" : "Thẻ tâm sở";
-    const slot = $("card-reveal-slot"); slot.replaceChildren(cardNode(id, { context, opened, own, owned }));
+    const slot = $("card-reveal-slot"); slot.replaceChildren(cardNode(id, { context, opened, own, owned, draw: !!(fresh || opened) }));
     slot.firstChild.classList.add("flip");
     $("card-reveal-ok").onclick = () => {
       wrap.hidden = true;
@@ -792,6 +816,42 @@ window.Mind = (() => {
       { key: "bad", title: "Tâm đã hiểu", extra: `${understood}/${bad.length} đã hiểu`, items: bad.map(mk) },
     ];
   }
+  // Feeling colours of a cetasika, for the tile glow and the band along the tile's top edge.
+  const feelColor = (k) => (Cetasika.FEELINGS[k].edge && k === "kho" ? Cetasika.FEELINGS[k].edge : Cetasika.FEELINGS[k].color);
+  function glowOf(cz) {
+    const cs = Cetasika.ORDER.filter((k) => cz.feelings.includes(k)).map(feelColor);
+    if (cs.length === 1) return `radial-gradient(circle, ${cs[0]}66 0%, ${cs[0]}00 70%)`;
+    const n = cs.length, seg = 360 / n;
+    const stops = cs.map((c, i) => `${c}55 ${(i * seg).toFixed(0)}deg ${((i + 1) * seg).toFixed(0)}deg`).join(", ");
+    return `radial-gradient(circle, #10181a00 28%, #10181acc 100%), conic-gradient(${stops})`;
+  }
+  function bandOf(cz) {
+    const cs = Cetasika.ORDER.filter((k) => cz.feelings.includes(k)).map(feelColor), n = cs.length;
+    return `linear-gradient(90deg, ${cs.map((c, i) => `${c} ${(i * 100 / n).toFixed(1)}% ${((i + 1) * 100 / n).toFixed(1)}%`).join(", ")})`;
+  }
+  // Bag-like tiles for one card section (album and profile). onOpen(id) for owned ones.
+  function cardGrid(sec, onOpen) {
+    const grid = el("div", "album-grid cz-grid");
+    for (const it of sec.items) {
+      const def = CARDS[it.id], cz = window.Cetasika && Cetasika.byGame(it.id);
+      const b = el("button", "cz-tile " + it.cls);
+      b.type = "button";
+      if (cz) { b.style.setProperty("--band", bandOf(cz)); b.style.setProperty("--tint", glowOf(cz)); }
+      const art = el("span", "cz-tile-art");
+      art.innerHTML = window.CetasikaArt ? (it.own ? CetasikaArt.svg(it.id, 56) : CetasikaArt.silhouette(56)) : "";
+      b.appendChild(art);
+      if (it.own) {
+        b.appendChild(el("b", "cz-tile-name", def.name));
+        b.appendChild(el("span", it.sub === "Đã hiểu" ? "cz-tile-sub cz-badge" : "cz-tile-sub", it.sub));
+        b.addEventListener("click", () => onOpen(it.id));
+      } else {
+        b.appendChild(el("span", "cz-tile-sub", def.where));
+        b.disabled = true;
+      }
+      grid.appendChild(b);
+    }
+    return grid;
+  }
   let albumTab = "cards";
   function openAlbum(tab) {
     if (tab === "cards" || tab === "bag" || tab === "log") albumTab = tab;
@@ -833,15 +893,7 @@ window.Mind = (() => {
       const h = el("h3", "album-title", sec.title);
       if (sec.extra) h.appendChild(el("span", "album-extra", sec.extra));
       list.appendChild(h);
-      const grid = el("div", "album-grid");
-      for (const it of sec.items) {
-        const b = el("button", "album-slot " + it.cls);
-        b.type = "button";
-        if (it.own) { b.appendChild(el("b", null, CARDS[it.id].name)); b.appendChild(el("span", null, it.sub)); b.addEventListener("click", () => showCard(it.id)); }
-        else { b.appendChild(el("b", null, "?")); b.appendChild(el("span", null, CARDS[it.id].where)); }
-        grid.appendChild(b);
-      }
-      list.appendChild(grid);
+      list.appendChild(cardGrid(sec, (id) => showCard(id)));
     }
     panel.hidden = false;
   }
@@ -902,7 +954,7 @@ window.Mind = (() => {
     CARDS, CARD_ORDER, GOOD, BAD, bar,
     caritaName: (k) => (CARITA[k] ? CARITA[k].name : ""),
     viewCard: (id, own, owned) => showCard(id, { own, owned, then: () => {} }),
-    cardSections,
+    cardSections, cardGrid,
     cardStep: (id, prevN) => MS().rules.cardStep(CARDS[id], prevN),
     milestoneState: () => { ensure(); return { got: S.milestones, counts: S.msCounts, save }; },
     current: () => JSON.parse(JSON.stringify(S)),
