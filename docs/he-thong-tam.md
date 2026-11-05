@@ -182,10 +182,92 @@ Có lần ra đúng thẻ mà Sân vẫn chưa lắng; game nói thật: *"Lần
 - Ra *Từ* lúc bị chó cắn → con chó dịu lại, ông Tư xin lỗi, mở nhánh làm lành.
 - Ra *Niệm* khi ngồi ở nghĩa địa gặp hồn ma → không bỏ chạy, nghe được chuyện của nó.
 
+## 4c. Bộ bài tâm: tâm nào đi với tâm sở nào
+
+Cốt lõi của Vi Diệu Pháp: **tâm sở không đứng riêng, mà luôn sinh cùng một tâm** (tương ưng). Game thể hiện điều này bằng **bộ bài tâm**: mỗi tình huống sinh ra một tâm, hiện như một bộ bài xòe ra, mỗi lá là một tâm sở đi cùng.
+
+### Tình huống tự sinh tâm
+
+Khi chó cắn, game **tự sinh Tâm sân**. Người chơi không chọn được, đúng như thực tế. Xong tình huống, người chơi thu được các lá trong bộ (lần đầu là mặt trước).
+
+**Thành phần Tâm sân** (theo Vi Diệu Pháp Toát Yếu, chương II; con số chính xác từng trường hợp cần thầy kiểm):
+
+| Nhóm | Các lá | Bài học ngầm |
+|---|---|---|
+| Có trong mọi tâm | Xúc, Thọ (khổ), Tưởng, Tư, Nhất tâm, Mạng quyền, Tác ý | 7 lá này tâm nào cũng có, kể cả tâm thiện |
+| Tùy tâm | Tầm, Tứ, Thắng giải, Tinh tấn, Dục | Tinh tấn cũng có trong tâm sân: hăng hái để giận |
+| **Ô xám: Hỷ** | không thể có | tâm sân không bao giờ đi cùng hỷ, vì thọ luôn là khổ |
+| Có trong mọi tâm xấu | Si, Không biết hổ, Không biết sợ, Phóng dật | 4 lá này tâm xấu nào cũng có |
+| Gốc | **Sân** | lá chính |
+| Đôi khi, mỗi lần một lá | Ganh tị, Bỏn xẻn, Hối hận | chỉ đi với tâm sân, không bao giờ cùng lúc |
+| Khi bị thúc đẩy | Hôn trầm, Thụy miên | chỉ có khi tâm sân sinh do bị xúi, chần chừ |
+
+Ô xám **Hỷ** là chỗ dạy hay: một ô không bao giờ lấp được, khiến người chơi tự hỏi vì sao.
+
+### Học ngầm "họ hàng" qua nhiều tình huống
+
+Không nói thẳng "ganh tị, bỏn xẻn, hối hận thuộc tâm sân". Cho người chơi gặp nhiều tình huống:
+
+| Tình huống | Lá đi kèm rơi ra |
+|---|---|
+| Hàng xóm được khen, mình thì không | Ganh tị |
+| Hồn ma xin cơm, mình giấu nồi cơm | Bỏn xẻn |
+| Lỡ đánh con chó rồi hối | Hối hận |
+
+Cả ba lần bộ bài có **cùng một lõi**: lá Sân và ô Hỷ xám. Người chơi tự nhận ra chúng cùng họ. Đủ ba lá thì album mở trang **"Họ hàng của Sân"** để xác nhận điều người chơi đã đoán.
+
+Tương tự cho hai họ còn lại:
+- **Tham:** đi với Tà kiến hoặc Ngã mạn; có thể có Hỷ.
+- **Si:** đi với Hoài nghi hoặc Phóng dật nổi trội; không có Dục.
+
+### Gặp lại tình huống: đổi bài thành tâm thiện
+
+Lần sau gặp lại con chó, Tâm sân vẫn tự sinh, nhưng người chơi có thể **đổi lá** bằng thẻ đã thu thập:
+
+| Lá xấu | Đổi bằng |
+|---|---|
+| Sân | Không sân |
+| Si | Tuệ (nếu đã có) |
+| Không biết hổ, Không biết sợ | Tàm, Quý |
+| Phóng dật | Niệm |
+| Thọ khổ | Thọ xả hoặc Thọ hỷ |
+
+**Luật tạo tâm thiện** (theo Vi Diệu Pháp):
+- 19 tâm sở tịnh hảo **luôn sinh cùng nhau** trong mọi tâm thiện. Tâm thiện chỉ thành khi có đủ bộ lõi: Tín, Niệm, Tàm, Quý, Không tham, Không sân, Trung bình, nhóm Khinh an.
+- Thiếu lá thì tâm thiện chưa trọn: chỉ giảm Sân một chút, kèm câu *"Còn thiếu Tín."*
+- Sân và Không sân không cùng có mặt: đặt lá này thì lá kia tự bay ra.
+
+**Hiệu quả:** tạo được tâm thiện thì **Sân nền giảm một chút**. Mức giảm phụ thuộc **độ hiểu**, tức số mặt đã mở của thẻ Sân ("biết rõ nó thì nó yếu đi"):
+
+```
+giảm_sân_nền = cơ_bản × (1 + số_mặt_đã_mở_của_thẻ_Sân × 0.2) × hên_xui
+```
+
+Sân nền không bao giờ về 0.
+
+### Theo lớp người chơi
+
+| Lớp | Thấy gì khi chó cắn |
+|---|---|
+| Dạo chơi | một lá **Tâm sân** to; lật ra thấy 2–3 lá chính (Sân, Si, Phóng dật). Lần sau có nút **"Gợi ý đổi bài"**, bấm một lần là xong |
+| Tò mò | bộ bài đầy đủ, ô Hỷ xám, tự đổi từng lá |
+| Đi sâu | tên đúng của tâm (ví dụ *"tâm sân, thọ ưu, vô trợ"*), số tâm sở, các trang họ hàng |
+
+### Quan hệ với mục 4b
+
+- Ra một thẻ đối trị (4b) chính là **đổi một lá** trong bộ bài tâm. Hai mục dùng chung một cơ chế: 4b là cách chơi nhanh, 4c là cách chơi đầy đủ.
+- Thẻ **Từ** ở lớp sâu được gộp lại: tâm từ chính là tâm sở **Không sân** khi hướng về chúng sinh.
+
+### Lưu ý mô phỏng
+
+- Thực tế trong một tình huống có vô số sát-na tâm sinh diệt; game chỉ chọn **một tâm đại diện**. Chân bảng ghi rõ.
+- Thành phần từng tâm (lá nào có, lá nào không, khi nào thêm Hôn trầm) phải đúng từng chi tiết; đây là phần cần thầy duyệt kỹ nhất.
+
 ### Bảng tâm
 
-- Tự điền khi người chơi trải qua một loại tâm.
-- Tâm thiền, tâm siêu thế chỉ ghi là **"đã đọc trong sách"**, không bao giờ là "đã đạt".
+- Mỗi tâm từng sinh trong game thành một **công thức**: tên tâm và các lá đi kèm.
+- 12 tâm bất thiện (8 tham, 2 sân, 2 si) và 8 tâm thiện dục giới là bộ sưu tập chính.
+- Tâm thiền, tâm siêu thế chỉ ghi là **"nghe sư kể"**, không bao giờ là "đã đạt".
 
 ## 5. Tính cách ban đầu: sáu hạng tính
 
@@ -440,6 +522,7 @@ Nguồn: **Kinh Ngoài Bức Tường** (Tirokuḍḍa, Tiểu Tụng). Ngạ qu
 5. Cảnh kết, để không ngụ ý chứng đắc.
 6. Bảng thẻ hợp, kém hợp khi đối trị (mục 4b).
 7. Các loài, cấu trúc tâm tái tục của từng loài, cách hiện chư thiên và nhiệm vụ hồi hướng (mục 9a).
+8. **Thành phần tâm sở của từng tâm** trong bộ bài tâm, luật tạo tâm thiện và bảng đổi lá (mục 4c).
 
 ## 14. Bản thử nhỏ nhất (MVP)
 
