@@ -1210,6 +1210,18 @@
     btn(mind, "Xem thẻ", () => Mind.openAlbum());
     btn(mind, "Xóa tâm", () => Mind.dev.wipe());
 
+    const odd = row("Chuyện lạ, nơi chốn");
+    const jumpTo = (key, dy = 40) => { const p = World.PLACES[key]; if (!state.role || !p) return; closeFind(true); state.leftScene = true; showWalkBar(); World.setPlayer(p.x, p.y + dy); };
+    btn(odd, "Gốc gạo", () => jumpTo("gao", 60));
+    btn(odd, "Bụi tre", () => jumpTo("bamboo", 60));
+    btn(odd, "Ao sen", () => jumpTo("ao", 70));
+    btn(odd, "Hang đá", () => jumpTo("hang", 70));
+    btn(odd, "Tháp cổ", () => jumpTo("thap", 70));
+    btn(odd, "Cổng làng", () => jumpTo("gate", 70));
+    btn(odd, "Xe ngựa", () => window.Cart && Cart.spawn());
+    btn(odd, "Xe sa lầy", () => window.Cart && Cart.stuck());
+    btn(odd, "Cho đủ vật phẩm", () => { const S = Mind.kit.S; for (const id of ["mandarava", "den_nho", "rau_ma"]) if (!S.items.includes(id)) S.items.push(id); Mind.kit.save(); toast("Đã thêm hoa mạn-đà-la, ngọn đèn, rau má."); });
+
     const fx = row("Hiệu ứng");
     btn(fx, "Cú", () => window.dispatchEvent(new CustomEvent("owl", { detail: { pan: 0 } })));
     btn(fx, "Quạ", () => window.dispatchEvent(new CustomEvent("crow", { detail: { pan: 0, n: 3 } })));
@@ -1291,20 +1303,27 @@
     $("quest-tip-go").hidden = !low;
     $("quest-cancel").hidden = !state.detour;
     $("quest-save").hidden = Save.signedIn() || !(Save.me().google || Save.me().devLogin);
-    const side = Mind.questInfo();
-    $("quest-side").hidden = !side;
-    if (side) { $("quest-side-title").textContent = side.title; $("quest-side-body").textContent = side.body; }
+    // every errand and rumour that is open right now, each with a way there
+    const sides = Mind.questList();
+    $("quest-side").hidden = !sides.length;
+    const box = $("quest-side-list"); box.replaceChildren();
+    for (const q of sides.slice(0, 6)) {
+      const item = el("div", "side-item");
+      item.appendChild(el("p", "quest-title side", q.title));
+      item.appendChild(el("p", "hint", q.body));
+      if (q.x != null) {
+        const go = el("button", "pill", "Đưa tôi tới đó"); go.type = "button";
+        go.addEventListener("click", () => { $("quest-panel").hidden = true; goTo(q.x, q.y); });
+        item.appendChild(go);
+      }
+      box.appendChild(item);
+    }
   }
   $("quest-login").addEventListener("click", () => {
     if (Save.me().google) { Save.flush().finally(() => { location.href = "/auth/google"; }); return; }
     $("quest-panel").hidden = true; leaveRole(); toast("Đăng nhập thử ở màn hình chọn vai, rồi lưu lần chơi này thành nhân vật.");
   });
-  $("quest-side-go").addEventListener("click", () => {
-    const side = Mind.questInfo();
-    if (!side) return;
-    $("quest-panel").hidden = true;
-    goTo(side.x, side.y + 14);
-  });
+
   // walk somewhere outside the story (the pending scene keeps waiting)
   function goTo(x, y) {
     if (state.sceneOpen) wander();

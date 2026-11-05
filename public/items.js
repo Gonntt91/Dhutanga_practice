@@ -23,6 +23,43 @@ window.Items = (() => {
         `<circle cx="50" cy="50" r="47" fill="url(#${u}g)"/>${petals}` +
         `<circle cx="50" cy="50" r="7" fill="#e6c56f" stroke="#d08a4d" stroke-width="1"/>${dots}<circle cx="50" cy="50" r="2.4" fill="#fff3c4"/>`;
     },
+    bat_com: (u) =>
+      `<defs><linearGradient id="${u}c" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#c98a56"/><stop offset="1" stop-color="#7d4b25"/></linearGradient>` +
+      `<radialGradient id="${u}r" cx="50%" cy="80%" r="80%"><stop offset="0" stop-color="#fffdf5"/><stop offset="1" stop-color="#ece3cc"/></radialGradient></defs>` +
+      `<path d="M40 30 C36 24 44 20 40 13 M52 32 C48 25 57 20 52 12 M63 30 C59 24 66 21 63 15" fill="none" stroke="#dcd5c5" stroke-opacity=".6" stroke-width="2" stroke-linecap="round"/>` +
+      `<path d="M20 52 C22 34 36 30 50 30 C64 30 78 34 80 52 Z" fill="url(#${u}r)" stroke="#bfb393" stroke-width="1.2"/>` +
+      [[34,42],[46,38],[58,39],[69,44],[40,47],[53,46],[63,49],[28,48]].map(([x,y]) => `<ellipse cx="${x}" cy="${y}" rx="3.2" ry="1.7" fill="#fff" stroke="#d6cdb0" stroke-width=".6" transform="rotate(${x*7%40-20} ${x} ${y})"/>`).join("") +
+      `<path d="M16 52 L84 52 C84 74 68 86 50 86 C32 86 16 74 16 52 Z" fill="url(#${u}c)" stroke="#5a3418" stroke-width="1.4" stroke-linejoin="round"/>` +
+      `<path d="M30 64 C34 74 42 79 50 79" fill="none" stroke="#f0b88a" stroke-opacity=".45" stroke-width="1.4" stroke-linecap="round"/>` +
+      `<path d="M38 86 L62 86 L60 91 L40 91 Z" fill="#7d4b25" stroke="#5a3418" stroke-width="1"/>` +
+      `<path d="M62 18 L80 50 M68 16 L87 47" stroke="#b8894a" stroke-width="2" stroke-linecap="round" opacity=".85"/>`,
+    hoa_sen: (u) =>
+      `<defs><radialGradient id="${u}g"><stop offset="0" stop-color="#dff0ff" stop-opacity=".6"/><stop offset="1" stop-color="#dff0ff" stop-opacity="0"/></radialGradient>` +
+      `<linearGradient id="${u}p" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#f6d9e0"/><stop offset=".5" stop-color="#fffafc"/><stop offset="1" stop-color="#ffffff"/></linearGradient>` +
+      `<linearGradient id="${u}l" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8fcf8f"/><stop offset="1" stop-color="#3f8a52"/></linearGradient></defs>` +
+      `<circle cx="50" cy="44" r="46" fill="url(#${u}g)"/>` +
+      `<ellipse cx="50" cy="82" rx="38" ry="10" fill="url(#${u}l)" stroke="#2f6a3f" stroke-width="1.2"/>` +
+      `<path d="M50 82 L22 80 M50 82 L78 80 M50 82 L36 90 M50 82 L64 90" stroke="#d6f0b8" stroke-opacity=".55" stroke-width=".9" stroke-linecap="round"/>` +
+      `<path d="M50 82 C48 70 52 62 50 54" stroke="#4f9a54" stroke-width="2.6" fill="none" stroke-linecap="round"/>` +
+      `<path d="M50 56 C28 54 22 36 30 26 C40 30 46 40 50 56 Z M50 56 C72 54 78 36 70 26 C60 30 54 40 50 56 Z" fill="url(#${u}p)" stroke="#e0b8c4" stroke-width="1.1" stroke-linejoin="round"/>` +
+      `<path d="M50 58 C38 50 36 28 50 14 C64 28 62 50 50 58 Z" fill="url(#${u}p)" stroke="#e6c0cc" stroke-width="1.2" stroke-linejoin="round"/>` +
+      `<path d="M50 54 L50 24" stroke="#e8c9d2" stroke-width=".9" stroke-linecap="round"/>` +
+      `<circle cx="50" cy="12" r="1.6" fill="#fff3c4"/>`,
+    khan_ran: (u) =>
+      `<defs><clipPath id="${u}k"><path d="M14 34 L78 24 L88 62 L26 76 Z"/></clipPath></defs>` +
+      `<path d="M20 44 L84 34 L90 72 L28 84 Z" fill="#b8b0a0" stroke="#4a4238" stroke-width="1.2" stroke-linejoin="round"/>` +
+      `<path d="M14 34 L78 24 L88 62 L26 76 Z" fill="#f4efe2" stroke="#2a2622" stroke-width="1.4" stroke-linejoin="round"/>` +
+      `<g clip-path="url(#${u}k)" stroke="#2a2622" stroke-width="5" opacity=".85">` +
+      [0,1,2,3,4,5,6,7].map((i) => `<path d="M${10 + i*12} 20 L${22 + i*12} 80"/>`).join("") +
+      [0,1,2,3,4].map((i) => `<path d="M10 ${34 + i*11} L95 ${24 + i*11}" stroke-width="3.5"/>`).join("") + `</g>` +
+      `<path d="M14 34 L78 24 L88 62 L26 76 Z" fill="none" stroke="#2a2622" stroke-width="1.4" stroke-linejoin="round"/>` +
+      `<path d="M26 76 L24 88 M32 75 L31 87 M38 74 L38 86 M44 73 L45 85" stroke="#2a2622" stroke-width="1.4" stroke-linecap="round"/>`,
+    banh_da: (u) =>
+      `<defs><radialGradient id="${u}b" cx="40%" cy="35%" r="75%"><stop offset="0" stop-color="#f3d9a0"/><stop offset=".7" stop-color="#d9a860"/><stop offset="1" stop-color="#b57a38"/></radialGradient></defs>` +
+      `<circle cx="50" cy="52" r="38" fill="url(#${u}b)" stroke="#8a5a26" stroke-width="1.5"/>` +
+      `<circle cx="50" cy="52" r="31" fill="none" stroke="#fff3c4" stroke-opacity=".4" stroke-width="1" stroke-dasharray="3 3"/>` +
+      [[34,38],[48,32],[62,40],[40,50],[56,52],[70,56],[30,62],[46,66],[62,70],[52,44],[38,74],[72,42],[24,50]].map(([x,y],i) => `<ellipse cx="${x}" cy="${y}" rx="2.2" ry="1.2" fill="#2a1d14" transform="rotate(${i*37%180} ${x} ${y})"/>`).join("") +
+      `<path d="M20 40 C24 28 34 22 44 20" fill="none" stroke="#fff3c4" stroke-opacity=".5" stroke-width="2" stroke-linecap="round"/>`,
     rau_ma: (u) => {
       const leaf = (cx, cy, r, rot) =>
         `<g transform="rotate(${rot} ${cx} ${cy})"><path d="M${cx} ${cy + r * 0.2} L${cx - r * 0.35} ${cy - r * 0.95} A${r} ${r} 0 1 0 ${cx + r * 0.35} ${cy - r * 0.95} Z" fill="url(#${u}l)" stroke="#2f6a3f" stroke-width="1.2" stroke-linejoin="round"/>` +
@@ -69,6 +106,30 @@ window.Items = (() => {
       from: "Chư thiên để lại sau khi người này làm việc thiện.",
       use: "Chưa dùng được, có lẽ sau này sẽ mở đường vào một cung điện trên trời. Giữ hoa trong người, lòng người này sáng hơn một đêm.",
     },
+    bat_com: {
+      name: "Bát cơm",
+      desc: "Một bát đất nung đầy cơm trắng, hơi nóng còn bốc lên nhẹ. Thơm mùi gạo mới.",
+      from: "Bà cụ ở giếng làng nấu cho.",
+      use: "Đem dâng sư rồi hồi hướng cho người đã khuất.",
+    },
+    hoa_sen: {
+      name: "Đóa sen trắng", glow: true,
+      desc: "Một đóa sen trắng còn khép nụ, kèm chiếc lá xanh. Cánh hoa phảng phất ánh trăng.",
+      from: "Hái nhẹ bên ao sen lúc trăng lên.",
+      use: "Dâng lên bàn thờ ở tịnh thất.",
+    },
+    khan_ran: {
+      name: "Khăn rằn",
+      desc: "Một chiếc khăn rằn sọc đen trắng, gấp gọn, vải mềm đã sờn nhẹ và còn mùi nắng.",
+      from: "Ông lái buôn trên xe ngựa tặng, sau khi người này giúp đẩy bánh xe sa lầy.",
+      use: "Một món trang phục. Sau này có thể dùng để thay đổi dáng vẻ nhân vật.",
+    },
+    banh_da: {
+      name: "Bánh đa mè",
+      desc: "Một chiếc bánh đa tròn nướng giòn, rắc đầy mè đen, thơm mùi gạo nướng.",
+      from: "Ông lái buôn đổi cho, khi người này tặng ông nắm rau má.",
+      use: "Có thể đem chia cho ai đó đang đói.",
+    },
     rau_ma: {
       name: "Nắm rau má",
       desc: "Một nắm rau má xanh mướt, buộc bằng sợi rơm. Còn thơm mùi đất ẩm.",
@@ -78,20 +139,20 @@ window.Items = (() => {
     la_gao: {
       name: "Chiếc lá gạo sáng", glow: true,
       desc: "Một chiếc lá xanh dịu, gân lá sáng lên như có ai thắp từ bên trong.",
-      from: "Thọ thần ở gốc cây gạo.",
-      use: "Chưa dùng được, có lẽ sau này sẽ hé lộ một lớp ẩn ở một chỗ nào đó.",
+      from: "Thọ thần ở gốc gạo tặng, sau khi người này đưa bé Na về nhà.",
+      use: "Soi thấy những dấu vết ẩn quanh gốc gạo.",
     },
     den_nho: {
       name: "Ngọn đèn nhỏ", glow: true,
       desc: "Một chiếc đèn dầu bằng đất nung, ngọn lửa nhỏ nhưng không tắt.",
-      from: "Địa thần ở cổng làng.",
-      use: "Chưa dùng được, có lẽ sau này sẽ cho người này bước vào hang tối.",
+      from: "Địa thần ở cổng làng trao lúc rạng đông.",
+      use: "Mang vào hang đá sau đồi; đèn sáng khi lòng không sợ.",
     },
     manh_ky_uc: {
       name: "Mảnh ký ức",
       desc: "Một mảnh giấy ảnh cũ bị xé dở. Thấy mờ mờ một bóng người.",
-      from: "Nhặt được trong ngôi nhà hoang.",
-      use: "Chưa dùng được, có lẽ sau này sẽ cho biết thêm về Hạnh.",
+      from: "Một hồn đói sâu trong hang đá đưa cho.",
+      use: "Một mảnh về cô bé Hạnh. Gom đủ để hiểu chuyện xưa.",
     },
   };
 

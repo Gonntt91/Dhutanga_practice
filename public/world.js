@@ -15,6 +15,9 @@ window.World = (() => {
     hermitage: { x: 205, y: 300, name: "Tịnh thất" },
     well: { x: 112, y: 2016, name: "Giếng làng" },
     mit: { x: 300, y: 2196, name: "Gốc mít" },
+    ao: { x: -25, y: 1720, name: "Ao sen" },
+    hang: { x: 440, y: 760, name: "Tảng đá lớn" }, // renamed "Hang đá" once the hidden cave is found
+    thap: { x: 350, y: 440, name: "Tháp cổ" },
   };
   const UNNAMED = { x: 262, y: 1032 };
   const SPAWN = {
@@ -181,6 +184,16 @@ window.World = (() => {
     // extra houses and trees around the village on both sides
     for (const [x, y] of [[44, 2060], [596, 2090], [30, 2220], [610, 2240]]) decor.push({ kind: "house", x, y });
     for (const [x, y] of [[110, 2330], [530, 2350], [60, 2150], [580, 2170]]) decor.push({ kind: "tree", x, y, s: 0.8 + r() * 0.4 });
+    // clear generated scenery from the three new places, then add them
+    const spots = [PLACES.ao, PLACES.hang, PLACES.thap];
+    for (let i = decor.length - 1; i >= 0; i--) {
+      const d = decor[i];
+      if (!["grave", "tree", "bamboo", "house"].includes(d.kind)) continue;
+      if (spots.some((p) => Math.hypot(d.x - p.x, d.y - p.y) < 85)) decor.splice(i, 1);
+    }
+    decor.push({ kind: "ao", x: PLACES.ao.x, y: PLACES.ao.y - 14 });
+    decor.push({ kind: "hang", x: PLACES.hang.x, y: PLACES.hang.y });
+    decor.push({ kind: "thap", x: PLACES.thap.x, y: PLACES.thap.y });
   })();
 
   const fog = Array.from({ length: 7 }, (_, i) => ({ x: Math.random() * W, y: i / 7, rx: 120 + Math.random() * 120, ry: 26 + Math.random() * 20, v: 3 + Math.random() * 5 }));
@@ -582,7 +595,7 @@ window.World = (() => {
     for (const o of others.values()) pts.push({ x: o.rx, y: o.ry, role: o.role });
     return {
       W, H, PLACES, path: PATH, others: pts, finds: finds.map((f) => ({ x: f.x, y: f.y })), camX, camY, viewW, viewH, zoom,
-      player: { x: player.x, y: player.y }, range: view.lookRange, view: view.role,
+      player: { x: player.x, y: player.y }, range: view.lookRange, view: view.role, caveFound: !!view.caveFound,
     };
   }
 
@@ -1035,6 +1048,327 @@ window.World = (() => {
     for (let i = 0; i < 7; i++) ellipse(x - 24 + i * 7, y + 8 + (i % 2) * 3, 3.2, 2.2, lerpHex("#1e2b20", "#5fae46", dayMix));
   }
 
+
+  // ---------- new places ----------
+  // Lotus pond: dark irregular water, lily pads, lotus, reeds, a moon reflection at night.
+  function drawAo(d, lights) {
+    const { x, y } = d;
+    const c = (n, dy) => lerpHex(n, dy, dayMix);
+    const night = 1 - dayMix;
+    const blob = (rx, ry, grow) => {
+      ctx.beginPath();
+      for (let i = 0; i <= 28; i++) {
+        const t = (i / 28) * Math.PI * 2;
+        const k = 1 + 0.08 * Math.sin(t * 3 + 1) + 0.05 * Math.sin(t * 5 + 2) + grow;
+        const px = x + Math.cos(t) * rx * k, py = y + Math.sin(t) * ry * k;
+        if (i) ctx.lineTo(px, py); else ctx.moveTo(px, py);
+      }
+      ctx.closePath();
+    };
+    blob(44, 19, 0.16); ctx.fillStyle = c("#1a2218", "#7a6a45"); ctx.fill();           // muddy bank
+    blob(42, 18, 0.06); ctx.fillStyle = c("#243024", "#5c8f4a"); ctx.fill();           // wet edge
+    blob(40, 17, 0);
+    const wg = ctx.createLinearGradient(x, y - 17, x, y + 17);
+    wg.addColorStop(0, c("#0b1517", "#5fb2b0")); wg.addColorStop(1, c("#060c0e", "#2f8a8c"));
+    ctx.fillStyle = wg; ctx.fill();
+    ctx.save(); blob(40, 17, 0); ctx.clip();
+    if (dayMix > 0.05) { ctx.fillStyle = `rgba(230,250,255,${0.4 * dayMix})`; for (let i = 0; i < 4; i++) ctx.fillRect(x - 26 + i * 15 + Math.sin(time + i) * 2, y - 8 + (i % 2) * 9, 9, 1.4); }
+    if (night > 0.05) {  // shimmering moon reflection
+      const mx = x + 8, my = y - 3;
+      ellipse(mx, my, 9, 4, `rgba(200,220,230,${0.28 * night})`);
+      for (let i = -3; i <= 3; i++) {
+        const w = 12 - Math.abs(i) * 1.4 + Math.sin(time * 2 + i) * 2.5;
+        ctx.fillStyle = `rgba(215,230,235,${(0.3 + 0.2 * Math.sin(time * 3 + i * 1.7)) * night})`;
+        ctx.fillRect(mx - w / 2 + Math.sin(time * 1.3 + i) * 1.5, my + i * 2.2, w, 0.9);
+      }
+    }
+    ctx.strokeStyle = `rgba(200,225,230,${0.25 + 0.15 * night})`; ctx.lineWidth = 0.6;  // ripples
+    for (let i = 0; i < 2; i++) {
+      const ph = (time * 0.35 + i * 0.5) % 1;
+      ctx.globalAlpha = 1 - ph; ctx.beginPath(); ctx.ellipse(x - 14, y + 5, 2 + ph * 10, 1 + ph * 4, 0, 0, Math.PI * 2); ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+    ctx.restore();
+    // lily pads
+    const pad = c("#1f3a26", "#3f9a45"), padHi = c("#2a4a30", "#58b858");
+    for (const [px, py, pr] of [[-22, 2, 6], [-10, -7, 5], [12, 8, 6.5], [24, -3, 5], [2, 5, 4.5], [-28, -6, 4]]) {
+      const bob = Math.sin(time * 0.8 + px) * 0.4;
+      ellipse(x + px, y + py + bob, pr, pr * 0.45, pad);
+      ellipse(x + px - 1, y + py + bob - 0.5, pr * 0.55, pr * 0.22, padHi);
+    }
+    // lotus flowers
+    for (const [px, py, white] of [[-14, -2, 0], [18, 1, 1], [-4, 9, 0], [27, -7, 0]]) {
+      const fx = x + px, fy = y + py - 3;
+      ctx.strokeStyle = c("#243a28", "#3b8a40"); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(fx, fy + 3); ctx.lineTo(fx, fy); ctx.stroke();
+      const petal = white ? c("#bfc4b8", "#fbf6f0") : c("#8a4a58", "#f08fb0");
+      const petal2 = white ? c("#d6d9cf", "#ffffff") : c("#a85d70", "#ffb6cf");
+      for (const s of [-1, 1]) { ctx.beginPath(); ctx.ellipse(fx + s * 2.6, fy - 1.5, 1.6, 3.6, s * 0.5, 0, Math.PI * 2); ctx.fillStyle = petal; ctx.fill(); }
+      ctx.beginPath(); ctx.ellipse(fx, fy - 2.5, 1.9, 4.2, 0, 0, Math.PI * 2); ctx.fillStyle = petal2; ctx.fill();
+      ellipse(fx, fy - 0.5, 1.2, 0.8, c("#9a8a40", "#f2c94c"));
+    }
+    // reeds at the bank
+    ctx.strokeStyle = c("#1c2a1f", "#4f8f3c"); ctx.lineWidth = 1.2;
+    for (const [rx, ry, h] of [[-38, 8, 22], [-35, 10, 17], [-33, 7, 25], [34, 10, 20], [37, 7, 24], [31, 12, 15], [-6, 19, 14]]) {
+      const sw = Math.sin(time * 1.2 + rx) * 1.5;
+      ctx.beginPath(); ctx.moveTo(x + rx, y + ry); ctx.quadraticCurveTo(x + rx + sw, y + ry - h * 0.6, x + rx + sw * 2 + 2, y + ry - h); ctx.stroke();
+    }
+    ctx.fillStyle = c("#3a2a1c", "#7a4a2a");
+    for (const [rx, ry, h] of [[-33, 7, 25], [37, 7, 24]]) ctx.fillRect(x + rx + 1, y + ry - h, 1.8, 5);
+    lights.push({ x, y, r: 62, a: 0.2 * night });
+  }
+
+  // Rock cave: a hill of grey boulders with a dark arched mouth.
+  // Before the cave is discovered: just one big mossy boulder among a few stones, nothing to suggest an opening.
+  function drawBoulder(d) {
+    const { x, y } = d;
+    const c = (n, dy) => lerpHex(n, dy, dayMix);
+    shadow(x, y + 2, 40);
+    if (dayMix > 0.05) ellipse(x + 22, y + 8, 46, 12, `rgba(20,40,24,${0.25 * dayMix})`);
+    ctx.fillStyle = c("#2d3330", "#8e918a");
+    ctx.beginPath();
+    ctx.moveTo(x - 38, y); ctx.quadraticCurveTo(x - 44, y - 30, x - 16, y - 44); ctx.quadraticCurveTo(x + 10, y - 56, x + 32, y - 34);
+    ctx.quadraticCurveTo(x + 44, y - 16, x + 36, y); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = c("#3a413d", "#a9aba3");
+    ctx.beginPath(); ctx.ellipse(x - 6, y - 36, 22, 10, -0.3, 0, 7); ctx.fill();
+    ctx.fillStyle = c("#22302a", "#6f9a4e");
+    ctx.beginPath(); ctx.ellipse(x - 18, y - 40, 12, 5, -0.4, 0, 7); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(x + 14, y - 10, 9, 4, 0.2, 0, 7); ctx.fill();
+    ctx.strokeStyle = c("#1d2220", "#6d706a"); ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(x + 4, y - 50); ctx.quadraticCurveTo(x + 10, y - 30, x + 2, y - 12); ctx.stroke();
+    for (const [sx, sy, r] of [[-50, 2, 7], [48, 3, 6], [56, -4, 4], [-58, -3, 4]]) ellipse(x + sx, y + sy, r, r * 0.7, c("#2a302d", "#9a9c95"));
+  }
+
+  function drawHang(d) {
+    const { x, y } = d;
+    const c = (n, dy) => lerpHex(n, dy, dayMix);
+    shadow(x, y + 2, 52);
+    if (dayMix > 0.05) ellipse(x + 26, y + 8, 60, 14, `rgba(20,40,24,${0.25 * dayMix})`);
+    const rocks = [[-44, -6, 22, 16, 0], [40, -4, 24, 17, 1], [-30, -26, 24, 20, 1], [28, -28, 26, 21, 0], [0, -46, 30, 22, 1], [-14, -58, 20, 14, 0], [48, -22, 14, 11, 0], [-52, -18, 12, 10, 1]];
+    for (const [rx, ry, w, h, v] of rocks) {
+      ellipse(x + rx, y + ry, w, h, v ? c("#3b403e", "#a8a69a") : c("#2f3432", "#8e8c82"));
+      ellipse(x + rx - w * 0.2, y + ry - h * 0.3, w * 0.62, h * 0.5, v ? c("#464c49", "#bdbbaf") : c("#383e3b", "#a3a196"));
+    }
+    // moss
+    for (const [mx, my, mw] of [[-24, -42, 9], [14, -62, 8], [-44, -12, 7], [36, -34, 8], [-6, -22, 6], [46, -8, 6]]) ellipse(x + mx, y + my, mw, mw * 0.4, c("#26402c", "#5e9a46"));
+    // cave mouth
+    const cx = x, cy = y - 2;
+    ctx.beginPath(); ctx.moveTo(cx - 17, cy); ctx.lineTo(cx - 17, cy - 22); ctx.quadraticCurveTo(cx - 15, cy - 40, cx, cy - 40); ctx.quadraticCurveTo(cx + 15, cy - 40, cx + 17, cy - 22); ctx.lineTo(cx + 17, cy); ctx.closePath();
+    ctx.fillStyle = c("#1a1e1c", "#6d6b62"); ctx.fill();  // lip
+    ctx.beginPath(); ctx.moveTo(cx - 13, cy); ctx.lineTo(cx - 13, cy - 21); ctx.quadraticCurveTo(cx - 12, cy - 36, cx, cy - 36); ctx.quadraticCurveTo(cx + 12, cy - 36, cx + 13, cy - 21); ctx.lineTo(cx + 13, cy); ctx.closePath();
+    const dg = ctx.createLinearGradient(0, cy - 36, 0, cy);
+    dg.addColorStop(0, "#020303"); dg.addColorStop(0.6, "#050707"); dg.addColorStop(1, c("#0e1311", "#2a2a26"));
+    ctx.fillStyle = dg; ctx.fill();
+    const mist = ctx.createRadialGradient(cx, cy - 4, 1, cx, cy - 4, 14);
+    mist.addColorStop(0, `rgba(160,190,200,${0.1 + 0.05 * Math.sin(time * 1.1)})`); mist.addColorStop(1, "rgba(160,190,200,0)");
+    ctx.fillStyle = mist; ctx.fillRect(cx - 14, cy - 18, 28, 20);
+    // stalactite hints
+    ctx.fillStyle = c("#0c100f", "#4a483f");
+    for (const sx of [-8, -2, 5, 10]) { ctx.beginPath(); ctx.moveTo(cx + sx - 2, cy - 36 + Math.abs(sx) * 0.3); ctx.lineTo(cx + sx, cy - 29 - (sx % 3)); ctx.lineTo(cx + sx + 2, cy - 36 + Math.abs(sx) * 0.3); ctx.fill(); }
+    // vines at the lip and a stone step
+    ctx.strokeStyle = c("#26402c", "#4f8f3c"); ctx.lineWidth = 1;
+    for (const vx of [-12, -6, 9]) { ctx.beginPath(); ctx.moveTo(cx + vx, cy - 38); ctx.quadraticCurveTo(cx + vx + 2, cy - 33, cx + vx, cy - 28 - (vx % 4)); ctx.stroke(); }
+    ellipse(cx, y + 5, 20, 5, c("#343a37", "#9d9b90"));
+    ellipse(cx, y + 3, 17, 3.6, c("#444a46", "#b5b3a7"));
+  }
+
+  // Old stupa: square base, tapering tiers, a bell dome and finial in weathered laterite.
+  function drawThap(d, lights) {
+    const { x, y } = d;
+    const c = (n, dy) => lerpHex(n, dy, dayMix);
+    shadow(x, y + 2, 30);
+    if (dayMix > 0.05) ellipse(x + 18, y + 5, 36, 9, `rgba(20,40,24,${0.25 * dayMix})`);
+    const brick = c("#3a2e28", "#a8683f"), brickHi = c("#4a3b33", "#c08558"), brickLo = c("#2a211d", "#86502f");
+    // base (front + side faces)
+    ctx.fillStyle = brickLo; ctx.fillRect(x - 24, y - 16, 48, 16);
+    ctx.fillStyle = brick; ctx.fillRect(x - 24, y - 16, 34, 16);
+    ctx.fillStyle = brickHi; ctx.fillRect(x - 26, y - 19, 52, 4);
+    // tiers
+    let ty = y - 19;
+    const tiers = [[20, 9], [15, 8], [11, 7]];
+    for (const [hw, h] of tiers) {
+      ctx.fillStyle = brick; ctx.fillRect(x - hw, ty - h, hw * 2, h);
+      ctx.fillStyle = brickLo; ctx.fillRect(x + hw * 0.3, ty - h, hw * 0.7, h);
+      ctx.fillStyle = brickHi; ctx.fillRect(x - hw - 2, ty - h - 2, hw * 2 + 4, 3);
+      ty -= h + 2;
+    }
+    // brick lines
+    ctx.strokeStyle = c("#241c18", "#6e4026"); ctx.lineWidth = 0.5;
+    for (let i = 1; i < 4; i++) { ctx.beginPath(); ctx.moveTo(x - 24, y - i * 4); ctx.lineTo(x + 24, y - i * 4); ctx.stroke(); }
+    // niche
+    ctx.fillStyle = c("#0a0807", "#3a2418"); ctx.beginPath(); ctx.moveTo(x - 5, y - 2); ctx.lineTo(x - 5, y - 11); ctx.quadraticCurveTo(x, y - 17, x + 5, y - 11); ctx.lineTo(x + 5, y - 2); ctx.fill();
+    // bell dome
+    const by = ty;
+    ctx.beginPath(); ctx.moveTo(x - 10, by); ctx.bezierCurveTo(x - 12, by - 10, x - 5, by - 20, x, by - 22); ctx.bezierCurveTo(x + 5, by - 20, x + 12, by - 10, x + 10, by); ctx.closePath();
+    ctx.fillStyle = c("#3d322b", "#b07040"); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(x + 3, by); ctx.bezierCurveTo(x + 8, by - 8, x + 4, by - 17, x, by - 22); ctx.bezierCurveTo(x + 5, by - 20, x + 12, by - 10, x + 10, by); ctx.fillStyle = brickLo; ctx.fill();
+    // finial
+    ctx.fillStyle = c("#4a4036", "#c9a35a");
+    ctx.fillRect(x - 5, by - 24, 10, 3); ctx.fillRect(x - 3, by - 27, 6, 3);
+    ctx.beginPath(); ctx.moveTo(x - 1.6, by - 27); ctx.lineTo(x, by - 38); ctx.lineTo(x + 1.6, by - 27); ctx.fill();
+    // moss
+    for (const [mx, my, mw] of [[-20, -17, 6], [-12, -3, 4], [8, -30, 5], [16, -19, 4], [-3, by - y - 20, 4]]) ellipse(x + mx, y + my, mw, mw * 0.4, c("#27422d", "#5e9a46"));
+    // offering slab
+    ctx.fillStyle = c("#2f3532", "#9a988d"); ctx.fillRect(x - 11, y + 4, 22, 5);
+    ctx.fillStyle = c("#434945", "#bdbbaf"); ctx.fillRect(x - 12, y + 2, 24, 3);
+    ellipse(x - 4, y + 1, 2.2, 1.4, c("#6a3a3a", "#e07a5a"));
+    // faint golden shimmer at the top at night
+    const night = 1 - dayMix;
+    if (night > 0.05) {
+      const sh = 0.5 + 0.5 * Math.sin(time * 1.6);
+      const g = ctx.createRadialGradient(x, by - 30, 1, x, by - 30, 16);
+      g.addColorStop(0, `rgba(255,215,120,${(0.22 + 0.12 * sh) * night})`); g.addColorStop(1, "rgba(255,215,120,0)");
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, by - 30, 16, 0, Math.PI * 2); ctx.fill();
+      lights.push({ x, y: by - 26, r: 36, a: (0.16 + 0.08 * sh) * night });
+    }
+  }
+
+  // ---------- new actors ----------
+  function actorAlpha(a) { return a.alpha == null ? 1 : a.alpha; }
+
+  // Tree spirit: a kind old woman in pale green-gold, dissolving into roots and leaves.
+  function drawTreeGod(a, lights) {
+    const { x, y } = a;
+    const k = actorAlpha(a); if (k <= 0.01) return;
+    const f = Math.sin(time * 1.4) * 1.2;
+    ctx.save(); ctx.globalAlpha = k;
+    const halo = ctx.createRadialGradient(x, y - 22, 2, x, y - 20, 42);
+    halo.addColorStop(0, "rgba(220,255,170,0.5)"); halo.addColorStop(0.5, "rgba(170,230,130,0.2)"); halo.addColorStop(1, "rgba(170,230,130,0)");
+    ctx.fillStyle = halo; ctx.beginPath(); ctx.arc(x, y - 20, 42, 0, Math.PI * 2); ctx.fill();
+    // roots below
+    ctx.strokeStyle = "rgba(120,150,80,0.55)"; ctx.lineWidth = 1.6;
+    for (const s of [-1, 0, 1]) { ctx.beginPath(); ctx.moveTo(x + s * 3, y - 10); ctx.quadraticCurveTo(x + s * 9, y - 3, x + s * 14, y + (s ? 0 : 2)); ctx.stroke(); }
+    // translucent lower robe fading
+    const rb = ctx.createLinearGradient(x, y - 28, x, y);
+    rb.addColorStop(0, "#e9efbf"); rb.addColorStop(0.55, "rgba(205,230,150,0.75)"); rb.addColorStop(1, "rgba(160,210,120,0)");
+    ctx.fillStyle = rb;
+    ctx.beginPath(); ctx.moveTo(x - 5, y - 28); ctx.quadraticCurveTo(x - 10, y - 14, x - 9 + f, y); ctx.lineTo(x + 9 + f, y); ctx.quadraticCurveTo(x + 10, y - 14, x + 5, y - 28); ctx.closePath(); ctx.fill();
+    // sleeves + hands
+    ctx.fillStyle = "rgba(225,240,170,0.9)";
+    ctx.beginPath(); ctx.ellipse(x - 7, y - 19, 2.6, 6, 0.3, 0, Math.PI * 2); ctx.ellipse(x + 7, y - 19, 2.6, 6, -0.3, 0, Math.PI * 2); ctx.fill();
+    // head, bun
+    ellipse(x, y - 32, 4, 4.3, "#e8cfa8");
+    ellipse(x, y - 38, 4.3, 2.6, "#d8dcd0"); ellipse(x, y - 41.5, 2.6, 2.4, "#e4e6dc");
+    ctx.fillStyle = "#6a5a3a"; ctx.fillRect(x - 2.2, y - 32.6, 1, 0.9); ctx.fillRect(x + 1.2, y - 32.6, 1, 0.9);
+    // drifting leaves
+    for (let i = 0; i < 5; i++) {
+      const p = (time * 0.25 + i * 0.2) % 1;
+      ctx.globalAlpha = k * Math.sin(p * Math.PI) * 0.8;
+      ellipse(x + Math.sin(p * 6 + i * 2) * 14, y - 4 - p * 38, 2, 1, i % 2 ? "#cfe89a" : "#e8d98a");
+    }
+    ctx.restore();
+    lights.push({ x, y: y - 22, r: 80 * k, a: 0.6 * k });
+  }
+
+  // Earth spirit: an old man with a long white beard, brown robe and a staff.
+  function drawEarthGod(a, lights) {
+    const { x, y } = a;
+    const k = actorAlpha(a) * 0.92; if (k <= 0.01) return;
+    ctx.save(); ctx.globalAlpha = k;
+    shadow(x, y, 9);
+    const halo = ctx.createRadialGradient(x, y - 18, 2, x, y - 16, 38);
+    halo.addColorStop(0, "rgba(255,200,120,0.4)"); halo.addColorStop(1, "rgba(255,200,120,0)");
+    ctx.fillStyle = halo; ctx.beginPath(); ctx.arc(x, y - 16, 38, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#5a3f28"; ctx.fillRect(x - 3, y - 6, 2.5, 6); ctx.fillRect(x + 1, y - 6, 2.5, 6);
+    ctx.beginPath(); ctx.moveTo(x - 9, y - 4); ctx.lineTo(x - 5, y - 26); ctx.lineTo(x + 5, y - 26); ctx.lineTo(x + 9, y - 4); ctx.closePath();
+    ctx.fillStyle = "#8a6038"; ctx.fill();
+    ctx.fillStyle = "#6e4a2a"; ctx.fillRect(x - 5, y - 15, 10, 2);
+    ellipse(x, y - 30, 4.4, 4.6, "#d8b48c");
+    ctx.beginPath(); ctx.moveTo(x - 4, y - 29); ctx.quadraticCurveTo(x, y - 7, x + 4, y - 29); ctx.fillStyle = "#f2efe6"; ctx.fill(); // beard
+    ctx.beginPath(); ctx.moveTo(x - 4.6, y - 32); ctx.quadraticCurveTo(x, y - 38, x + 4.6, y - 32); ctx.fillStyle = "#e8e6dc"; ctx.fill(); // hair
+    ctx.fillStyle = "#3a2a1a"; ctx.fillRect(x - 2.2, y - 31, 1, 0.9); ctx.fillRect(x + 1.2, y - 31, 1, 0.9);
+    // staff
+    ctx.strokeStyle = "#4a3320"; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(x + 11, y + 1); ctx.lineTo(x + 11, y - 40); ctx.stroke();
+    ctx.beginPath(); ctx.arc(x + 11, y - 42, 2.4, Math.PI * 0.8, Math.PI * 2.1); ctx.stroke();
+    ellipse(x + 8, y - 17, 2.2, 2.2, "#d8b48c");
+    ctx.restore();
+    lights.push({ x, y: y - 18, r: 72 * k, a: 0.5 * k });
+  }
+
+  // Bé Na, a lost village girl: tiny, two hair bunches, may cry or walk.
+  function drawChild(a, lights) {
+    let { x, y } = a;
+    const k = actorAlpha(a); if (k <= 0.01) return;
+    const moving = !!a.moving, phase = a.phase || time * 8;
+    const bob = moving ? Math.abs(Math.sin(phase)) * 1.2 : 0;
+    const shake = a.crying ? Math.sin(time * 22) * 0.7 : 0;
+    ctx.save(); ctx.globalAlpha = k;
+    shadow(x, y, 5.5);
+    const step = moving ? Math.sin(phase) * 1.8 : 0;
+    ctx.fillStyle = "#8f7056"; ctx.fillRect(x - 2.4 + step, y - 5, 1.8, 5); ctx.fillRect(x + 0.6 - step, y - 5, 1.8, 5);
+    x += shake;
+    ctx.beginPath(); ctx.moveTo(x - 4, y - 5 - bob); ctx.lineTo(x - 3, y - 15 - bob); ctx.lineTo(x + 3, y - 15 - bob); ctx.lineTo(x + 4, y - 5 - bob); ctx.closePath();
+    ctx.fillStyle = lerpHex("#a65a58", "#e0605a", dayMix); ctx.fill();
+    ctx.fillStyle = lerpHex("#3f4a5a", "#4a6fb0", dayMix); ctx.fillRect(x - 3.6, y - 8 - bob, 7.2, 3);
+    ellipse(x, y - 18.5 - bob, 3.4, 3.5, "#c09a76");
+    ctx.fillStyle = "#1c1612"; ctx.beginPath(); ctx.arc(x, y - 19.5 - bob, 3.6, Math.PI, 0); ctx.fill();
+    ellipse(x - 4.4, y - 20 - bob, 1.6, 1.6, "#1c1612"); ellipse(x + 4.4, y - 20 - bob, 1.6, 1.6, "#1c1612");
+    ellipse(x - 4.4, y - 18.6 - bob, 0.9, 0.9, "#c0606a"); ellipse(x + 4.4, y - 18.6 - bob, 0.9, 0.9, "#c0606a");
+    if (a.crying) {
+      ctx.fillStyle = "rgba(190,225,255,0.9)";
+      for (let i = 0; i < 3; i++) {
+        const p = (time * 1.6 + i * 0.33) % 1;
+        const sd = i % 2 ? 1 : -1;
+        ellipse(x + sd * (1.6 + p * 2), y - 17 - bob + p * 9, 0.8, 1.2, `rgba(190,225,255,${0.9 * (1 - p)})`);
+      }
+    }
+    ctx.restore();
+  }
+
+  // Ngạ quỷ: a hungry ghost grandmother, thin and grey-blue, pitiable. a.glow (0..1) warms her to white light.
+  function drawPeta(a, lights) {
+    const { x, y } = a;
+    const k = actorAlpha(a); if (k <= 0.01) return;
+    const glow = Math.max(0, Math.min(1, a.glow || 0));
+    const flick = (0.82 + 0.18 * Math.sin(time * 6 + 1.3)) * (1 - glow * 0.6) + glow * 0.6;
+    const sway = Math.sin(time * 1.5) * 1.2;
+    const yy = y - 3 + Math.sin(time * 1.3) * 1.5;
+    const mixc = (cold, warm) => lerpHex(cold, warm, glow);
+    ctx.save(); ctx.globalAlpha = k * flick;
+    // cold mist
+    const mist = ctx.createRadialGradient(x, yy - 8, 2, x, yy - 6, 34);
+    mist.addColorStop(0, glow > 0.3 ? `rgba(255,240,205,${0.35 * glow})` : "rgba(150,175,200,0.22)"); mist.addColorStop(1, "rgba(150,175,200,0)");
+    ctx.fillStyle = mist; ctx.beginPath(); ctx.ellipse(x, yy - 6, 34, 20, 0, 0, Math.PI * 2); ctx.fill();
+    // tattered cloth, fading at the hem
+    const cl = ctx.createLinearGradient(x, yy - 24, x, yy + 2);
+    cl.addColorStop(0, mixc("#6d8092", "#fff3d8")); cl.addColorStop(1, `rgba(${Math.round(70 + 185 * glow)},${Math.round(84 + 152 * glow)},${Math.round(98 + 92 * glow)},0)`);
+    ctx.fillStyle = cl;
+    ctx.beginPath(); ctx.moveTo(x - 3 + sway, yy - 24); ctx.lineTo(x - 7, yy - 4); ctx.lineTo(x - 5, yy + 1); ctx.lineTo(x - 2, yy - 2); ctx.lineTo(x + 1, yy + 2); ctx.lineTo(x + 4, yy - 2); ctx.lineTo(x + 7, yy + 1); ctx.lineTo(x + 6, yy - 6); ctx.lineTo(x + 4 + sway, yy - 24); ctx.closePath(); ctx.fill();
+    // thin arms hanging
+    ctx.strokeStyle = mixc("#9fb3c3", "#ffe9c4"); ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(x - 3 + sway, yy - 22); ctx.quadraticCurveTo(x - 8, yy - 14, x - 6, yy - 7); ctx.moveTo(x + 4 + sway, yy - 22); ctx.quadraticCurveTo(x + 9, yy - 14, x + 7, yy - 8); ctx.stroke();
+    // long thin neck, bowed head
+    ctx.lineWidth = 1.8; ctx.beginPath(); ctx.moveTo(x + 0.5 + sway, yy - 24); ctx.quadraticCurveTo(x + 2 + sway, yy - 30, x + 4 + sway * 0.5, yy - 33); ctx.stroke();
+    ellipse(x + 4 + sway * 0.5, yy - 35, 3.6, 4, mixc("#a9bccb", "#ffeccc"));
+    // thin grey hair strands
+    ctx.strokeStyle = mixc("#9aa6b0", "#ffffff"); ctx.lineWidth = 0.7;
+    for (const s of [-1, 0, 1]) { ctx.beginPath(); ctx.moveTo(x + 4 + s * 2 + sway * 0.5, yy - 38); ctx.quadraticCurveTo(x + 1 + s * 3, yy - 32, x + s * 3 + 1, yy - 27); ctx.stroke(); }
+    // sad eyes
+    ctx.fillStyle = mixc("#1a232c", "#7a5a3a"); ctx.fillRect(x + 2.6 + sway * 0.5, yy - 35.5, 1, 1.2); ctx.fillRect(x + 5.2 + sway * 0.5, yy - 35.5, 1, 1.2);
+    ctx.restore();
+    lights.push({ x, y: yy - 16, r: 34 + glow * 90, a: (0.34 + glow * 0.6) * k });
+  }
+
+  // A village woman: like the villager but in a brown-rose shirt, a headscarf, and no lantern.
+  function drawMother(a, lights) {
+    const { x, y } = a;
+    const k = actorAlpha(a); if (k <= 0.01) return;
+    const moving = !!a.moving, phase = a.phase || 0;
+    const bob = moving ? Math.abs(Math.sin(phase)) * 1.4 : 0;
+    const step = moving ? Math.sin(phase) * 2.5 : 0;
+    ctx.save(); ctx.globalAlpha = k;
+    shadow(x, y, 7);
+    ctx.fillStyle = "#2a3235"; ctx.fillRect(x - 3 + step, y - 7, 2.5, 7); ctx.fillRect(x + 1 - step, y - 7, 2.5, 7);
+    ctx.beginPath(); ctx.moveTo(x - 5, y - 6); ctx.lineTo(x - 4, y - 22 - bob); ctx.lineTo(x + 4, y - 22 - bob); ctx.lineTo(x + 5, y - 6); ctx.closePath();
+    ctx.fillStyle = lerpHex("#7a4a48", "#b8564c", dayMix); ctx.fill();
+    ctx.fillStyle = lerpHex("#2f3538", "#4a5a60", dayMix); ctx.fillRect(x - 5, y - 11, 10, 6);
+    ellipse(x, y - 25 - bob, 3.6, 3.7, "#8f7056");
+    ctx.beginPath(); ctx.arc(x, y - 26 - bob, 4, Math.PI * 0.95, Math.PI * 2.05); ctx.closePath();
+    ctx.fillStyle = lerpHex("#5a5a52", "#d8d0b8", dayMix); ctx.fill();
+    ellipse(x - 3.6, y - 23 - bob, 1.8, 2.4, lerpHex("#5a5a52", "#d8d0b8", dayMix));
+    ctx.restore();
+    lights.push({ x, y: y - 14, r: 34, a: 0.28 * k });
+  }
+
   function drawDog(a, lights) {
     const { x, y } = a;
     const f = a.facing || 1;
@@ -1102,6 +1436,11 @@ window.World = (() => {
       case "granny": drawVillager(a.x, a.y, 0, false, a.facing || 1, lights); break;
       case "monk": drawMonk(a.x, a.y, a.pose || "sit", 0, false, 1, lights); break;
       case "deva": { const k = a.alpha == null ? 1 : a.alpha; if (k > 0.01) lights.push({ x: a.x, y: a.y - 34, r: 170 * k, a: 0.95 * k }); break; }
+      case "treegod": drawTreeGod(a, lights); break;
+      case "earthgod": drawEarthGod(a, lights); break;
+      case "child": drawChild(a, lights); break;
+      case "peta": drawPeta(a, lights); break;
+      case "mother": drawMother(a, lights); break;
     }
   }
 
@@ -1185,8 +1524,8 @@ window.World = (() => {
   function frame(ts) {
     const dt = Math.min(0.05, (ts - last) / 1000 || 0.016);
     last = ts;
-    update(dt);
-    draw();
+    // one bad drawing must never freeze the whole scene
+    try { update(dt); draw(); } catch (e) { if (!frame.warned) { frame.warned = true; console.error(e); } }
     requestAnimationFrame(frame);
   }
 
@@ -1226,6 +1565,9 @@ window.World = (() => {
         case "ghostbot": drawGhost(it.x, it.y, it.phase, it.alpha, lights); break;
         case "well": drawWell(it); break;
         case "mit": drawMit(it); break;
+        case "ao": drawAo(it, lights); break;
+        case "hang": if (view.caveFound) drawHang(it); else drawBoulder(it); break;
+        case "thap": drawThap(it, lights); break;
         case "actor": drawActor(it, lights); break;
       }
     }
@@ -1367,7 +1709,7 @@ window.World = (() => {
       if (!a.label) continue;
       ctx.font = '500 9px "Be Vietnam Pro", system-ui, sans-serif';
       ctx.textAlign = "center";
-      const ly = a.y - (a.kind === "dog" ? 22 : a.kind === "deva" ? 92 : a.kind === "monk" ? 34 : 42);
+      const ly = a.y - (a.kind === "dog" ? 22 : a.kind === "deva" ? 92 : a.kind === "monk" ? 34 : a.kind === "child" ? 32 : a.kind === "peta" ? 44 : a.kind === "treegod" || a.kind === "earthgod" ? 54 : 42);
       if (dayMix > 0.5) { ctx.lineWidth = 2.6; ctx.strokeStyle = "rgba(250,246,230,0.85)"; ctx.strokeText(a.label, a.x, ly); ctx.fillStyle = "rgba(32,48,28,0.85)"; }
       else ctx.fillStyle = a.kind === "deva" ? "rgba(255,240,200,0.95)" : "rgba(220,213,197,0.7)";
       ctx.fillText(a.label, a.x, ly);

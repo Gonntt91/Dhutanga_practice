@@ -54,7 +54,24 @@ window.Mind = (() => {
       faces: [["Đặc tính", "Ưa thích."], ["Phận sự", "Làm thân tâm sảng khoái."], ["Biểu hiện", "Phấn chấn."], ["Nhân gần", "Danh và sắc."]],
     },
   };
-  const CARD_ORDER = ["san", "hoi_han", "tham", "khong_san", "khong_tham", "niem", "hy"];
+  Object.assign(CARDS, {
+    bon_xen: {
+      name: "Bỏn xẻn", good: false, pali: "macchariya", plain: "Tiếc của, không muốn chia cho ai.",
+      tip: "Khi thấy mình tiếc, thử chia một phần nhỏ thôi.", where: "Có lẽ gặp ở nghĩa địa, nơi có người đói lâu năm.",
+      faces: [["Đặc tính", "Che giấu điều mình có hoặc sẽ có."], ["Phận sự", "Không chịu để người khác cùng có."], ["Biểu hiện", "Co rút lại, keo kiệt."], ["Nhân gần", "Điều tốt của chính mình."]],
+    },
+    bi: {
+      name: "Bi", good: true, pali: "karuṇā", plain: "Thấy người khổ thì muốn giúp họ bớt khổ.",
+      tip: "Thấy ai khổ, làm một việc nhỏ cho họ đỡ hơn.", where: "Có lẽ gặp khi có ai đó đang khóc.",
+      faces: [["Đặc tính", "Muốn làm vơi khổ của người khác."], ["Phận sự", "Không đành lòng trước khổ của người khác."], ["Biểu hiện", "Không làm hại."], ["Nhân gần", "Thấy người khổ không nơi nương tựa."]],
+    },
+    tuy_hy: {
+      name: "Tùy hỷ", good: true, pali: "muditā", plain: "Vui theo niềm vui, điều tốt của người khác.",
+      tip: "Thấy ai được điều tốt, thử vui cùng họ một chút.", where: "Có lẽ gặp ở nơi rất xa, rất sáng.",
+      faces: [["Đặc tính", "Vui mừng với thành tựu của người khác."], ["Phận sự", "Không ganh tị."], ["Biểu hiện", "Dứt bỏ bất mãn."], ["Nhân gần", "Thấy thành tựu của người khác."]],
+    },
+  });
+  const CARD_ORDER = ["san", "hoi_han", "tham", "bon_xen", "khong_san", "khong_tham", "niem", "hy", "bi", "tuy_hy"];
 
   // ---------- temperaments (Visuddhimagga, ch. III) ----------
   const CARITA = {
@@ -69,12 +86,13 @@ window.Mind = (() => {
   const BAD = [["tham", "Tham"], ["san", "Sân"], ["si", "Si"]];
 
   // ---------- saved state ----------
-  function fresh() { return { carita: null, stats: null, cards: {}, quest: { step: "start", hit: false }, items: [], deva: { pity: 0, last: 0, seen: 0 } }; }
+  function fresh() { return { carita: null, stats: null, cards: {}, quest: { step: "start", hit: false }, q: {}, items: [], deva: { pity: 0, last: 0, seen: 0 } }; }
   function load() {
     try { const s = JSON.parse(Save.get(KEY) || "null"); if (s && s.cards) return { ...fresh(), ...s }; } catch {}
     return fresh();
   }
   let S = load();
+  if (!S.q) S.q = {};
   const save = () => Save.set(KEY, JSON.stringify(S));
 
   let api = null;          // callbacks from app.js
@@ -286,6 +304,7 @@ window.Mind = (() => {
       list.push({ kind: "granny", x: P().well.x + 22, y: P().well.y + 8, facing: -1, label: "bà cụ" });
       if (["monk", "sit", "deva", "done"].includes(st)) { const m = MONK_SPOT(); list.push({ kind: "monk", x: m.x, y: m.y, label: "sư già" }); }
     }
+    for (const m of modules) if (m.actors) try { list.push(...m.actors()); } catch (e) { console.error(e); }
     if (fx.devaAt) list.push({ kind: "deva", x: fx.devaAt.x, y: fx.devaAt.y - 6, alpha: Math.min(1, fx.devaT / 1.6) * (fx.devaFade == null ? 1 : fx.devaFade), label: fx.devaT > 1.6 ? "chư thiên" : "" });
     return list;
   }
@@ -309,6 +328,14 @@ window.Mind = (() => {
     const t = target();
     if (!t) return null;
     return { title: t.title, body: t.body, x: t.x, y: t.y };
+  }
+  // Every errand currently open (the dog chain plus the ones registered by encounters.js).
+  function questList() {
+    const out = [];
+    const t = target();
+    if (t) out.push({ title: t.title, body: t.body, x: t.x, y: t.y, name: t.name });
+    if (role) for (const m of modules) if (m.targets) try { out.push(...m.targets()); } catch (e) { console.error(e); }
+    return out;
   }
 
   // ---------- the dog bite chain ----------
@@ -570,7 +597,7 @@ window.Mind = (() => {
     World.resetLook();
   }
   // Save a picture of the moment with a caption band.
-  function saveMoment(line) {
+  function saveMoment(line, title = "Gặp chư thiên") {
     const src = World.snapshot();
     if (!src) return api.toast("Chưa lưu được ảnh.");
     const img = new Image();
@@ -582,7 +609,7 @@ window.Mind = (() => {
       g.drawImage(img, 0, 0);
       const fs = Math.round(img.width * 0.04);
       g.fillStyle = "#e6c56f"; g.font = `600 ${fs * 1.2}px "Cormorant Garamond", serif`; g.textAlign = "center";
-      g.fillText("Gặp chư thiên", c.width / 2, img.height + fs * 1.6);
+      g.fillText(title, c.width / 2, img.height + fs * 1.6);
       g.fillStyle = "#dcd5c5"; g.font = `italic ${fs * 0.8}px "Literata", serif`;
       g.fillText(line.replace(/[“”]/g, ""), c.width / 2, img.height + fs * 3, c.width * 0.92);
       g.fillStyle = "#8d9189"; g.font = `${fs * 0.6}px "Be Vietnam Pro", sans-serif`;
@@ -644,9 +671,9 @@ window.Mind = (() => {
       ctx.globalCompositeOperation = "source-over";
     }
     fx.remote = fx.remote.filter((r) => r.t < 12);
-    // marker for the side quest
-    const t = target();
-    if (t && role && !open) {
+    for (const m of modules) if (m.fx) try { m.fx(ctx, v, dt); } catch (e) { console.error(e); }
+    // markers for the open errands (only those with a place)
+    for (const t of role && !open ? questList().filter((q) => q.x != null && q.name) : []) {
       const pulse = 0.5 + 0.5 * Math.sin(v.time * 3);
       ctx.strokeStyle = `rgba(159,210,193,${0.5 + 0.4 * pulse})`; ctx.lineWidth = 1.4;
       ctx.beginPath(); ctx.ellipse(t.x, t.y + 6, 18 + pulse * 4, 8 + pulse * 2, 0, 0, Math.PI * 2); ctx.stroke();
@@ -674,10 +701,11 @@ window.Mind = (() => {
       }
       if (st === "deva" && near(MONK_SPOT(), 90)) return devaVisit(MONK_SPOT(), true);
     }
+    for (const m of modules) if (m.loop) { try { if (m.loop()) return; } catch (e) { console.error(e); } }
     // random visits at night in quiet holy places, when the mind is bright
     if (api.darkness() >= 0.5 && api.mood() >= 0.62 && Date.now() - S.deva.last > 8 * 60000) {
-      for (const key of ["hermitage", "gao"]) {
-        if (!near(P()[key], 70)) continue;
+      for (const key of ["hermitage", "gao", "ao"]) {
+        if (!P()[key] || !near(P()[key], 70)) continue;
         if (Math.random() < 0.04 + S.deva.pity * 0.04) return devaVisit({ x: P()[key].x - 30, y: P()[key].y + 20 }, false);
         S.deva.pity++; save();
         break;
@@ -803,8 +831,27 @@ window.Mind = (() => {
     wipe() { S = fresh(); save(); syncCardsBtn(); api.toast("Đã xóa dữ liệu tâm và thẻ."); },
   };
 
+  // ---------- encounters registered from encounters.js ----------
+  const modules = [];
+  function register(m) { modules.push(m); }
+  // "Xem tâm" of a being: a line, root bars, a note on why it lives where it lives.
+  function beingMind(title, line, bars, why, back) {
+    const box = el("div", "being");
+    box.appendChild(el("p", null, line));
+    const b = el("div", "stat-bars");
+    bars.forEach(([n, v, good]) => b.appendChild(bar(n, v, good)));
+    box.appendChild(b);
+    box.appendChild(el("p", "hint", why + " " + SIM_NOTE));
+    showSheet({ label: title, lines: [], body: box, choices: [{ label: "Quay lại", fn: back }] });
+  }
+  const kit = {
+    get S() { return S; }, save, showSheet, closeSheet, award, giveItem, dropItem, gotItem, grow, near, el, rand, P, MONK_SPOT,
+    role: () => role, api: () => api, setOpen: (v) => { open = v; }, cooldown: (ms) => { cooldownUntil = Date.now() + ms; },
+    syncActors, saveMoment, beingMind, understanding, SIM_NOTE,
+  };
+
   // Load the progress of the character now being played (or the guest's).
-  function reload() { S = load(); syncCardsBtn(); }
+  function reload() { S = load(); if (!S.q) S.q = {}; syncCardsBtn(); }
 
   // Read-only helpers for the profile screen (render any character's saved mind, not just the one in play).
   const parts = {
@@ -815,5 +862,5 @@ window.Mind = (() => {
     suggestion: () => (S.stats ? suggestion() : ""),
   };
 
-  return { parts, reload, init, onRoleStart, onRoleEnd, isOpen: () => open, bias, questInfo, renderStats, remote, openAlbum, dev, cardsChanged: syncCardsBtn };
+  return { register, kit, questList, parts, reload, init, onRoleStart, onRoleEnd, isOpen: () => open, bias, questInfo, renderStats, remote, openAlbum, dev, cardsChanged: syncCardsBtn };
 })();

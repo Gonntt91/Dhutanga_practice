@@ -152,3 +152,17 @@ Code: `auth.js` (Google OAuth, phiên đăng nhập bằng cookie HttpOnly, API 
 **Chạy trên máy:** không cần cấu hình gì. Tài khoản lưu vào `data/accounts.json`, và màn chọn vai có nút "Đăng nhập thử" (tắt khi `NODE_ENV=production`).
 
 **Màn "Nhân vật của tôi"** (`public/profile.js`): khi đã đăng nhập, bấm vào tên một nhân vật ở màn chọn vai, hoặc bấm nút "Nhân vật của tôi", sẽ thấy tính cách, chỉ số tâm, thẻ tâm sở, túi đồ và nhật ký của nhân vật đó. Từ đây có thể chơi tiếp hoặc xóa nhân vật. Sau này phần trang phục (quần áo, tóc…) sẽ nằm ở màn này.
+
+### Thêm nơi chốn, loài và nhiệm vụ (`public/encounters.js`, `public/palace.js`)
+
+- **Thọ thần ở gốc gạo** (từ chạng vạng): nhờ tìm bé Na lạc trong bụi tre. Dỗ dành rồi dẫn bé về ngõ làng gặp mẹ, quay lại nhận **chiếc lá gạo sáng**. Thẻ: Bi, Tùy hỷ.
+- **Bà ngoại ngạ quỷ ở nghĩa địa** (đêm, nhà sư và người dân): xin bát cơm ở giếng, dâng sư già, hồi hướng; bà sáng dần rồi tan. Thẻ: Bỏn xẻn, Không tham.
+- **Địa thần ở cổng làng** (sau khi đã làm một việc thiện, từ chạng vạng, tâm sáng): trao **ngọn đèn nhỏ**.
+- **Tảng đá lớn phía đông:** ngồi xuống nghỉ thì phát hiện **hang đá bí mật**. Có đèn thì vào được; nỗi sợ làm đèn tối dần. Cuối hang nhận **mảnh ký ức** về Hạnh.
+- **Ao sen** ở đầu làng: ngồi ngắm trăng, hái sen dâng ở tịnh thất. Đôi khi có chư thiên ghé.
+- **Tháp cổ trên đồi:** ban đêm, có hoa mạn-đà-la thì vào được **thiên cung**. Nổi giận thì cung tan; cười xòa thì nhận thẻ Tùy hỷ.
+- **Xe ngựa của ông lái buôn** chạy dọc đường chính: bắt chuyện để nghe tin đồn, đẩy giúp xe sa lầy (tặng **khăn rằn**), hoặc tặng rau má để đổi **bánh đa mè**. Không mua bán.
+- Bảng **Nhiệm vụ** liệt kê mọi việc đang mở và các chuyện lạ, mỗi mục có nút "Đưa tôi tới đó".
+- Dev (`?dev`): mục "Chuyện lạ, nơi chốn" để nhảy tới từng nơi, gọi xe ngựa và thêm vật phẩm.
+
+Các câu chuyện chỉ phỏng theo tinh thần Chuyện Thiên Cung và Chuyện Ngạ Quỷ, cần thầy duyệt.

@@ -10,6 +10,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Literata:opsz,wght@7..72,400;7..72,500&family=Be+Vietnam+Pro:wght@400;500&display=swap">
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="items.css">
+<link rel="stylesheet" href="palace.css">
 </head>
 <body>
 <div id="app" class="app">
@@ -51,10 +52,8 @@
       <button id="quest-cancel" class="pill" type="button" hidden>Bỏ, quay lại chỗ cũ</button>
     </div>
     <div id="quest-side" class="quest-side" hidden>
-      <p class="label">Việc nhỏ trong làng</p>
-      <p id="quest-side-title" class="quest-title side"></p>
-      <p id="quest-side-body" class="hint"></p>
-      <button id="quest-side-go" class="pill" type="button">Đưa tôi tới đó</button>
+      <p class="label">Việc nhỏ và chuyện lạ</p>
+      <div id="quest-side-list"></div>
     </div>
     <div id="quest-save" class="quest-side" hidden>
       <p class="label">Lưu nhân vật</p>
@@ -270,7 +269,9 @@
 <script src="room.js"></script>
 <script src="items.js"></script>
 <script src="save.js"></script>
+<script src="palace.js"></script>
 <script src="mind.js"></script>
+<script src="encounters.js"></script>
 <script src="avatar.js"></script>
 <script src="profile.js"></script>
 <script src="app.js"></script>

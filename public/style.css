@@ -546,3 +546,9 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--lantern); o
 .mood-dot { width: 26px; height: 26px; border-radius: 50%; flex: none; }
 .mood-legend summary { cursor: pointer; font: 500 13px var(--font-ui); color: var(--ash-dim); margin: 6px 0; }
 .mood-legend .mind-legend { margin-top: 8px; }
+.side-item { padding: 6px 0 10px; border-bottom: 1px dashed var(--line); }
+.side-item:last-child { border-bottom: 0; }
+.side-item .hint { margin: 2px 0 6px; }
+.quest-panel { max-height: calc(100% - 90px); overflow-y: auto; }
+/* card and item popups sit above full-screen scenes (palace, room) */
+.card-reveal { z-index: 12; }
