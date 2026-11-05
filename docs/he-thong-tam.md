@@ -24,6 +24,8 @@
 - **Trường Bộ, Kinh Phúng Tụng (DN 33)**: ba loại tuệ (văn, tư, tu).
 - **Kinh Lửa** (SN 46.53): khi tâm chìm thì nuôi giác chi nào, khi tâm động thì nuôi giác chi nào (dùng cho thẻ đối trị).
 - **Tương Ưng Chư Thiên** (SN 1) và **Kinh Ngoài Bức Tường** (Tirokuḍḍa, Tiểu Tụng): chư thiên đến hỏi đạo lúc đêm khuya; ngạ quỷ thân quyến và hồi hướng.
+- **Chuyện Thiên Cung** (Vimānavatthu) và **Chuyện Ngạ Quỷ** (Petavatthu), Tiểu Bộ Kinh: nguồn chuyện ngắn về nghiệp và quả cho các cuộc gặp (mục 9b).
+- **Tăng Chi, AN 3.37**: Tứ Đại Thiên Vương đi xem xét thế gian vào ngày trai giới (chu kỳ trăng trong game).
 
 Lời giảng 2018 nhấn mạnh và game dùng làm luật chơi:
 
@@ -487,6 +489,103 @@ Nguồn: **Kinh Ngoài Bức Tường** (Tirokuḍḍa, Tiểu Tụng). Ngạ qu
 - **Chư thiên hiếm:** chỉ xuất hiện khi tâm người chơi đủ sáng (Không sân và Tín cao), kèm hên xui; gặp nhiều sẽ mất huyền bí.
 - **Cách gọi:** dùng "thọ thần", "địa thần", "chư thiên" theo kinh, tránh pha thần linh dân gian.
 
+## 9b. Khám phá bề mặt: gặp gỡ, hiệu ứng, cõi khác
+
+Phần nền tảng (mục 4–9a) chạy ngầm. Phần bề mặt là thứ **làm người chơi muốn đi tiếp**: khám phá bản đồ, gặp đúng loài vào đúng lúc, có hiệu ứng để khoe, nhận manh mối mở nhiệm vụ mới, và bước vào cõi khác.
+
+**Nguồn chuyện** (Tiểu Bộ Kinh), vừa ngắn vừa đúng kinh, dạy đúng bài nghiệp và quả:
+- **Chuyện Thiên Cung** (Vimānavatthu): vị thiên kể *"tôi đã làm việc gì mà được cung điện này"*, thường chỉ một việc nhỏ như dâng đèn, dâng hoa.
+- **Chuyện Ngạ Quỷ** (Petavatthu): ngạ quỷ kể *"vì việc gì mà tôi khổ thế này"*, thường là bỏn xẻn, lừa dối, và kết bằng việc người thân hồi hướng.
+
+### Gặp ai, ở đâu, khi nào
+
+Mỗi cuộc gặp phụ thuộc: **nơi chốn × giờ (canh) × ngày trăng × tâm người chơi × hên xui**.
+
+| Điểm | Loài | Khi nào dễ gặp |
+|---|---|---|
+| Gốc gạo | Thọ thần | canh ba, trời lặng gió |
+| Cổng làng | Địa thần | rạng đông, khi người chơi vừa giữ giới |
+| Nghĩa địa | Ngạ quỷ | đêm không trăng |
+| Tịnh thất | Chư thiên nghe pháp | canh khuya, khi có người tụng kinh |
+| *Ao sen (mới)* | Chư thiên tắm hoa | đêm rằm |
+| *Gò tháp cổ (mới)* | Lối vào thiên cung | rằm hoặc mùng tám, tâm sáng |
+| *Hang đá sau đồi (mới)* | Ngạ quỷ trong hang | đêm tối nhất, mang theo đèn |
+
+- **Chu kỳ trăng trong game.** Theo Tăng Chi (AN 3.37), vào ngày trai giới Tứ Đại Thiên Vương và tùy tùng đi khắp thế gian xem loài người có hiếu với cha mẹ, có giữ trai giới không. Vì vậy vào rằm và mùng tám, cơ hội gặp chư thiên cao hơn hẳn.
+- **Mắt tâm.** Vòng tâm sáng (vàng, trắng) thì thấy thêm **lớp ẩn** trên cùng bản đồ: ánh lấp lánh quanh gốc cây, dấu chân sáng ở ao sen, bóng mờ ở cửa hang. Tâm tối thì lớp này mờ hẳn. Bề mặt nối với nền tảng mà không cần giải thích.
+- **Hên xui có bảo đảm.** Mỗi lần đến đúng chỗ mà không gặp, cơ hội lần sau tăng dần, đến lúc nào đó chắc chắn gặp.
+
+### Hiệu ứng khi gặp
+
+| Loài | Hình ảnh và âm thanh |
+|---|---|
+| Chư thiên | ánh sáng tỏa khắp khu rừng (như câu mở đầu nhiều bài kinh); **hoa mạn-đà-la rơi từ trời**; hương thơm thành làn sáng; tiếng chuông xa |
+| Thọ thần | lá cây gạo sáng lên từng chiếc, rễ phát sáng dưới đất, gió ngừng hẳn |
+| Địa thần | mặt đất ấm lên, đom đóm xếp thành vòng |
+| Ngạ quỷ | sương lạnh lan ra, lửa chập chờn, tiếng thở dài, màn hình hơi mất màu |
+| Bước vào cõi khác | màn hình gợn như mặt nước rồi mở ra cảnh mới |
+
+### Khoảnh khắc để khoe
+
+- Mỗi cuộc gặp tự tạo một **tấm ảnh khoảnh khắc**: cảnh, loài, giờ, ngày trăng, một câu ngắn của vị đó. Lưu hoặc chia sẻ được.
+- **Người chơi ở gần cũng thấy** ánh sáng hoặc sương, và cùng gặp. Có lý do để rủ nhau đi.
+- Bảng dấu vết chung hiện một dòng nhẹ: *"Đêm qua có người gặp thọ thần ở gốc gạo."* Không ghi tên, không xếp hạng.
+
+### Nhận được gì
+
+Vật phẩm là **chìa khóa và manh mối**, không phải sức mạnh hay tiền.
+
+| Vật | Từ ai | Dùng để |
+|---|---|---|
+| Hoa mạn-đà-la | chư thiên | mở lối vào thiên cung; tâm sáng hơn trong một đêm |
+| Chiếc lá gạo sáng | thọ thần | soi thấy lớp ẩn ở một chỗ |
+| Ngọn đèn nhỏ | địa thần | vào được hang đá |
+| Mảnh ký ức | thọ thần, ngạ quỷ | manh mối về Hạnh |
+| Lời gợi ý | mọi loài | một câu, mở nhiệm vụ tiếp theo |
+
+**Nhiệm vụ chỉ mở khi gặp**, ví dụ:
+- thọ thần nhờ tìm đứa trẻ đi lạc trong rừng tre;
+- ngạ quỷ trong hang nhờ tìm người thân ở làng để họ hồi hướng;
+- chư thiên hỏi một câu, người chơi phải đi tìm câu trả lời ở tịnh thất.
+
+Mỗi cuộc gặp cũng rơi ra thẻ tâm sở (mục 4a, 9a).
+
+### Chiều sâu: các tầng của bản đồ
+
+Bản đồ vẫn nhỏ gọn như hiện nay, nhưng có thêm tầng:
+
+| Tầng | Là gì | Mở bằng |
+|---|---|---|
+| 1. Thế giới thường | bản đồ hiện có | từ đầu |
+| 2. Lớp ẩn | cùng bản đồ, thấy thêm dấu vết các loài | mắt tâm (vòng tâm sáng) |
+| 3. Các cõi | cảnh riêng nhỏ, làm theo kiểu phòng 2.5D như nhà hoang, tịnh thất | vật phẩm và tâm phù hợp |
+
+**Thiên cung** (vào từ gò tháp, cần hoa mạn-đà-la):
+- Cung điện sáng. Vị thiên kể **một việc thiện nhỏ** đời trước, kiểu Chuyện Thiên Cung (*"Tôi chỉ dâng một ngọn đèn ở chùa làng."*).
+- Bấm xem cấu trúc tâm của vị ấy.
+- **Luật ở lại:** nếu Sân của người chơi bùng lên trong một tình huống thử, cung điện tan và người chơi rơi về gò tháp. Bài học "tâm nào cõi nấy", không cần giải thích.
+
+**Hang ngạ quỷ** (vào từ hang đá sau đồi, cần ngọn đèn):
+- Hang tối, chỉ thấy quanh ngọn đèn. Càng sâu càng nhiều ngạ quỷ; mỗi vị kể **một việc** đã làm, kiểu Chuyện Ngạ Quỷ (*"Tôi giấu cơm, nói với sư là nhà hết gạo."*).
+- **Luật đi sâu:** nỗi sợ làm đèn tối dần; ra thẻ Niệm hoặc Không sân thì đèn sáng lại; sợ quá thì chạy ra ngoài.
+- Cuối hang có một ngạ quỷ liên quan đến Hạnh.
+
+**Có thể làm sau:** cõi rồng (nāga) dưới ao sen, thế giới trong lòng cây gạo.
+
+### Ranh giới
+
+- **Cung điện là quả của việc thiện của chính vị ấy**, không phải phần thưởng ban cho người chơi. Người chơi không bao giờ "kiếm được" cung điện.
+- Chư thiên không ban điều ước; vật phẩm không tăng chỉ số lâu dài; không mua bán, không gacha.
+- **Ngạ quỷ đáng thương, không đáng sợ.** Có sương và bóng tối, nhưng không hù dọa kiểu nhảy bổ ra. Cảm xúc chính là thương, đúng tinh thần Kinh Ngoài Bức Tường.
+- Chuyện của từng vị **phỏng theo đúng truyện** trong Chuyện Thiên Cung, Chuyện Ngạ Quỷ rồi rút còn một hai câu; không tự bịa nghiệp quả.
+
+### Thứ tự làm đề xuất
+
+1. Chu kỳ trăng trong game; quy tắc gặp theo nơi chốn, giờ, trăng, tâm, hên xui có bảo đảm.
+2. Một cuộc gặp trọn vẹn: thọ thần ở gốc gạo, có hiệu ứng, tấm ảnh khoảnh khắc, người chơi gần cùng thấy, một nhiệm vụ mở ra.
+3. Lớp ẩn bằng mắt tâm.
+4. Hang ngạ quỷ (cảnh 2.5D đầu tiên), rồi thiên cung.
+
 ## 10. Mở khóa kiến thức
 
 - **Kiến thức mở bằng thẻ**, cho mọi vai (mục 4a). Không bắt đọc sách lý thuyết để mở khóa.
@@ -523,6 +622,7 @@ Nguồn: **Kinh Ngoài Bức Tường** (Tirokuḍḍa, Tiểu Tụng). Ngạ qu
 6. Bảng thẻ hợp, kém hợp khi đối trị (mục 4b).
 7. Các loài, cấu trúc tâm tái tục của từng loài, cách hiện chư thiên và nhiệm vụ hồi hướng (mục 9a).
 8. **Thành phần tâm sở của từng tâm** trong bộ bài tâm, luật tạo tâm thiện và bảng đổi lá (mục 4c).
+9. Chuyện của từng vị thiên, ngạ quỷ phỏng theo Chuyện Thiên Cung, Chuyện Ngạ Quỷ; cách hiện thiên cung, hang ngạ quỷ (mục 9b).
 
 ## 14. Bản thử nhỏ nhất (MVP)
 
