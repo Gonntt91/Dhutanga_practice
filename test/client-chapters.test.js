@@ -65,7 +65,7 @@ test("night 2 picks the c2 variant from how c1 ended", () => {
   assert.equal(pick("monk", 1).chapter, "c2a");
   assert.equal(pick("monk", 2).chapter, "c2a");
   assert.equal(pick("villager", 2).title, "Theo thầy tu tập");
-  assert.equal(pick("villager", 0).title, "Còn ngờ");
+  assert.equal(pick("villager", 0).title, "Còn nghi ngờ");
   assert.equal(pick("ghost", 0).title, "Đêm không còn chờ");
   assert.equal(pick("ghost", 2).title, "Còn chờ");
 });

@@ -129,7 +129,8 @@
   function sendPresence(force) {
     if (!state.connected) return;
     const p = World.getPlayer();
-    const key = `${state.role}|${state.sceneId}|${currentPose()}|${state.nick}|${Math.round(moodValue() * 25)}`;
+    const cid = Save.character() ? Save.character().id : null; // null for guest / trial play
+    const key = `${state.role}|${state.sceneId}|${currentPose()}|${state.nick}|${Math.round(moodValue() * 25)}|${cid}`;
     const now = Date.now();
     const movedEnough = Math.abs(p.nx - state.lastSent.x) > 0.004 || Math.abs(p.ny - state.lastSent.y) > 0.002;
     if (!force && key === state.lastSent.key && (!movedEnough || now - state.lastSent.t < 350)) return;
@@ -137,7 +138,7 @@
     post("/api/presence", {
       role: state.role, scene: state.sceneId, nick: state.nick,
       x: state.role ? p.nx : 0.5, y: state.role ? p.ny : 0.99, pose: currentPose(),
-      mood: state.role ? moodValue() : 0.5,
+      mood: state.role ? moodValue() : 0.5, characterId: cid,
     });
   }
 
@@ -314,12 +315,13 @@
     const counts = { monk: 0, ghost: 0, villager: 0 };
     others.forEach((p) => counts[p.role]++);
     const parts = [];
-    if (counts.monk) parts.push(`${counts.monk} nhà sư`);
-    if (counts.ghost) parts.push(`${counts.ghost} hồn ma`);
-    if (counts.villager) parts.push(`${counts.villager} người dân`);
+    const narrow = window.matchMedia("(max-width: 480px)").matches;
+    if (counts.monk) parts.push(`${counts.monk} ${narrow ? "sư" : "nhà sư"}`);
+    if (counts.ghost) parts.push(`${counts.ghost} ${narrow ? "ma" : "hồn ma"}`);
+    if (counts.villager) parts.push(`${counts.villager} ${narrow ? "dân" : "người dân"}`);
     $("presence-count").textContent = total <= 0
-      ? "Bạn đang ở đây một mình"
-      : parts.length ? `Đêm nay có ${parts.join(", ")}` : `${total} người đang xem`;
+      ? (window.matchMedia("(max-width: 480px)").matches ? "Bạn ở đây một mình" : "Bạn đang ở đây một mình")
+      : parts.length ? `${window.matchMedia("(max-width: 480px)").matches ? "Có" : "Đêm nay có"} ${parts.join(", ")}` : `${total} người đang xem`;
   }
 
   const MOMENT_TEXT = {
@@ -505,7 +507,9 @@
       body.type = "button";
       body.title = "Xem hồ sơ nhân vật";
       body.addEventListener("click", () => Profile.open(c.id));
-      body.appendChild(el("div", "rc-name", c.name));
+      const nm = el("div", "rc-name", c.name);
+      if (c.newConnections > 0) nm.appendChild(el("span", "new-dot"));
+      body.appendChild(nm);
       body.appendChild(el("div", "rc-who", `${info ? info.name : c.role} · ${c.cards || 0} thẻ · ${c.items || 0} vật phẩm${c.updatedAt ? " · " + ago(c.updatedAt) : ""}`));
       const go = el("button", "primary", "Chơi tiếp"); go.type = "button";
       go.addEventListener("click", () => playCharacter(c.id));
@@ -546,6 +550,8 @@
     // from the profile: play a character (leaving the one in play first, if any)
     play: async (id) => { if (state.role) await leaveRole(); playCharacter(id); },
     changed: () => { if (!state.role) renderPicker(); },
+    // from the profile's "Người quen": connect or disconnect changed who is a quen
+    connChanged: () => refreshQuen(),
     login: () => { if (Save.me().google) Save.flush().finally(() => { location.href = "/auth/google"; }); else { leaveRole(); toast("Đăng nhập ở màn hình chọn vai, rồi lưu lần chơi này thành nhân vật."); } },
   });
   async function playCharacter(id) {
@@ -558,6 +564,7 @@
     state.nick = Save.character() ? Save.character().name : $("nick").value.replace(/\s+/g, " ").trim().slice(0, 24);
     state.completed = loadCompleted();
     state.role = role;
+    refreshQuen();
     const spawn = World.SPAWN[role];
     const plan = Progress.decide(loadCheckpoint(), role, STORY[role], spawn, { minX: 12, maxX: World.W - 12, minY: 60, maxY: World.H }, { mem: loadMem() });
     state.cp = plan.cp;
@@ -631,6 +638,7 @@
     state.sceneId = null;
     state.sceneOpen = false;
     World.stop();
+    World.setQuen(new Set());
     sendPresence(true);
     renderPicker();
     return closing;
@@ -1059,7 +1067,7 @@
   }
 
   // ---------- nearby chat ----------
-  const chat = { open: false, muted: false, unread: 0, log: [], lastSent: 0 };
+  const chat = { open: false, muted: false, unread: 0, log: [], lastSent: 0, tab: "near" }; // tab: "near" (Quanh đây) or "friends" (Người quen)
   const chatWho = (m) => (m.from === state.sid ? "Bạn" : m.nick || ROLE_INFO[m.role]?.name || "Ai đó");
 
   function renderChat() {
@@ -1085,7 +1093,7 @@
     chat.log.push(m);
     if (chat.log.length > 100) chat.log.shift();
     World.say(m.from === state.sid ? "me" : m.from, m.text, m.role);
-    if (chat.open) renderChat();
+    if (chat.open) { if (chat.tab === "near") renderChat(); } // on the friends tab the line is kept in the log, shown when "Quanh đây" opens
     else if (m.from !== state.sid) { chat.unread++; updateChatBadge(); toast(`${chatWho(m)}: ${m.text}`); }
   }
   function updateChatBadge() {
@@ -1095,10 +1103,63 @@
   function openChat(open) {
     chat.open = open;
     $("chat-panel").hidden = !open;
-    if (open) { chat.unread = 0; updateChatBadge(); renderChat(); setTimeout(() => $("chat-input").focus(), 50); }
+    if (open) { chat.unread = 0; updateChatBadge(); showChatTab(chat.tab); if (chat.tab === "near") setTimeout(() => $("chat-input").focus(), 50); }
   }
   $("chat-btn").addEventListener("click", () => openChat(!chat.open));
   $("chat-close").addEventListener("click", () => openChat(false));
+
+  // ---------- the chat panel's second tab: "Người quen" (signed in, playing a saved character) ----------
+  const friendsAvailable = () => connCharId() !== null;
+  let friendsSeq = 0; // a late answer for an earlier load is dropped
+  function showChatTab(tab) {
+    if (tab === "friends" && !friendsAvailable()) tab = "near";
+    chat.tab = tab;
+    const friends = tab === "friends";
+    $("chat-tabs").hidden = !friendsAvailable();
+    $("chat-tab-near").setAttribute("aria-selected", String(!friends));
+    $("chat-tab-friends").setAttribute("aria-selected", String(friends));
+    $("chat-head-label").hidden = friends;
+    $("chat-near").hidden = friends;
+    $("chat-friends").hidden = !friends;
+    if (friends) refreshFriends(); else renderChat();
+  }
+  $("chat-tab-near").addEventListener("click", () => showChatTab("near"));
+  $("chat-tab-friends").addEventListener("click", () => showChatTab("friends"));
+  // Quen connections of the character being played; a row gets "Đi tới chỗ bạn" only when that person is online here.
+  async function refreshFriends() {
+    const cid = connCharId();
+    const list = $("chat-friends-list");
+    const note = $("chat-friends-note");
+    if (!cid) return;
+    const seq = ++friendsSeq;
+    note.textContent = "Đang tải…";
+    try {
+      const d = await Social.connections(cid);
+      if (seq !== friendsSeq) return;
+      const rows = (d.connections || []).filter((r) => r.level === "quen");
+      list.replaceChildren();
+      note.textContent = "";
+      if (!rows.length) list.appendChild(el("li", "sys", "Chưa có người quen. Gặp ai đó ngoài làng, bấm Giữ kết nối, và khi họ cũng giữ lại thì thành quen."));
+      for (const r of rows) list.appendChild(friendRow(r));
+    } catch {
+      if (seq === friendsSeq) note.textContent = "Chưa tải được danh sách, thử lại nhé.";
+    }
+  }
+  function friendRow(r) {
+    const li = el("li", "friend-row");
+    const text = el("div", "friend-text");
+    const meta = [ROLE_INFO[r.role] ? ROLE_INFO[r.role].name : "", Social.statusText(r.status)].filter(Boolean).join(" · ");
+    text.append(el("b", null, r.name || "Người này"), el("small", null, meta));
+    li.appendChild(text);
+    const peer = r.status && r.status.online ? state.peers.find((p) => p.handle === r.handle && p.pid !== state.sid) : null;
+    if (peer) {
+      const go = el("button", "pill", "Đi tới chỗ bạn"); go.type = "button";
+      go.addEventListener("click", () => { openChat(false); state.findTarget = null; World.walkTo(peer.x * World.W + 24, peer.y * World.H + 6); });
+      li.appendChild(go);
+    }
+    return li;
+  }
+  setInterval(() => { if (chat.open && chat.tab === "friends") refreshFriends(); }, 30000);
   $("chat-mute").addEventListener("click", () => {
     chat.muted = !chat.muted;
     $("chat-mute").setAttribute("aria-pressed", String(chat.muted));
@@ -1354,12 +1415,217 @@
     refreshDev();
   }
 
+  // ---------- info card: tap a person, NPC, place or thing on the map ----------
+  // Shows only what this character has already found out (Discover). Nothing unmet is named.
+  const INFO_DISC = { dog: "cho", monk: "su_gia", deva: "chu_thien", treegod: "tho_than", child: "be_na", peta: "ba_ngoai", earthgod: "dia_than" };
+  const UNKNOWN_LINE = "Chưa biết gì nhiều về chỗ này.";
+  function infoContent(hit) {
+    if (hit.kind === "player") {
+      const g = typeof hit.mood === "number" ? hit.mood : 0.5;
+      const [r, gg, b] = World.moodRgb(g);
+      return {
+        title: hit.name,
+        lines: [ROLE_INFO[hit.role] ? ROLE_INFO[hit.role].name : "", hit.pose === "sit" ? "Đang ngồi thiền." : "Đang đi quanh đây."],
+        mood: { label: `Màu tâm của người này: ${moodLabel(g)}`, color: `rgb(${r},${gg},${b})` },
+      };
+    }
+    if (hit.kind === "place") {
+      const here = window.Discover ? Discover.entries().filter((e) => e.place === hit.id) : [];
+      const known = here.find((e) => e.state === "seen") || here.find((e) => e.state === "heard");
+      if (known) return { title: hit.name, lines: [known.state === "seen" ? known.hint : known.rumour] };
+      const visited = window.Discover && Discover.placeState(hit.id).visited;
+      return { title: hit.name, lines: [visited ? "Đã từng ghé qua đây." : UNKNOWN_LINE] };
+    }
+    if (hit.kind === "actor") {
+      const id = INFO_DISC[hit.actorKind];
+      const e = id && window.Discover ? Discover.entries().find((x) => x.id === id) : null;
+      if (e && e.state === "seen") return { title: e.title, lines: [e.hint] };
+      if (e && e.state === "heard") return { title: hit.name, lines: [e.rumour] };
+      return { title: hit.name, lines: ["Chưa biết gì nhiều về người này."] };
+    }
+    return { title: hit.name, lines: ["Một thứ quen thuộc trong nghĩa địa."] };
+  }
+  // Where "Đi tới" walks: beside the thing, not on top of it.
+  function infoSpot(hit) {
+    if (hit.kind === "actor") return { x: hit.x + 26, y: hit.y + 6 };
+    if (hit.kind === "player") return { x: hit.x + 24, y: hit.y + 6 };
+    if (hit.kind === "place") return { x: hit.x, y: hit.y + 6 };
+    return { x: hit.x, y: hit.y + 8 };
+  }
+  const infoScrim = el("div", "info-scrim");
+  const infoCard = el("section", "info-card");
+  infoScrim.hidden = true; infoCard.hidden = true;
+  infoCard.setAttribute("aria-label", "Thông tin");
+  $("app").append(infoScrim, infoCard);
+  let openCard = null; // the hit whose card is showing; late profile answers for another card are dropped
+  function closeInfoCard() { infoScrim.hidden = true; infoCard.hidden = true; openCard = null; }
+
+  // Only other players have an info card for now, and it is two steps: tapping (or hovering, with a mouse) a
+  // player shows a small "i" badge beside them; tapping the badge opens the card. Anything else just walks,
+  // so a tap on a grave or a tree never throws a popup.
+  const infoBadge = el("button", "info-badge", "i");
+  infoBadge.type = "button"; infoBadge.hidden = true; infoBadge.setAttribute("aria-label", "Xem thông tin người này");
+  $("app").appendChild(infoBadge);
+  let badgeFor = null, badgeTimer = null, badgeHide = null;
+  function placeBadge() {
+    const pos = badgeFor && World.otherPos(badgeFor.id);
+    if (!pos) { hideInfoBadge(); return; }
+    const sp = World.screenPos(pos.x, pos.y);
+    const r = $("world").getBoundingClientRect(), a = $("app").getBoundingClientRect();
+    infoBadge.style.left = Math.round(r.left - a.left + sp.x + 14) + "px";
+    infoBadge.style.top = Math.round(r.top - a.top + sp.y - 34) + "px";
+  }
+  function hideInfoBadge() { clearInterval(badgeTimer); clearTimeout(badgeHide); badgeTimer = null; badgeFor = null; infoBadge.hidden = true; }
+  function showInfoBadge(hit, autoHideMs) {
+    if (badgeFor && badgeFor.id === hit.id && !infoBadge.hidden) { clearTimeout(badgeHide); } else {
+      badgeFor = hit; placeBadge(); infoBadge.hidden = false;
+      clearInterval(badgeTimer); badgeTimer = setInterval(placeBadge, 100);
+    }
+    clearTimeout(badgeHide);
+    badgeHide = setTimeout(hideInfoBadge, autoHideMs || 6000);
+  }
+  infoBadge.addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (!badgeFor) return;
+    const hit = badgeFor; hideInfoBadge(); openInfoCard(hit);
+  });
+  // a mouse hovering over a player shows the badge too; it stays while the pointer is on the badge itself
+  $("world").addEventListener("pointermove", (e) => {
+    if (e.pointerType !== "mouse" || !state.role) return;
+    const r = $("world").getBoundingClientRect();
+    const [wx, wy] = World.clientToWorld ? World.clientToWorld(e.clientX, e.clientY) : [null, null];
+    if (wx == null) return;
+    const hit = World.pick(wx, wy);
+    if (hit && hit.kind === "player") showInfoBadge(hit, 2500);
+  });
+  infoScrim.addEventListener("click", closeInfoCard); // tapping outside the card closes it without walking
+  window.addEventListener("keydown", (e) => { if (e.key === "Escape" && !infoCard.hidden) closeInfoCard(); });
+  // Block / report act on the account behind the player's character; the server answers by handle only.
+  async function blockPlayer(hit) {
+    if (!confirm(`Chặn “${hit.name}”? Hai bên sẽ không thấy hồ sơ hay gặp nhau nữa.`)) return;
+    try { await Social.block(hit.handle); closeInfoCard(); toast("Đã chặn người này."); }
+    catch { toast("Chưa chặn được, thử lại nhé."); }
+  }
+  async function reportPlayer(hit) {
+    const raw = prompt("Điều gì khiến bạn báo cáo người này? Ghi ngắn gọn.");
+    if (raw == null) return;
+    const reason = [...raw.replace(/\s+/g, " ").trim()].slice(0, 200).join("");
+    if (!reason) return;
+    if (!confirm("Gửi báo cáo về người này?")) return;
+    try { await Social.report(hit.handle, reason); closeInfoCard(); toast("Đã gửi báo cáo. Cảm ơn bạn."); }
+    catch { toast("Chưa gửi được báo cáo, thử lại nhé."); }
+  }
+  // ---------- connections: the card's "Giữ kết nối", and the gold dots on the map ----------
+  const CONN_NOTE = { quen: "Đã quen", luu: "Đã lưu", moi: "Người này muốn kết nối với bạn" };
+  const isSaved = (level) => level === "luu" || level === "quen";
+  // Only a signed-in viewer playing a saved character (never a guest) gets the connect row.
+  const connCharId = () => (Save.signedIn() && Save.character() ? Save.character().id : null);
+  // The row: the level as a small note, and one button that saves or unsaves.
+  function paintConn(box, card, cid, level) {
+    box.replaceChildren();
+    if (CONN_NOTE[level]) box.appendChild(el("span", "info-line conn-note", CONN_NOTE[level]));
+    const btn = el("button", "pill", isSaved(level) ? "Bỏ kết nối" : "Giữ kết nối"); btn.type = "button";
+    btn.addEventListener("click", () => changeConn(card, cid, box, level));
+    box.appendChild(btn);
+  }
+  async function changeConn(card, cid, box, level) {
+    const hit = card.hit;
+    const was = isSaved(level);
+    box.querySelector("button").disabled = true;
+    try {
+      const r = was ? await Social.disconnect(cid, hit.handle) : await Social.connect(cid, hit.handle);
+      level = r.level || null;
+      toast(was ? `Đã bỏ kết nối với ${hit.name}.` : level === "quen" ? `Đã quen với ${hit.name}.` : `Đã giữ kết nối với ${hit.name}.`);
+    } catch (e) {
+      toast(Social.connectErrorText(e));
+      if (openCard === card) paintConn(box, card, cid, level);
+      return;
+    }
+    refreshQuen();
+    if (openCard === card) paintConn(box, card, cid, level);
+  }
+  // Loads the current level of this person for the open card; a failed load just shows no row.
+  function loadConn(card, box, cid) {
+    Social.connections(cid).then((d) => {
+      if (openCard !== card) return;
+      const row = (d.connections || []).find((r) => r.handle === card.hit.handle);
+      paintConn(box, card, cid, row ? row.level : null);
+    }).catch(() => {});
+  }
+  // Gold dots on the map: connections who are online now and have a status (a null status never gets a dot).
+  async function refreshQuen() {
+    const cid = connCharId();
+    if (!cid) { World.setQuen(new Set()); return; }
+    try {
+      const d = await Social.connections(cid);
+      if (connCharId() !== cid) return; // the character changed while this was loading
+      World.setQuen(new Set((d.connections || []).filter((r) => r.level === "quen" && r.status && r.status.online).map((r) => r.handle)));
+    } catch { /* keep the dots we have */ }
+  }
+  setInterval(refreshQuen, 45000);
+
+  function openInfoCard(hit) {
+    const c = infoContent(hit);
+    const body = [el("p", "info-title", c.title)];
+    for (const t of c.lines) if (t) body.push(el("p", "info-line", t));
+    if (c.mood) {
+      const line = el("p", "info-line");
+      const dot = el("span", "info-dot");
+      dot.style.background = c.mood.color;
+      line.append(dot, c.mood.label);
+      body.push(line);
+    }
+    // a signed-in player's public profile (guests and unknown players get nothing extra)
+    const card = { hit };
+    openCard = card;
+    const cid = hit.kind === "player" && hit.handle ? connCharId() : null;
+    if (cid) {
+      const connBox = el("div", "info-conn");
+      body.push(connBox);
+      loadConn(card, connBox, cid);
+    }
+    if (hit.kind === "player" && hit.handle) {
+      const slot = el("div", "info-slot");
+      body.push(slot);
+      Social.fetchPublic(hit.handle).then((data) => {
+        if (openCard !== card || infoCard.hidden) return;
+        slot.replaceChildren(...Social.publicNodes(Social.profileView(data)));
+      }).catch(() => {});
+    }
+    const close = el("button", "pill", "Đóng"); close.type = "button";
+    const go = el("button", "primary", "Đi tới"); go.type = "button";
+    const spot = infoSpot(hit);
+    close.addEventListener("click", closeInfoCard);
+    go.addEventListener("click", () => { closeInfoCard(); state.findTarget = null; World.walkTo(spot.x, spot.y); });
+    const actions = el("div", "info-actions");
+    actions.append(close, go);
+    if (hit.kind === "player" && hit.handle && Save.signedIn()) {
+      const more = el("div", "info-more");
+      const block = el("button", "text-btn", "Chặn"); block.type = "button";
+      const report = el("button", "text-btn", "Báo cáo"); report.type = "button";
+      block.addEventListener("click", () => blockPlayer(hit));
+      report.addEventListener("click", () => reportPlayer(hit));
+      more.append(block, report);
+      body.push(more);
+    }
+    infoCard.replaceChildren(...body, actions);
+    infoScrim.hidden = false; infoCard.hidden = false;
+    close.focus({ preventScroll: true });
+  }
+
   // ---------- boot ----------
   // fromKey: the keyboard (desktop) is walking; same rules as a tap on the ground, except it never snaps to a nearby find.
   const onWorldTap = (x, y, fromKey) => {
     if (!state.role) return;
+    if (fromKey) { closeInfoCard(); hideInfoBadge(); }
     state.sideTarget = null;
     if (state.findOpen || Mind.isOpen()) return;
+    // a tap on someone or something opens its card instead of walking (while a story sheet is open, the tap folds it first)
+    if (!fromKey && !(state.sceneOpen && !$("sheet").classList.contains("collapsed"))) {
+      const hit = World.pick(x, y);
+      if (hit && hit.kind === "player") { showInfoBadge(hit); return; }
+      hideInfoBadge();
+    }
     if (state.sceneOpen) {
       // tapping the world while reading folds the sheet so the scene is visible
       if (!$("sheet").classList.contains("collapsed")) { setCollapsed(true); return; }

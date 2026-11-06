@@ -6,11 +6,29 @@ window.NightAudio = (() => {
   let day = false; // daytime: crickets stay silent
   let night = true; // owls and crows are only heard at night
 
+  // Mobile browsers keep audio locked until a real tap, and iOS also mutes Web Audio when the
+  // silent switch is on. Play a silent clip and resume the context on every user gesture.
+  let wanted = false;
+  function unlock() {
+    try { if (navigator.audioSession) navigator.audioSession.type = "playback"; } catch (e) { /* older browsers */ }
+    if (!ctx) return;
+    if (ctx.state !== "running") ctx.resume().catch(() => {});
+    try {
+      const b = ctx.createBuffer(1, 1, 22050), s = ctx.createBufferSource();
+      s.buffer = b; s.connect(ctx.destination); s.start(0);
+    } catch (e) { /* ignore */ }
+  }
+  ["touchend", "pointerdown", "click", "keydown"].forEach((ev) =>
+    document.addEventListener(ev, () => { if (wanted) { if (!ctx) start(); else unlock(); } }, { passive: true }));
+  document.addEventListener("visibilitychange", () => { if (wanted && ctx && !document.hidden) unlock(); });
+
   function start() {
-    if (ctx) { ctx.resume(); master.gain.value = 0.9; loadSamples(); scheduleCrickets(); scheduleFar(); return; }
+    wanted = true;
+    if (ctx) { unlock(); master.gain.value = 0.9; loadSamples(); scheduleCrickets(); scheduleFar(); return; }
     const AudioCtx = window.AudioContext || window.webkitAudioContext;
     if (!AudioCtx) return;
     ctx = new AudioCtx();
+    unlock();
     master = ctx.createGain();
     master.gain.value = 0.9;
     master.connect(ctx.destination);
@@ -39,6 +57,7 @@ window.NightAudio = (() => {
   }
 
   function stop() {
+    wanted = false;
     if (!ctx) return;
     master.gain.value = 0;
     clearTimeout(cricketTimer);

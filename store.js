@@ -9,9 +9,15 @@ const crypto = require("crypto");
 const SESSION_DAYS = 60;
 const MAX_CHARACTERS = 12;
 const MAX_TRACES = 500;
+const MAX_ENCOUNTERS = 50; // per character: "Từng gặp" keeps the newest ones
+const MAX_CONNECTIONS = 100; // per character: saved connections ("Đã lưu" / "Quen") it made itself
+const REPORT_REASON_MAX = 200;
 const PRUNE_EVERY = 50; // pg: trim old traces on every Nth insert, not each time
 const newId = () => crypto.randomUUID();
 const hashToken = (t) => crypto.createHash("sha256").update(t).digest("hex");
+// 12 random bytes -> 16 base64url chars ([A-Za-z0-9_-]). Opaque: never derived from the character id.
+const newHandle = () => crypto.randomBytes(12).toString("base64url");
+const isoOrNull = (v) => (v == null ? null : new Date(v).toISOString());
 
 function summary(c) {
   const mind = (c.data && c.data.mind) || {};
@@ -19,6 +25,7 @@ function summary(c) {
     id: c.id, name: c.name, role: c.role, createdAt: c.created_at, updatedAt: c.updated_at,
     cards: Object.keys(mind.cards || {}).length, items: (mind.items || []).length,
     carita: mind.carita || null,
+    hideProfile: !!c.hide_profile, hideStatus: !!c.hide_status,
   };
 }
 
@@ -42,12 +49,54 @@ function pgStore(url, injectedPool) {
       name text not null, role text not null, data jsonb not null default '{}'::jsonb,
       created_at timestamptz not null default now(), updated_at timestamptz not null default now());
     create index if not exists characters_user on characters(user_id);
+    alter table characters add column if not exists public_handle text;
+    create unique index if not exists characters_public_handle on characters(public_handle);
+    alter table characters add column if not exists hide_profile boolean not null default false;
+    alter table characters add column if not exists hide_status boolean not null default false;
+    alter table characters add column if not exists last_seen_at bigint;
+    create table if not exists encounters (
+      char_id text not null references characters(id) on delete cascade,
+      other_char_id text not null,
+      first_at bigint not null,
+      last_at bigint not null,
+      count int not null default 1,
+      primary key (char_id, other_char_id));
+    create index if not exists encounters_char_last on encounters(char_id, last_at desc);
+    create table if not exists connections (
+      char_id text not null references characters(id) on delete cascade,
+      other_char_id text not null,
+      created_at bigint not null,
+      seen_at bigint,
+      primary key (char_id, other_char_id));
+    create index if not exists connections_other on connections(other_char_id);
+    create table if not exists blocks (
+      user_id text not null references users(id) on delete cascade,
+      blocked_user_id text not null references users(id) on delete cascade,
+      created_at timestamptz not null default now(),
+      primary key (user_id, blocked_user_id));
+    create table if not exists reports (
+      id bigserial primary key,
+      reporter_user_id text not null references users(id) on delete cascade,
+      reported_char_id text not null,
+      reported_user_id text not null,
+      reason text not null,
+      created_at bigint not null);
     create table if not exists traces (
       seq bigserial primary key, id text not null, kind text not null, variant int not null default 0,
       role text, nick text, at bigint not null);
   `);
   const wait = async () => { await ready; };
   let inserts = 0;
+  // Both directions of saved connections between two accounts' characters (used when blocking).
+  async function removeConnectionsBetweenUsers(userA, userB) {
+    await wait();
+    if (!userA || !userB) return;
+    await q(
+      `delete from connections where
+         (char_id in (select id from characters where user_id = $1) and other_char_id in (select id from characters where user_id = $2))
+      or (char_id in (select id from characters where user_id = $2) and other_char_id in (select id from characters where user_id = $1))`,
+      [userA, userB]);
+  }
   return {
     kind: "postgres",
     async loadTraces(limit) {
@@ -87,7 +136,7 @@ function pgStore(url, injectedPool) {
     async saveAccount(userId, account) { await wait(); await q("update users set account = $2 where id = $1", [userId, account]); },
     async listCharacters(userId) {
       await wait();
-      const r = await q("select id, name, role, data, created_at, updated_at from characters where user_id = $1 order by updated_at desc", [userId]);
+      const r = await q("select id, name, role, data, created_at, updated_at, hide_profile, hide_status from characters where user_id = $1 order by updated_at desc", [userId]);
       return r.rows.map(summary);
     },
     async createCharacter(userId, name, role, data) {
@@ -112,7 +161,195 @@ function pgStore(url, injectedPool) {
       const r = await q("update characters set name = $3, updated_at = now() where user_id = $1 and id = $2", [userId, id, name]);
       return r.rowCount > 0;
     },
-    async deleteCharacter(userId, id) { await wait(); await q("delete from characters where user_id = $1 and id = $2", [userId, id]); },
+    // Cascades by hand (encounters both directions, reports) so it does not depend on FK options.
+    async deleteCharacter(userId, id) {
+      await wait();
+      const own = await q("select id from characters where user_id = $1 and id = $2", [userId, id]);
+      if (!own.rows[0]) return;
+      await q("delete from encounters where char_id = $1 or other_char_id = $1", [id]);
+      await q("delete from reports where reported_char_id = $1", [id]);
+      await q("delete from connections where char_id = $1 or other_char_id = $1", [id]);
+      await q("delete from characters where user_id = $1 and id = $2", [userId, id]);
+    },
+
+    // ----- social: handles, flags, encounters, blocks, reports -----
+    // Returns the character's public handle, creating it on first use (old rows are backfilled this way).
+    async ensureHandle(userId, charId) {
+      await wait();
+      const cur = await q("select public_handle from characters where id = $1 and user_id = $2", [charId, userId]);
+      if (!cur.rows[0]) return null;
+      if (cur.rows[0].public_handle) return cur.rows[0].public_handle;
+      for (let i = 0; i < 5; i++) {
+        try {
+          const r = await q("update characters set public_handle = $3 where id = $1 and user_id = $2 and public_handle is null returning public_handle", [charId, userId, newHandle()]);
+          if (r.rows[0]) return r.rows[0].public_handle;
+          const again = await q("select public_handle from characters where id = $1 and user_id = $2", [charId, userId]);
+          return again.rows[0] ? again.rows[0].public_handle : null;
+        } catch (err) {
+          if (err.code !== "23505") throw err; // unique collision on the handle: try another
+        }
+      }
+      throw new Error("could not allocate a handle");
+    },
+    async getByHandle(handle) {
+      await wait();
+      if (typeof handle !== "string" || !handle) return null;
+      const r = await q("select id, user_id, name, role, data, created_at, hide_profile, hide_status from characters where public_handle = $1", [handle]);
+      const c = r.rows[0];
+      if (!c) return null;
+      return { id: c.id, user_id: c.user_id, name: c.name, role: c.role, data: c.data || {}, created_at: isoOrNull(c.created_at), hide_profile: !!c.hide_profile, hide_status: !!c.hide_status };
+    },
+    async setFlags(userId, charId, flags = {}) {
+      await wait();
+      const hp = typeof flags.hideProfile === "boolean" ? flags.hideProfile : null;
+      const hs = typeof flags.hideStatus === "boolean" ? flags.hideStatus : null;
+      const r = await q("update characters set hide_profile = coalesce($3::boolean, hide_profile), hide_status = coalesce($4::boolean, hide_status) where user_id = $1 and id = $2", [userId, charId, hp, hs]);
+      return r.rowCount > 0;
+    },
+    async touchSeen(charId, nowMs = Date.now()) {
+      await wait();
+      await q("update characters set last_seen_at = $2 where id = $1", [charId, nowMs]);
+    },
+    // One row per direction. Refuses self-pairs and two characters of the same account (the join filters it).
+    async recordEncounter(charId, otherCharId, nowMs) {
+      await wait();
+      if (!charId || !otherCharId || charId === otherCharId) return false;
+      const r = await q(
+        `insert into encounters (char_id, other_char_id, first_at, last_at, count)
+         select a.id, b.id, $3::bigint, $3::bigint, 1
+         from characters a join characters b on b.id = $2::text
+         where a.id = $1::text and a.user_id <> b.user_id
+         on conflict (char_id, other_char_id) do update set last_at = excluded.last_at, count = encounters.count + 1`,
+        [charId, otherCharId, nowMs]);
+      await q(
+        "delete from encounters where char_id = $1 and other_char_id not in (select other_char_id from encounters where char_id = $1 order by last_at desc limit $2)",
+        [charId, MAX_ENCOUNTERS]);
+      return r.rowCount > 0;
+    },
+    async listEncounters(charId) {
+      await wait();
+      const r = await q(
+        `select e.other_char_id, e.first_at, e.last_at, e.count, c.user_id as other_user_id, c.name, c.role, c.public_handle, c.hide_profile
+         from encounters e join characters c on c.id = e.other_char_id
+         where e.char_id = $1 order by e.last_at desc limit $2`,
+        [charId, MAX_ENCOUNTERS]);
+      return r.rows.map((x) => ({
+        otherCharId: x.other_char_id, otherUserId: x.other_user_id, name: x.name, role: x.role,
+        handle: x.public_handle || null, hideProfile: !!x.hide_profile,
+        firstAt: Number(x.first_at), lastAt: Number(x.last_at), count: Number(x.count),
+      }));
+    },
+    async addBlock(userId, blockedUserId) {
+      await wait();
+      if (!userId || !blockedUserId || userId === blockedUserId) return false;
+      await q("insert into blocks (user_id, blocked_user_id) values ($1,$2) on conflict do nothing", [userId, blockedUserId]);
+      await removeConnectionsBetweenUsers(userId, blockedUserId);
+      return true;
+    },
+    // ----- connections: one row per direction (char_id saved other_char_id) -----
+    async addConnection(charId, otherCharId, nowMs = Date.now()) {
+      await wait();
+      if (!charId || !otherCharId || charId === otherCharId) return false;
+      // Both characters must exist and belong to different accounts.
+      const pair = await q(
+        "select 1 from characters a join characters b on b.id = $2::text where a.id = $1::text and a.user_id <> b.user_id",
+        [charId, otherCharId]);
+      if (!pair.rows[0]) return false;
+      const have = await q("select 1 from connections where char_id = $1 and other_char_id = $2", [charId, otherCharId]);
+      if (have.rows[0]) return true; // idempotent
+      const r = await q(
+        `insert into connections (char_id, other_char_id, created_at, seen_at)
+         select $1::text, $2::text, $3::bigint, null
+         where (select count(*) from connections where char_id = $1::text) < $4::int
+         on conflict (char_id, other_char_id) do nothing`,
+        [charId, otherCharId, nowMs, MAX_CONNECTIONS]);
+      return r.rowCount > 0;
+    },
+    async removeConnection(charId, otherCharId) {
+      await wait();
+      await q("delete from connections where char_id = $1 and other_char_id = $2", [charId, otherCharId]);
+    },
+    async connectionPair(charId, otherCharId) {
+      await wait();
+      const r = await q(
+        `select exists(select 1 from connections where char_id = $1 and other_char_id = $2) as i_saved,
+                exists(select 1 from connections where char_id = $2 and other_char_id = $1) as they_saved`,
+        [charId, otherCharId]);
+      return { iSaved: !!r.rows[0].i_saved, theySaved: !!r.rows[0].they_saved };
+    },
+    // "Từng gặp" in either direction.
+    async hasEncounter(charId, otherCharId) {
+      await wait();
+      if (!charId || !otherCharId || charId === otherCharId) return false;
+      const r = await q(
+        "select 1 from encounters where (char_id = $1 and other_char_id = $2) or (char_id = $2 and other_char_id = $1) limit 1",
+        [charId, otherCharId]);
+      return r.rows.length > 0;
+    },
+    // Every character that either side saved. Characters that no longer exist are dropped by the join.
+    async listConnections(charId) {
+      await wait();
+      const r = await q(
+        `select o.id as other_char_id, o.user_id as other_user_id, o.name, o.role, o.public_handle,
+                o.hide_profile, o.hide_status, o.last_seen_at,
+                mine.created_at as my_at, theirs.created_at as their_at, theirs.seen_at as their_seen_at
+         from (select other_char_id as oid from connections where char_id = $1
+               union select char_id from connections where other_char_id = $1) x
+         join characters o on o.id = x.oid
+         left join connections mine on mine.char_id = $1 and mine.other_char_id = o.id
+         left join connections theirs on theirs.char_id = o.id and theirs.other_char_id = $1
+         where x.oid <> $1`,
+        [charId]);
+      return r.rows.map((x) => ({
+        otherCharId: x.other_char_id, otherUserId: x.other_user_id, handle: x.public_handle || null,
+        name: x.name, role: x.role, hideProfile: !!x.hide_profile, hideStatus: !!x.hide_status,
+        lastSeenAt: x.last_seen_at == null ? null : Number(x.last_seen_at),
+        iSaved: x.my_at != null, theySaved: x.their_at != null,
+        savedAt: Number(x.my_at ?? x.their_at),
+        incomingUnseen: x.their_at != null && x.my_at == null && x.their_seen_at == null,
+      }));
+    },
+    // Marks the incoming connections (someone saved me) as looked at.
+    async markIncomingSeen(charId, nowMs = Date.now()) {
+      await wait();
+      await q("update connections set seen_at = $2 where other_char_id = $1 and seen_at is null", [charId, nowMs]);
+    },
+    // Map charId -> number of incoming connections not yet seen and not yet saved back.
+    async countIncomingUnseen(charIds) {
+      await wait();
+      const out = new Map();
+      const ids = (Array.isArray(charIds) ? charIds : []).filter((x) => typeof x === "string" && x);
+      if (!ids.length) return out;
+      const r = await q(
+        `select t.other_char_id as cid, count(*)::int as n from connections t
+         where t.other_char_id = any($1::text[]) and t.seen_at is null
+           and not exists (select 1 from connections m where m.char_id = t.other_char_id and m.other_char_id = t.char_id)
+         group by t.other_char_id`,
+        [ids]);
+      for (const row of r.rows) out.set(row.cid, Number(row.n));
+      return out;
+    },
+    removeConnectionsBetweenUsers,
+    async removeBlock(userId, blockedUserId) {
+      await wait();
+      await q("delete from blocks where user_id = $1 and blocked_user_id = $2", [userId, blockedUserId]);
+    },
+    async isBlockedEither(userA, userB) {
+      await wait();
+      if (!userA || !userB) return false;
+      const r = await q(
+        "select 1 from blocks where (user_id = $1 and blocked_user_id = $2) or (user_id = $2 and blocked_user_id = $1) limit 1",
+        [userA, userB]);
+      return r.rows.length > 0;
+    },
+    async addReport(reporterUserId, reportedCharId, reason, nowMs) {
+      await wait();
+      const r = await q(
+        `insert into reports (reporter_user_id, reported_char_id, reported_user_id, reason, created_at)
+         select $1::text, c.id, c.user_id, $3::text, $4::bigint from characters c where c.id = $2::text`,
+        [reporterUserId, reportedCharId, String(reason ?? "").slice(0, REPORT_REASON_MAX), nowMs]);
+      return r.rowCount > 0;
+    },
   };
 }
 
@@ -128,7 +365,9 @@ function fileStore(file, tracesFile) {
       fs.writeFile(tracesFile, JSON.stringify(traces, null, 1), (err) => err && console.error("save traces failed:", err.message));
     }, 500);
   };
-  let db = { users: {}, sessions: {}, characters: {} };
+  // encounters: keyed "charId|otherCharId"; connections: same key, one row per direction;
+  // blocks: keyed "userId|blockedUserId"; reports: array.
+  let db = { users: {}, sessions: {}, characters: {}, encounters: {}, connections: {}, blocks: {}, reports: [] };
   try { db = { ...db, ...JSON.parse(fs.readFileSync(file, "utf8")) }; } catch {}
   let timer = null;
   const persist = () => {
@@ -139,6 +378,16 @@ function fileStore(file, tracesFile) {
     }, 300);
   };
   const now = () => new Date().toISOString();
+  // Both directions of saved connections between two accounts' characters (used when blocking).
+  function removeConnectionsBetweenUsers(userA, userB) {
+    if (!userA || !userB) return;
+    for (const k of Object.keys(db.connections)) {
+      const t = db.connections[k];
+      const ownerA = db.characters[t.char_id]?.user_id, ownerB = db.characters[t.other_char_id]?.user_id;
+      if ((ownerA === userA && ownerB === userB) || (ownerA === userB && ownerB === userA)) delete db.connections[k];
+    }
+    persist();
+  }
   return {
     kind: "file",
     async loadTraces(limit) { return limit > 0 ? traces.slice(-limit) : []; },
@@ -174,7 +423,7 @@ function fileStore(file, tracesFile) {
     },
     async createCharacter(userId, name, role, data) {
       if (Object.values(db.characters).filter((c) => c.user_id === userId).length >= MAX_CHARACTERS) throw new Error("too many characters");
-      const c = { id: newId(), user_id: userId, name, role, data: data || {}, created_at: now(), updated_at: now() };
+      const c = { id: newId(), user_id: userId, name, role, data: data || {}, created_at: now(), updated_at: now(), hide_profile: false, hide_status: false };
       db.characters[c.id] = c; persist();
       return c;
     },
@@ -191,7 +440,169 @@ function fileStore(file, tracesFile) {
       c.name = name; c.updated_at = now(); persist();
       return true;
     },
-    async deleteCharacter(userId, id) { const c = db.characters[id]; if (c && c.user_id === userId) { delete db.characters[id]; persist(); } },
+    async deleteCharacter(userId, id) {
+      const c = db.characters[id];
+      if (!c || c.user_id !== userId) return;
+      delete db.characters[id];
+      for (const k of Object.keys(db.encounters)) {
+        const e = db.encounters[k];
+        if (e.char_id === id || e.other_char_id === id) delete db.encounters[k];
+      }
+      db.reports = db.reports.filter((r) => r.reported_char_id !== id);
+      for (const k of Object.keys(db.connections)) {
+        const t = db.connections[k];
+        if (t.char_id === id || t.other_char_id === id) delete db.connections[k];
+      }
+      persist();
+    },
+
+    // ----- social: handles, flags, encounters, blocks, reports -----
+    async ensureHandle(userId, charId) {
+      const c = db.characters[charId];
+      if (!c || c.user_id !== userId) return null;
+      if (!c.public_handle) {
+        let h;
+        do { h = newHandle(); } while (Object.values(db.characters).some((x) => x.public_handle === h));
+        c.public_handle = h;
+        persist();
+      }
+      return c.public_handle;
+    },
+    async getByHandle(handle) {
+      if (typeof handle !== "string" || !handle) return null;
+      const c = Object.values(db.characters).find((x) => x.public_handle === handle);
+      if (!c) return null;
+      return { id: c.id, user_id: c.user_id, name: c.name, role: c.role, data: c.data || {}, created_at: c.created_at, hide_profile: !!c.hide_profile, hide_status: !!c.hide_status };
+    },
+    async setFlags(userId, charId, flags = {}) {
+      const c = db.characters[charId];
+      if (!c || c.user_id !== userId) return false;
+      if (typeof flags.hideProfile === "boolean") c.hide_profile = flags.hideProfile;
+      if (typeof flags.hideStatus === "boolean") c.hide_status = flags.hideStatus;
+      persist();
+      return true;
+    },
+    async touchSeen(charId, nowMs = Date.now()) {
+      const c = db.characters[charId];
+      if (c) { c.last_seen_at = nowMs; persist(); }
+    },
+    async recordEncounter(charId, otherCharId, nowMs) {
+      const a = db.characters[charId], b = db.characters[otherCharId];
+      if (!a || !b || charId === otherCharId || a.user_id === b.user_id) return false;
+      const k = `${charId}|${otherCharId}`;
+      const e = db.encounters[k];
+      if (e) { e.last_at = nowMs; e.count += 1; }
+      else db.encounters[k] = { char_id: charId, other_char_id: otherCharId, first_at: nowMs, last_at: nowMs, count: 1 };
+      const mine = Object.entries(db.encounters)
+        .filter(([, v]) => v.char_id === charId)
+        .sort((x, y) => y[1].last_at - x[1].last_at);
+      for (const [key] of mine.slice(MAX_ENCOUNTERS)) delete db.encounters[key];
+      persist();
+      return true;
+    },
+    async listEncounters(charId) {
+      return Object.values(db.encounters)
+        .filter((e) => e.char_id === charId)
+        .sort((x, y) => y.last_at - x.last_at)
+        .slice(0, MAX_ENCOUNTERS)
+        .flatMap((e) => {
+          const o = db.characters[e.other_char_id];
+          if (!o) return []; // character gone: drop the row
+          return [{
+            otherCharId: o.id, otherUserId: o.user_id, name: o.name, role: o.role,
+            handle: o.public_handle || null, hideProfile: !!o.hide_profile,
+            firstAt: e.first_at, lastAt: e.last_at, count: e.count,
+          }];
+        });
+    },
+    async addBlock(userId, blockedUserId) {
+      if (!userId || !blockedUserId || userId === blockedUserId) return false;
+      db.blocks[`${userId}|${blockedUserId}`] = { user_id: userId, blocked_user_id: blockedUserId, created_at: now() };
+      removeConnectionsBetweenUsers(userId, blockedUserId);
+      persist();
+      return true;
+    },
+    // ----- connections: one row per direction (char_id saved other_char_id) -----
+    async addConnection(charId, otherCharId, nowMs = Date.now()) {
+      const a = db.characters[charId], b = db.characters[otherCharId];
+      if (!a || !b || charId === otherCharId || a.user_id === b.user_id) return false;
+      const k = `${charId}|${otherCharId}`;
+      if (db.connections[k]) return true; // idempotent
+      if (Object.values(db.connections).filter((c) => c.char_id === charId).length >= MAX_CONNECTIONS) return false;
+      db.connections[k] = { char_id: charId, other_char_id: otherCharId, created_at: nowMs, seen_at: null };
+      persist();
+      return true;
+    },
+    async removeConnection(charId, otherCharId) {
+      delete db.connections[`${charId}|${otherCharId}`];
+      persist();
+    },
+    async connectionPair(charId, otherCharId) {
+      return { iSaved: !!db.connections[`${charId}|${otherCharId}`], theySaved: !!db.connections[`${otherCharId}|${charId}`] };
+    },
+    async hasEncounter(charId, otherCharId) {
+      if (!charId || !otherCharId || charId === otherCharId) return false;
+      return !!(db.encounters[`${charId}|${otherCharId}`] || db.encounters[`${otherCharId}|${charId}`]);
+    },
+    async listConnections(charId) {
+      const ids = new Set();
+      for (const c of Object.values(db.connections)) {
+        if (c.char_id === charId) ids.add(c.other_char_id);
+        else if (c.other_char_id === charId) ids.add(c.char_id);
+      }
+      ids.delete(charId);
+      return [...ids].flatMap((oid) => {
+        const o = db.characters[oid];
+        if (!o) return []; // character gone: drop the row
+        const mine = db.connections[`${charId}|${oid}`];
+        const theirs = db.connections[`${oid}|${charId}`];
+        if (!mine && !theirs) return [];
+        return [{
+          otherCharId: oid, otherUserId: o.user_id, handle: o.public_handle || null,
+          name: o.name, role: o.role, hideProfile: !!o.hide_profile, hideStatus: !!o.hide_status,
+          lastSeenAt: o.last_seen_at == null ? null : Number(o.last_seen_at),
+          iSaved: !!mine, theySaved: !!theirs,
+          savedAt: Number(mine ? mine.created_at : theirs.created_at),
+          incomingUnseen: !!theirs && !mine && theirs.seen_at == null,
+        }];
+      });
+    },
+    async markIncomingSeen(charId, nowMs = Date.now()) {
+      let changed = false;
+      for (const t of Object.values(db.connections)) {
+        if (t.other_char_id === charId && t.seen_at == null) { t.seen_at = nowMs; changed = true; }
+      }
+      if (changed) persist();
+    },
+    async countIncomingUnseen(charIds) {
+      const out = new Map();
+      const want = new Set(Array.isArray(charIds) ? charIds : []);
+      for (const t of Object.values(db.connections)) {
+        if (!want.has(t.other_char_id) || t.seen_at != null) continue;
+        if (db.connections[`${t.other_char_id}|${t.char_id}`]) continue; // already saved back: not new
+        out.set(t.other_char_id, (out.get(t.other_char_id) || 0) + 1);
+      }
+      return out;
+    },
+    removeConnectionsBetweenUsers,
+    async removeBlock(userId, blockedUserId) {
+      delete db.blocks[`${userId}|${blockedUserId}`];
+      persist();
+    },
+    async isBlockedEither(userA, userB) {
+      if (!userA || !userB) return false;
+      return !!(db.blocks[`${userA}|${userB}`] || db.blocks[`${userB}|${userA}`]);
+    },
+    async addReport(reporterUserId, reportedCharId, reason, nowMs) {
+      const c = db.characters[reportedCharId];
+      if (!c) return false;
+      db.reports.push({
+        id: newId(), reporter_user_id: reporterUserId, reported_char_id: c.id, reported_user_id: c.user_id,
+        reason: String(reason ?? "").slice(0, REPORT_REASON_MAX), created_at: nowMs,
+      });
+      persist();
+      return true;
+    },
   };
 }
 
@@ -206,4 +617,4 @@ function createStore(opts = {}) {
 let shared = null;
 const getStore = () => shared || (shared = createStore());
 
-module.exports = { createStore, getStore, MAX_CHARACTERS, MAX_TRACES };
+module.exports = { createStore, getStore, MAX_CHARACTERS, MAX_TRACES, MAX_ENCOUNTERS, MAX_CONNECTIONS, REPORT_REASON_MAX };

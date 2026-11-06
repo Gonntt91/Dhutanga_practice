@@ -205,7 +205,7 @@ window.STORY = {
             { kind: "nghe", text: "Tiếng dế. Tiếng gió. Hình như có cả tiếng thở." },
           ],
           results: [
-            { min: 0, text: "Thầy lạc hơi nhiều, lạc rồi lại nhớ ra là mình đang ngồi. Lúc nhớ ra, thầy cười thầm. Nhớ ra cũng là một lần quay về." },
+            { min: 0, text: "Tâm thầy đi chơi hơi nhiều, đi rồi mới sực nhớ là mình đang ngồi. Sực nhớ ra, thầy cười thầm. Sực nhớ ra cũng là một lần quay về." },
             { min: 3, text: "Có những ý nghĩ trôi qua, thầy chạm vào, gọi tên, rồi thả. Muỗi thì vẫn ở trên mũi, nhưng thầy đã bớt giận nó." },
             { min: 6, text: "Ý nghĩ đến rồi đi như người qua cổng. Thầy không đuổi, không mời, chỉ đứng yên làm cái cổng." },
           ],

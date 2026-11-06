@@ -153,7 +153,7 @@ window.Save = (() => {
   async function createCharacter(name, role, data) {
     const { character } = await api("POST", "/api/characters", { name, role, data: data || {} });
     char = { id: character.id, name: character.name, role: character.role, kv: kvFromData(character.data) };
-    me.characters = [{ id: char.id, name: char.name, role: char.role, cards: 0, items: 0, updatedAt: new Date().toISOString() }, ...(me.characters || [])];
+    me.characters = [{ id: char.id, name: char.name, role: char.role, cards: 0, items: 0, hideProfile: false, hideStatus: false, updatedAt: new Date().toISOString() }, ...(me.characters || [])];
     return char;
   }
   async function renameCharacter(id, name) {
@@ -161,6 +161,12 @@ window.Save = (() => {
     (me.characters || []).forEach((c) => { if (c.id === id) c.name = character.name; });
     if (char && char.id === id) char.name = character.name;
     return character.name;
+  }
+  // Privacy switches for one character ({hideProfile?, hideStatus?}); the summary in the list follows the server's answer.
+  async function setFlags(id, flags) {
+    await api("PATCH", "/api/characters/" + id + "/flags", flags);
+    (me.characters || []).forEach((c) => { if (c.id === id) Object.assign(c, flags); });
+    return flags;
   }
   async function deleteCharacter(id) {
     await api("DELETE", "/api/characters/" + id);
@@ -205,7 +211,7 @@ window.Save = (() => {
   return {
     get, set, remove, flush, log, history, status, onStatus: (cb) => { statusSubs.push(cb); },
     refresh, me: () => me, signedIn, character: () => char,
-    openCharacter, createCharacter, deleteCharacter, renameCharacter, closeCharacter,
+    openCharacter, createCharacter, deleteCharacter, renameCharacter, setFlags, closeCharacter,
     guestProgress, importGuest, devLogin, logout,
     setGuestRole: (r, nick) => { ls.set(GUEST_ROLE, r); if (nick) ls.set(GUEST_NICK, nick); },
   };

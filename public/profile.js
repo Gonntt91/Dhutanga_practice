@@ -1,5 +1,6 @@
-// Profile screen for signed-in players: all characters, and for the chosen one its temperament,
-// mind stats, cards, bag and diary. Read-only; "Chơi tiếp" hands back to app.js.
+// Profile screen for signed-in players: all characters, and for the chosen one its header, then three tabs:
+// the overview (temperament, mind stats, cards, milestones, bag), the people it has met, and the diary.
+// Read-only; "Chơi tiếp" hands back to app.js.
 // Later this is where appearance (clothes, hair…) will be shown and changed.
 window.Profile = (() => {
   const $ = (id) => document.getElementById(id);
@@ -8,17 +9,11 @@ window.Profile = (() => {
   let selected = null;
   let live = null; // the character being played right now (opened from the mind orb); null when opened from the picker
   const cache = new Map(); // id -> character (with data)
+  let profileTab = "overview"; // the active tab; kept while the same character is shown, reset when another one is
+  let tabOwner = null; // the character id that profileTab belongs to
 
   const fmtDate = (iso) => { try { return new Date(iso).toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" }); } catch { return ""; } };
-  function ago(iso) {
-    if (!iso) return "";
-    const mins = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
-    if (mins < 1) return "vừa xong";
-    if (mins < 60) return `${mins} phút trước`;
-    const h = Math.round(mins / 60);
-    if (h < 24) return `${h} giờ trước`;
-    return `${Math.round(h / 24)} ngày trước`;
-  }
+  const ago = (iso) => Social.ago(iso);
 
   async function fetchCharacter(id) {
     if (cache.has(id)) return cache.get(id);
@@ -44,13 +39,18 @@ window.Profile = (() => {
       b.setAttribute("aria-pressed", String(c.id === selected));
       const glyph = el("span", "chip-avatar"); glyph.innerHTML = Avatar.svg(c.role, c.skin, 34);
       const txt = el("span", "chip-text");
-      txt.appendChild(el("b", null, c.name));
-      txt.appendChild(el("small", null, `${ROLE_INFO[c.role] ? ROLE_INFO[c.role].name : c.role} · ${live && live.id === c.id ? "đang chơi" : ago(c.updatedAt)}`));
+      const nameEl = el("b", null, c.name);
+      if (c.newConnections > 0) nameEl.appendChild(newDot("Có người muốn kết nối với bạn"));
+      txt.appendChild(nameEl);
+      txt.appendChild(el("small", null,`${ROLE_INFO[c.role] ? ROLE_INFO[c.role].name : c.role} · ${live && live.id === c.id ? "đang chơi" : ago(c.updatedAt)}`));
       b.append(glyph, txt);
       b.addEventListener("click", () => select(c.id));
       list.appendChild(b);
     }
   }
+
+  // The gold dot: someone saved this character and it has not looked yet.
+  function newDot(title) { const d = el("span", "new-dot"); d.title = title; d.setAttribute("aria-label", title); return d; }
 
   function section(title, extra) {
     const s = el("section", "profile-sec");
@@ -62,6 +62,7 @@ window.Profile = (() => {
 
   async function select(id) {
     selected = id;
+    if (tabOwner !== id) { profileTab = "overview"; tabOwner = id; }
     renderList();
     const box = $("profile-detail");
     box.replaceChildren(el("p", "hint", "Đang mở…"));
@@ -140,54 +141,160 @@ window.Profile = (() => {
     } else actions.append(play, del);
     box.appendChild(actions);
 
-    // the mind right now (only for the character in play)
-    if (isLive && live.mood) {
-      const now = section("Tâm lúc này");
-      const row = el("div", "mood-now");
-      const dot = el("span", "mood-dot"); dot.style.background = live.mood.color; dot.style.boxShadow = `0 0 16px ${live.mood.color}`;
-      row.append(dot, el("b", null, live.mood.label));
-      now.appendChild(row);
-      if (live.suggestion) now.appendChild(el("p", "quest-tip", live.suggestion));
-      const legend = document.querySelector("#mind-info .mind-legend");
-      if (legend) {
-        const det = el("details", "mood-legend");
-        det.appendChild(el("summary", null, "Ý nghĩa các màu"));
-        det.appendChild(legend.cloneNode(true));
-        document.querySelectorAll("#mind-info > p.hint").forEach((p) => det.appendChild(p.cloneNode(true)));
-        now.appendChild(det);
+    // tabs under the header (the guest has no "Người quen"); only the active tab's body is built
+    const tabList = [["overview", "Tổng quan"], ["milestones", "Dấu mốc"]];
+    if (id !== "guest") tabList.push(["people", "Người quen"]);
+    tabList.push(["diary", "Nhật ký"]);
+    const tabBar = el("div", "profile-tabs"); tabBar.setAttribute("role", "tablist");
+    const tabBody = el("div", "profile-tab-body"); tabBody.id = "profile-tabpanel"; tabBody.setAttribute("role", "tabpanel");
+    const tabBtns = tabList.map(([k, n]) => {
+      const t = el("button", "pill", n); t.type = "button"; t.dataset.tab = k;
+      if (k === "people" && summary.newConnections > 0) t.appendChild(newDot("Có tin mới"));
+      t.setAttribute("role", "tab"); t.setAttribute("aria-controls", "profile-tabpanel");
+      t.addEventListener("click", () => { profileTab = k; drawTab(); });
+      tabBar.appendChild(t); return t;
+    });
+    const drawTab = () => {
+      tabBtns.forEach((t) => t.setAttribute("aria-selected", String(t.dataset.tab === profileTab)));
+      tabBody.replaceChildren();
+      if (profileTab === "people") { tabBody.appendChild(peopleSection(id, summary, drawTab)); markPeopleSeen(id); }
+      else if (profileTab === "milestones") tabBody.appendChild(milestoneSection(mind));
+      else if (profileTab === "diary") tabBody.appendChild(diarySection(history));
+      else overviewSections(tabBody);
+    };
+
+    // overview: the mind right now, stats, cards and the bag (milestones have their own tab)
+    const overviewSections = (into) => {
+      // the mind right now (only for the character in play)
+      if (isLive && live.mood) {
+        const now = section("Tâm lúc này");
+        const row = el("div", "mood-now");
+        const dot = el("span", "mood-dot"); dot.style.background = live.mood.color; dot.style.boxShadow = `0 0 16px ${live.mood.color}`;
+        row.append(dot, el("b", null, live.mood.label));
+        now.appendChild(row);
+        if (live.suggestion) now.appendChild(el("p", "quest-tip", live.suggestion));
+        const legend = document.querySelector("#mind-info .mind-legend");
+        if (legend) {
+          const det = el("details", "mood-legend");
+          det.appendChild(el("summary", null, "Ý nghĩa các màu"));
+          det.appendChild(legend.cloneNode(true));
+          document.querySelectorAll("#mind-info > p.hint").forEach((p) => det.appendChild(p.cloneNode(true)));
+          now.appendChild(det);
+        }
+        into.appendChild(now);
       }
-      box.appendChild(now);
+
+      // stats
+      const st = section("Chỉ số tâm");
+      if (mind.stats) {
+        const g = el("div", "stat-bars"); P.GOOD.forEach(([k, n]) => g.appendChild(P.bar(n, mind.stats[k], true)));
+        const b = el("div", "stat-bars"); P.BAD.forEach(([k, n]) => b.appendChild(P.bar(n, mind.stats[k], false)));
+        st.append(g, b);
+        st.appendChild(el("p", "hint", "Mô phỏng để chơi, có lên có xuống, xoay quanh một mốc. Không phải thước đo tâm thật."));
+      } else st.appendChild(el("p", "hint", "Chưa có chỉ số. Vào chơi một lần để biết tính cách của nhân vật này."));
+      into.appendChild(st);
+
+      // cards
+      const owned = mind.cards || {};
+      for (const sec of P.cardSections(owned)) {
+        const cs = section(sec.title, sec.extra);
+        if (sec.key === "good") {
+          cs.appendChild(P.catalogButton(owned));
+        }
+        cs.appendChild(P.cardGrid(sec, (cid) => P.viewCard(cid, owned[cid], owned)));
+        into.appendChild(cs);
+      }
+
+      // bag
+      const items = (mind.items || []).filter((i) => window.Items && Items.def(i));
+      const bs = section("Túi đồ", String(items.length));
+      if (items.length && window.Items) { const bag = el("div", "bag"); Items.renderBag(bag, items, (iid) => Items.showDetail(iid)); bs.appendChild(bag); }
+      else bs.appendChild(el("p", "hint", "Túi còn trống."));
+      into.appendChild(bs);
+    };
+
+    box.append(tabBar, tabBody);
+    drawTab();
+  }
+
+  // Opening the tab clears the dot: the server marks the incoming connections as seen, then the list is read again.
+  function markPeopleSeen(id) {
+    const c = (Save.me().characters || []).find((x) => x.id === id);
+    if (!c || !(c.newConnections > 0)) return;
+    Social.markSeen(id).then(() => Save.refresh()).then(() => {
+      $("profile-detail").querySelectorAll('[data-tab="people"] .new-dot').forEach((d) => d.remove());
+      renderList();
+    }).catch(() => {});
+  }
+
+  // "Người quen": one list (quen, moi, luu, only met) with a level tag per row, then the two privacy switches.
+  function peopleSection(id, summary, redraw) {
+    const sec = el("section", "profile-sec people-sec");
+    sec.appendChild(el("p", "hint", "Gặp ai ngoài làng thì có thể giữ kết nối. Khi cả hai cùng giữ nhau, hai bên thành Quen."));
+    const list = el("div", "enc-list");
+    list.appendChild(el("p", "hint", "Đang tải…"));
+    sec.appendChild(list);
+    Promise.all([Social.connections(id), Social.encounters(id)]).then(([conn, encs]) => {
+      if (!sec.isConnected) return;
+      const rows = Social.mergePeople(conn.connections, encs);
+      if (!rows.length) { list.replaceChildren(el("p", "hint enc-empty", "Chưa gặp ai. Ra làng đi dạo, sẽ có người.")); return; }
+      list.replaceChildren();
+      let group = null, box = null;
+      for (const row of rows) {
+        if (row.group !== group) {
+          group = row.group;
+          const head = el("div", "enc-group");
+          head.appendChild(el("span", null, Social.groupTitle(group)));
+          list.appendChild(head);
+          box = el("div", "enc-cards"); list.appendChild(box);
+        }
+        box.appendChild(personRow(row, id, redraw));
+      }
+    }).catch(() => { if (sec.isConnected) list.replaceChildren(el("p", "hint", "Chưa tải được danh sách này.")); });
+
+    const priv = el("div", "privacy-card");
+    priv.appendChild(el("h4", "privacy-title", "Quyền riêng tư"));
+    priv.append(
+      switchRow(id, "hideProfile", "Ẩn hồ sơ của người này với người khác", summary.hideProfile),
+      switchRow(id, "hideStatus", "Ẩn trạng thái đang chơi", summary.hideStatus, "Người quen sẽ không thấy bạn đang chơi hay lần chơi cuối."),
+    );
+    sec.appendChild(priv);
+    return sec;
+  }
+
+  // One row: name, a level tag, and a short line (status for quen; last meeting and count for only-met).
+  function personRow(row, cid, redraw) {
+    const b = el("button", "enc-row"); b.type = "button";
+    const pic = el("span", "enc-pic");
+    try { pic.appendChild(Avatar.node(row.role, null, 44)); } catch { /* portrait is optional */ }
+    const body = el("span", "enc-body");
+    const head = el("span", "enc-head");
+    head.appendChild(el("b", null, row.name || "Người này"));
+    if (row.group !== "met") {
+      const tag = el("span", "lvl-tag", Social.levelLabel(row.level));
+      tag.dataset.level = row.level;
+      head.appendChild(tag);
     }
-
-    // stats
-    const st = section("Chỉ số tâm");
-    if (mind.stats) {
-      const g = el("div", "stat-bars"); P.GOOD.forEach(([k, n]) => g.appendChild(P.bar(n, mind.stats[k], true)));
-      const b = el("div", "stat-bars"); P.BAD.forEach(([k, n]) => b.appendChild(P.bar(n, mind.stats[k], false)));
-      st.append(g, b);
-      st.appendChild(el("p", "hint", "Mô phỏng để chơi, có lên có xuống, xoay quanh một mốc. Không phải thước đo tâm thật."));
-    } else st.appendChild(el("p", "hint", "Chưa có chỉ số. Vào chơi một lần để biết tính cách của nhân vật này."));
-    box.appendChild(st);
-
-    // cards
-    const owned = mind.cards || {};
-    for (const sec of P.cardSections(owned)) {
-      const cs = section(sec.title, sec.extra);
-      cs.appendChild(P.cardGrid(sec, (cid) => P.viewCard(cid, owned[cid], owned)));
-      box.appendChild(cs);
+    const bits = [ROLE_INFO[row.role] ? ROLE_INFO[row.role].name : ""];
+    if (row.group === "met") {
+      const a = Social.ago(row.lastAt);
+      bits.push(a === "vừa xong" ? "vừa gặp" : a ? `gặp ${a}` : "");
+      if (row.count > 1) bits.push(`${row.count} lần`);
+    } else if (row.group === "quen") {
+      const t = Social.statusText(row.status);
+      if (t) bits.push(t);
     }
+    if (row.hidden) bits.push("giữ kín hồ sơ");
+    const meta = el("small", "enc-meta", bits.filter(Boolean).join(" · "));
+    if (row.group === "quen" && row.status && row.status.online) b.classList.add("online");
+    body.append(head, meta);
+    b.append(pic, body);
+    b.addEventListener("click", () => showPerson(row, cid, redraw));
+    return b;
+  }
 
-    // milestones (private; hidden ones stay unlisted until reached)
-    box.appendChild(milestoneSection(mind));
-
-    // bag
-    const items = (mind.items || []).filter((i) => window.Items && Items.def(i));
-    const bs = section("Túi đồ", String(items.length));
-    if (items.length && window.Items) { const bag = el("div", "bag"); Items.renderBag(bag, items, (iid) => Items.showDetail(iid)); bs.appendChild(bag); }
-    else bs.appendChild(el("p", "hint", "Túi còn trống."));
-    box.appendChild(bs);
-
-    // diary
+  // "Nhật ký": the character's latest entries, newest first.
+  function diarySection(history) {
     const ds = section("Nhật ký");
     if (!history.length) ds.appendChild(el("p", "hint", "Chưa có gì."));
     else {
@@ -200,11 +307,100 @@ window.Profile = (() => {
       }
       ds.appendChild(ol);
     }
-    box.appendChild(ds);
+    return ds;
+  }
+
+  // One privacy switch: optimistic; on failure it goes back and says so.
+  function switchRow(id, key, text, checked, sub) {
+    const label = el("label", "switch-row");
+    const box = el("input"); box.type = "checkbox"; box.checked = !!checked;
+    const txt = el("span", "switch-text", text);
+    if (sub) txt.appendChild(el("small", null, sub));
+    box.addEventListener("change", async () => {
+      const want = box.checked;
+      try { await Save.setFlags(id, { [key]: want }); }
+      catch { box.checked = !want; alert("Chưa đổi được. Thử lại nhé."); }
+    });
+    label.append(box, txt);
+    return label;
+  }
+
+  // A row of the people list: the other person's public profile, then the actions, shown under the list.
+  // The person's public profile opens as a small sheet over the profile screen, with its own close button.
+  let personSheet = null;
+  function closePerson() { if (personSheet) { personSheet.remove(); personSheet = null; } document.removeEventListener("keydown", personEsc); }
+  function personEsc(e) { if (e.key === "Escape") { e.stopPropagation(); closePerson(); } }
+  async function showPerson(row, cid, redraw) {
+    closePerson();
+    const scrim = el("div", "person-scrim");
+    const card = el("div", "person-card"); card.setAttribute("role", "dialog"); card.setAttribute("aria-label", row.name || "Người này");
+    const x = el("button", "person-x", "✕"); x.type = "button"; x.setAttribute("aria-label", "Đóng");
+    x.addEventListener("click", closePerson);
+    scrim.addEventListener("click", (e) => { if (e.target === scrim) closePerson(); });
+    const head = el("div", "person-head");
+    const pic = el("span", "enc-pic big");
+    try { pic.appendChild(Avatar.node(row.role, null, 64)); } catch { /* optional */ }
+    const who = el("div", "person-who");
+    who.appendChild(el("b", "person-name", row.name || "Người này"));
+    const sub = [ROLE_INFO[row.role] ? ROLE_INFO[row.role].name : "", row.level ? Social.levelLabel(row.level) : "Từng gặp"].filter(Boolean).join(" · ");
+    who.appendChild(el("small", null, sub));
+    head.append(pic, who);
+    const body = el("div", "person-body");
+    body.appendChild(el("p", "hint", "Đang mở…"));
+    card.append(x, head, body);
+    scrim.appendChild(card);
+    document.body.appendChild(scrim);
+    personSheet = scrim;
+    document.addEventListener("keydown", personEsc);
+    const open = () => personSheet === scrim;
+    const nodes = [];
+    try {
+      const data = await Social.fetchPublic(row.handle);
+      if (!open()) return;
+      if (!data) nodes.push(el("p", "hint", "Người này không còn hiện trong danh sách."));
+      else nodes.push(...Social.publicNodes(Social.profileView(data)));
+    } catch { nodes.push(el("p", "hint", "Chưa mở được hồ sơ này, thử lại nhé.")); }
+    if (!open()) return;
+    body.replaceChildren(...nodes, personActions(row, cid, () => { closePerson(); redraw(); }));
+  }
+
+  // "Giữ kết nối" / "Bỏ kết nối" for this character, plus "Chặn" and "Báo cáo" (both act on the other account).
+  function personActions(row, cid, redraw) {
+    const box = el("div", "enc-actions");
+    const saved = row.level === "luu" || row.level === "quen";
+    const conn = el("button", saved ? "pill" : "primary", saved ? "Bỏ kết nối" : "Giữ kết nối"); conn.type = "button";
+    conn.addEventListener("click", async () => {
+      conn.disabled = true;
+      try {
+        if (saved) await Social.disconnect(cid, row.handle);
+        else await Social.connect(cid, row.handle);
+      } catch (e) { alert(Social.connectErrorText(e)); conn.disabled = false; return; }
+      hooks.connChanged && hooks.connChanged();
+      redraw();
+    });
+    const block = el("button", "text-btn", "Chặn"); block.type = "button";
+    block.addEventListener("click", async () => {
+      if (!confirm(`Chặn “${row.name || "người này"}”? Hai bên sẽ không thấy hồ sơ hay gặp nhau nữa.`)) return;
+      try { await Social.block(row.handle); } catch { alert("Chưa chặn được, thử lại nhé."); return; }
+      hooks.connChanged && hooks.connChanged();
+      redraw();
+    });
+    const report = el("button", "text-btn", "Báo cáo"); report.type = "button";
+    report.addEventListener("click", async () => {
+      const raw = prompt("Điều gì khiến bạn báo cáo người này? Ghi ngắn gọn.");
+      if (raw == null) return;
+      const reason = [...raw.replace(/\s+/g, " ").trim()].slice(0, 200).join("");
+      if (!reason) return;
+      if (!confirm("Gửi báo cáo về người này?")) return;
+      try { await Social.report(row.handle, reason); } catch { alert("Chưa gửi được báo cáo, thử lại nhé."); return; }
+      alert("Đã gửi báo cáo. Cảm ơn bạn.");
+    });
+    box.append(conn, block, report);
+    return box;
   }
 
   function milestoneSection(mind) {
-    const sec = section("Dấu mốc");
+    const sec = el("section", "profile-sec"); // the tab label already says "Dấu mốc"
     const got = mind.milestones || {};
     const defs = (window.Milestones && Milestones.defs) || [];
     const reached = defs.filter((d) => got[d.id]).sort((a, b) => got[b.id].at - got[a.id].at);

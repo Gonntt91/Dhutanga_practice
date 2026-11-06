@@ -92,5 +92,66 @@ window.Cetasika = (() => {
     return base + `<circle cx="50" cy="50" r="35" fill="#10181a" stroke="#ffffff" stroke-opacity=".08"/>` + arcsFor(e) + text + `</svg>`;
   }
 
-  return { FEELINGS, ORDER, all, groups, byGame, byId, byName, token, groupLine };
+  // ---------- catalog popup view-model ("Tất cả các thẻ") ----------
+  // Pure: no DOM. Every entry becomes one tile in one of three states:
+  //   owned   the character has the in-game card for it: { state, id, game, name, good, n, sub, compact: false }
+  //   hint    an in-game card not met yet: { state, hint, compact: false } (the card's "where" line, no name)
+  //   locked  not in the game yet: { state, compact: true } (no name, no id, no hint, no text)
+  // Unmet tiles deliberately carry no id or name, so the real name cannot leak through them.
+  // Plain-language group titles for this popup; the traditional names stay on the card view.
+  const POPUP_TITLES = {
+    bien_hanh: "Các tâm có mặt trong mọi khoảnh khắc",
+    biet_canh: "Các tâm đến tùy lúc, tùy việc đang làm",
+    bat_thien: "Các tâm làm lòng nặng và rối",
+    tinh_hao: "Các tâm tốt đẹp, làm lòng nhẹ và sáng",
+  };
+  const GROUP_HINTS = {
+    bien_hanh: "Những yếu tố có mặt trong mọi khoảnh khắc của tâm.",
+    biet_canh: "Những yếu tố đi kèm tùy lúc, tùy việc đang làm.",
+    bat_thien: "Những tâm làm lòng nặng, rối. Gặp và hiểu chúng là cách để nhẹ đi.",
+    tinh_hao: "Những tâm lành, làm lòng nhẹ và sáng.",
+  };
+  // owned: saved cards by game id; cards: card definitions by game id ({ name, good, where });
+  // count(gameId, savedCard) gives the number shown as "gặp N lần" (defaults to the saved n).
+  function catalog({ owned = {}, cards = {}, count = (g, o) => o.n } = {}) {
+    const gameOf = new Map();
+    for (const g of Object.keys(GAME)) { const e = byGame(g); if (e) gameOf.set(e.id, g); }
+    const tileFor = (e) => {
+      const g = gameOf.get(e.id);
+      if (!g) return { state: "locked", compact: true };
+      const def = cards[g] || {};
+      if (owned[g]) {
+        const n = count(g, owned[g]);
+        return { state: "owned", id: e.id, game: g, name: def.name || e.name, good: !!def.good, n, sub: `gặp ${n} lần`, compact: false };
+      }
+      return { state: "hint", hint: def.where || "", compact: false };
+    };
+    let met = 0;
+    // Sub-groups are not shown; the tiles of a group form one list, big tiles first, compact locked ones after.
+    const groups = GROUPS.map((g) => {
+      const items = g.parts.flatMap((p) => p.items.map(tileFor));
+      const tiles = [...items.filter((t) => !t.compact), ...items.filter((t) => t.compact)];
+      const gm = tiles.filter((t) => t.state === "owned").length;
+      met += gm;
+      return { key: g.key, title: POPUP_TITLES[g.key] || g.title, hint: GROUP_HINTS[g.key] || "", met: gm, total: tiles.length, open: true, tiles };
+    });
+    return { met, total: all.length, groups };
+  }
+
+  // Explanation shown inside the "Tất cả các thẻ" popup: one short invitation line, and a "Tâm sở là gì?" link
+  // that opens a small tooltip with tâm sở / tâm. Owner-approved copy for the tooltip; use exactly as written.
+  const LORE = {
+    intro: "Mỗi thẻ là một yếu tố của tâm (tâm sở). Thu thập thẻ để mở ra những tầng truyện và thử thách mới. Thẻ cũng giúp nhân vật tu tập, từng chút thay đổi chỉ số tâm. Còn nhiều thẻ đang chờ bạn tìm ra.",
+    linkLabel: "Tâm sở là gì?",
+    // The "Tâm sở là gì?" link + tooltip is switched off for now: players learn by playing, the definition will
+    // go into the tịnh thất / a teacher talk later. Flip to true to bring it back (code and copy are kept).
+    showTip: false,
+    // lead is set in bold; rest follows it as plain text
+    paragraphs: [
+      { lead: "Tâm sở", rest: " — những yếu tố nhỏ đi cùng tâm trong từng khoảnh khắc: thương, giận, nhớ, vui… Có cái làm lòng nặng và rối, có cái làm lòng nhẹ và sáng." },
+      { lead: "Tâm", rest: " — sự nhận thức, cái biết: biết thấy, nghe, nghĩ, cảm khi một điều gì đó đến với mình." },
+    ],
+  };
+
+  return { FEELINGS, ORDER, all, groups, byGame, byId, byName, token, groupLine, catalog, LORE };
 })();

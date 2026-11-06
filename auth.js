@@ -102,7 +102,10 @@ async function me(req, res) {
   const base = { google: googleOn(), devLogin: devLoginOn(), storage: store.kind };
   if (!user) return json(res, 200, { ...base, user: null });
   const characters = await store.listCharacters(user.id);
-  json(res, 200, { ...base, user: { name: user.name, email: user.email, picture: user.picture }, account: user.account || {}, characters });
+  // newConnections: incoming saved connections not yet looked at, per character (see connections.js).
+  const unseen = await store.countIncomingUnseen(characters.map((c) => c.id));
+  const withCounts = characters.map((c) => ({ ...c, newConnections: unseen.get(c.id) || 0 }));
+  json(res, 200, { ...base, user: { name: user.name, email: user.email, picture: user.picture }, account: user.account || {}, characters: withCounts });
 }
 
 // Returns true when the request was handled.
@@ -177,8 +180,23 @@ async function handle(req, res, url) {
     }
     if (req.method === "DELETE") { await store.deleteCharacter(user.id, id); json(res, 200, { ok: true }); return true; }
   }
+  // Privacy flags for one character (owner only): {hideProfile?, hideStatus?}, both optional booleans.
+  const f = p.match(/^\/api\/characters\/([\w-]{8,64})\/flags$/);
+  if (f && req.method === "PATCH") {
+    const body = await readBody(req, 512);
+    const flags = {};
+    for (const key of ["hideProfile", "hideStatus"]) {
+      if (body[key] === undefined) continue;
+      if (typeof body[key] !== "boolean") { json(res, 400, { error: "flags must be booleans" }); return true; }
+      flags[key] = body[key];
+    }
+    if (!Object.keys(flags).length) { json(res, 400, { error: "no flags" }); return true; }
+    const ok = await store.setFlags(user.id, f[1], flags);
+    json(res, ok ? 200 : 404, ok ? { ok: true } : { error: "not found" });
+    return true;
+  }
   json(res, 404, { error: "not found" });
   return true;
 }
 
-module.exports = { handle, store, storeKind: () => store.kind };
+module.exports = { handle, store, storeKind: () => store.kind, currentUser };

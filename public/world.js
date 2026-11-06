@@ -449,6 +449,7 @@ window.World = (() => {
   let time = 0;
   const player = { x: SPAWN.monk.x, y: SPAWN.monk.y, tx: null, ty: null, facing: 1, phase: 0, moving: false };
   const others = new Map();
+  let quen = new Set(); // handles of connections who are online now (set by app.js); those get a gold dot
   const ripples = [];
   const view = { mood: null, lookRange: Infinity, mist: 0.4, hint: false, role: null, pose: null, darkness: 0.75, flags: new Set(), marker: null, nick: "", anchor: 0.55 };
   // The shown darkness eases toward the scene's darkness, so dusk and dawn fade in instead of snapping.
@@ -570,11 +571,15 @@ window.World = (() => {
       const x = p.x * W;
       const y = p.y * H;
       const o = others.get(p.pid);
-      if (o) Object.assign(o, { x, y, role: p.role, nick: p.nick, pose: p.pose, mood: p.mood });
-      else others.set(p.pid, { x, y, rx: x, ry: y, role: p.role, nick: p.nick, pose: p.pose, mood: p.mood, phase: Math.random() * 6 });
+      if (o) Object.assign(o, { x, y, role: p.role, nick: p.nick, pose: p.pose, mood: p.mood, handle: p.handle || null });
+      else others.set(p.pid, { x, y, rx: x, ry: y, role: p.role, nick: p.nick, pose: p.pose, mood: p.mood, handle: p.handle || null, phase: Math.random() * 6 });
     }
     for (const id of [...others.keys()]) if (!seen.has(id)) others.delete(id);
   }
+
+  // The set of quen handles that are online and have a status. Anything else is not a quen dot.
+  function setQuen(set) { quen = set instanceof Set ? set : new Set(); }
+  function quenFor(handle) { return !!handle && quen.has(handle); }
 
   function ripple(nx, ny, kind) { ripples.push({ x: nx * W, y: ny * H, kind, t: 0 }); }
 
@@ -1569,7 +1574,7 @@ window.World = (() => {
     // collect drawables in view, sort by y (base line)
     const items = [];
     for (const d of decor) if (d.y > top - 20 && d.y < bottom + 160) items.push(d);
-    for (const [pid, o] of others) items.push({ kind: "char", mood: o.mood, role: o.role, x: o.rx, y: o.ry, pose: o.pose, phase: o.phase, moving: o.moving, facing: o.x >= o.rx ? 1 : -1, label: o.nick || roleName(o.role), pid });
+    for (const [pid, o] of others) items.push({ kind: "char", mood: o.mood, role: o.role, x: o.rx, y: o.ry, pose: o.pose, phase: o.phase, moving: o.moving, facing: o.x >= o.rx ? 1 : -1, label: o.nick || roleName(o.role), pid, quen: quenFor(o.handle) });
     for (const b of bots) items.push({ kind: "ghostbot", x: b.x, y: b.y, phase: b.phase, alpha: botAlpha(b) });
     for (const a of actors) items.push({ ...a, actorKind: a.kind, kind: "actor" });
     if (view.role) items.push({ kind: "char", mood: view.mood, role: view.role, x: player.x, y: player.y, pose: view.pose, phase: player.phase, moving: player.moving, facing: player.facing, label: "bạn", isMe: true });
@@ -1723,6 +1728,10 @@ window.World = (() => {
       } else if (other && it.role === "ghost") ctx.fillStyle = "rgba(150,230,205,0.9)";
       else ctx.fillStyle = it.isMe ? "rgba(220,213,197,0.95)" : "rgba(220,213,197,0.75)";
       ctx.fillText(it.label, it.x, it.y - lift);
+      if (it.quen) { // a small gold dot after the name: a connection who is online now
+        ctx.fillStyle = "#e6c56f";
+        ctx.beginPath(); ctx.arc(it.x + ctx.measureText(it.label).width / 2 + 6, it.y - lift - 3, 2.5, 0, Math.PI * 2); ctx.fill();
+      }
     }
     for (const it of items) {
       if (it.kind !== "char") continue;
@@ -1823,5 +1832,54 @@ window.World = (() => {
     return role && window.ROLE_INFO ? ROLE_INFO[role].name : "";
   }
 
-  return { walkSpeed, hurryNext, HURRY_MAX, setActors, setFx, snapshot, moodRgb, zoomBy, say, setFinds, lookAt, resetLook, isLooking, getMap, W, H, PLACES, SPAWN, init, setView, setPlayer, walkTo, stop, getPlayer, setOthers, ripple };
+  // ---------- what is under a tap (info card) ----------
+  // Priority: another player > NPC or visitor > named place > scenery. Hit areas are never smaller than
+  // PICK_MIN_PX on screen, so a finger does not have to be exact. The geometry is in pickAt(), which is pure.
+  const PICK_MIN_PX = 28;
+  const ACTOR_NAMES = { dog: "Con chó", granny: "Bà cụ", monk: "Một vị sư", deva: "Một bóng sáng", treegod: "Một bóng xanh", earthgod: "Một bóng đất", child: "Một đứa bé", peta: "Một bóng người", mother: "Một người phụ nữ" };
+  const OBJECT_NAMES = { grave: "Ngôi mộ", tree: "Cây", bamboo: "Bụi tre", gao: "Cây gạo", gate: "Cổng", well: "Giếng", mit: "Cây mít", ruin: "Đống gạch cũ", shrine: "Miếu nhỏ", sign: "Biển gỗ", house: "Nhà", unnamed: "Chỗ lặng lẽ", ao: "Ao", hang: "Tảng đá", thap: "Tháp cổ" };
+
+  // groups: { players, actors, places, objects }, each a list of { cx, cy, r, info } in world units.
+  // Returns a copy of the info of the nearest hit in the first group (in priority order) that has one, or null.
+  function pickAt(wx, wy, s, groups) {
+    const minR = PICK_MIN_PX / (s || 1);
+    for (const key of ["players", "actors", "places", "objects"]) {
+      let best = null, bd = Infinity;
+      for (const c of groups[key] || []) {
+        const d = Math.hypot(c.cx - wx, c.cy - wy);
+        if (d <= Math.max(c.r, minR) && d < bd) { bd = d; best = c; }
+      }
+      if (best) return { ...best.info };
+    }
+    return null;
+  }
+
+  function pickGroups() {
+    const players = [], actorHits = [], places = [], objects = [];
+    for (const [pid, o] of others) {
+      players.push({ cx: o.rx, cy: o.ry - 22, r: 18, info: { kind: "player", id: pid, name: o.nick || roleName(o.role), role: o.role, pose: o.pose, mood: o.mood, handle: o.handle || null, x: o.rx, y: o.ry } });
+    }
+    for (const a of actors) {
+      if (actorAlpha(a) <= 0.01) continue; // fully faded out: not there to tap
+      actorHits.push({ cx: a.x, cy: a.y - 22, r: 18, info: { kind: "actor", id: a.kind, name: a.label || ACTOR_NAMES[a.kind] || "Một người", actorKind: a.kind, x: a.x, y: a.y } });
+    }
+    for (const [key, p] of Object.entries(PLACES)) {
+      places.push({ cx: p.x, cy: p.y - 10, r: 20, info: { kind: "place", id: key, name: p.name, x: p.x, y: p.y } });
+    }
+    for (let i = 0; i < decor.length; i++) {
+      const d = decor[i];
+      objects.push({ cx: d.x, cy: d.y - 22, r: 16, info: { kind: "object", id: `${d.kind}:${i}`, objKind: d.kind, name: OBJECT_NAMES[d.kind] || "Một thứ", x: d.x, y: d.y } });
+    }
+    return { players, actors: actorHits, places, objects };
+  }
+
+  // Current view: what is at world point (wx, wy), or null for bare ground.
+  function pick(wx, wy) { return pickAt(wx, wy, scale, pickGroups()); }
+
+  // Screen position (CSS px, inside the canvas) of a world point; and where another player stands now.
+  function clientToWorld(cx, cy) { const rect = canvas.getBoundingClientRect(); return [(cx - rect.left) / scale + camX, (cy - rect.top) / scale + camY]; }
+  function screenPos(wx, wy) { return { x: (wx - camX) * scale, y: (wy - camY) * scale }; }
+  function otherPos(pid) { const o = others.get(pid); return o ? { x: o.rx, y: o.ry - 22 } : null; }
+
+  return { clientToWorld, screenPos, otherPos, walkSpeed, hurryNext, HURRY_MAX, setActors, setFx, snapshot, moodRgb, zoomBy, say, setFinds, lookAt, resetLook, isLooking, getMap, W, H, PLACES, SPAWN, init, setView, setPlayer, walkTo, stop, getPlayer, setOthers, setQuen, quenFor, ripple, pick, pickAt };
 })();

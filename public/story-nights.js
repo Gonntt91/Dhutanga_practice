@@ -79,7 +79,7 @@ Object.assign(STORY.villager.scenes, {
     ],
   },
 
-  // ---- night 2, still doubting: "Còn ngờ" ----
+  // ---- night 2, still doubting: "Còn nghi ngờ" ----
   v2b_0: {
     time: "Sáng sớm",
     place: "well",
@@ -118,8 +118,8 @@ Object.assign(STORY.villager.scenes, {
       "Ông nhớ lại cái thùng nước. Nhớ cách ông sư cúi chào bà cụ: chào như chào một vị quan. Ông chưa từng thấy ai chào bà cụ như vậy. Ông cũng chưa từng chào bà cụ như vậy.",
     ],
     choices: [
-      { label: "Vẫn còn ngờ. Ngờ là quyền của ông", delta: 0, next: "v2b_end" },
-      { label: "Thôi, ngờ để mai. Đêm nay chỉ ngồi xem", delta: 1, next: "v2b_end" },
+      { label: "Vẫn còn nghi ngờ. Ông có quyền nghi ngờ mà", delta: 0, next: "v2b_end" },
+      { label: "Thôi, để mai nghi ngờ tiếp. Đêm nay chỉ ngồi xem", delta: 1, next: "v2b_end" },
       { label: "Để lại ngọn đèn nhỏ ở chân tre rồi về", delta: 2, next: "v2b_end", trace: { kind: "lamp", variant: 0 } },
     ],
   },
@@ -128,8 +128,8 @@ Object.assign(STORY.villager.scenes, {
     place: "gate",
     end: true,
     endings: [
-      { max: 3, text: "Ông Tư về nhà muộn. Vợ hỏi, ông bảo đi tìm con Vàng. Con Vàng nằm ngủ ngay cửa từ chiều. Hai vợ chồng im lặng nhìn nhau. Ông ngờ thêm được một ngày nữa." },
-      { max: 7, text: "Gà gáy, ông Tư xách đèn về. Ông vẫn chưa tin hẳn. Nhưng ông nhận ra mình không còn đi tìm lý do để ngờ như hôm trước. Ngờ cũng mệt." },
+      { max: 3, text: "Ông Tư về nhà muộn. Vợ hỏi, ông bảo đi tìm con Vàng. Con Vàng nằm ngủ ngay cửa từ chiều. Hai vợ chồng im lặng nhìn nhau. Ông nghi ngờ thêm được một ngày nữa." },
+      { max: 7, text: "Gà gáy, ông Tư xách đèn về. Ông vẫn chưa tin hẳn. Nhưng ông nhận ra mình không còn đi tìm lý do để nghi ngờ như hôm trước. Nghi ngờ hoài cũng mệt." },
       { max: 10, text: "Trời hửng. Ông Tư đi ngang giếng, thấy bà cụ đang gánh nước. Lần đầu tiên trong đời ông cúi chào bà trước. Bà cụ nhìn ông, nhìn trời, rồi nhìn lại ông: “Hôm nay có mưa không ông?”" },
     ],
   },
@@ -392,7 +392,7 @@ Object.assign(STORY.monk.scenes, {
     end: true,
     endings: [
       { max: 3, text: "Sáng ra, trăng còn lại một mảnh mờ. Đêm nay thầy nghĩ nhiều hơn ngồi. Không sao. Nghĩ cũng là việc để biết." },
-      { max: 7, text: "Trăng lặn sau rặng tre, trời hửng dần. Một đêm bình thường: có muỗi, có tê chân, có vài lần lạc rồi về. Thầy nghĩ bình thường cũng là một món quà." },
+      { max: 7, text: "Trăng lặn sau rặng tre, trời hửng dần. Một đêm bình thường: có muỗi, có tê chân, có vài lần tâm đi chơi rồi tự về. Thầy nghĩ bình thường cũng là một món quà." },
       { max: 10, text: "Rạng sáng. Thầy mở mắt khi chim đầu tiên kêu, lòng yên như mặt ao không gió. Không có gì xảy ra. Thầy cúi đầu cảm ơn cái không-có-gì ấy.", trace: { kind: "vigil", variant: 0 } },
     ],
   },

@@ -78,6 +78,24 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--lantern); o
 .walk-text { font: 500 15px/1.4 var(--font-body); }
 .walk-actions { display: flex; gap: 8px; align-items: center; }
 
+/* ---------- info card: tapping someone or something on the map ---------- */
+.info-scrim { position: absolute; inset: 0; z-index: 6; background: transparent; }
+.info-card {
+  position: absolute; z-index: 7; left: 12px; right: 12px; bottom: calc(env(safe-area-inset-bottom, 0px) + 110px);
+  max-width: 340px; margin: 0 auto; padding: 12px 14px 12px; background: rgba(12, 18, 17, 0.96);
+  border: 1px solid var(--line); border-radius: 12px; backdrop-filter: blur(8px); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+}
+.info-badge { position: absolute; z-index: 5; width: 30px; height: 30px; margin: -4px 0 0 -4px; padding: 0; border-radius: 50%; border: 1.5px solid var(--lantern, #e6c56f); background: var(--panel); color: var(--lantern, #e6c56f); font: italic 700 16px/1 var(--font-display); box-shadow: 0 2px 8px rgba(0,0,0,0.45); cursor: pointer; animation: badgein 0.18s ease-out; }
+.info-badge[hidden] { display: none; }
+/* the same "i", inline beside a heading (profile, album, catalog popup) */
+.info-badge.info-inline { position: static; flex: none; width: 28px; height: 28px; margin: 0; font-size: 15px; animation: none; }
+@keyframes badgein { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.info-title { margin: 0 0 2px; font: 600 17px/1.25 var(--font-display); color: var(--ash); overflow-wrap: anywhere; }
+.info-line { margin: 0; font: 13.5px/1.5 var(--font-ui); color: var(--ash-dim); overflow-wrap: anywhere; }
+.info-line + .info-line { margin-top: 4px; }
+.info-dot { display: inline-block; width: 9px; height: 9px; margin-right: 6px; border-radius: 50%; vertical-align: middle; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35); }
+.info-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 12px; }
+
 /* ---------- sheet ---------- */
 .sheet {
   position: absolute; z-index: 3; left: 0; right: 0; bottom: 0;
@@ -128,6 +146,18 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--lantern); o
 .chat-log li.me .who { color: var(--ash); }
 .chat-log li.sys { font: italic 13px var(--font-body); color: var(--ash-dim); }
 .chat-note { margin: 0 0 6px; min-height: 16px; font: 12px/1.3 var(--font-ui); color: var(--ash-dim); }
+.chat-tabs { display: flex; gap: 6px; margin: 0 0 8px; }
+.chat-tabs[hidden] { display: none; }
+.chat-tabs .pill { flex: 1; }
+.chat-tabs .pill[aria-selected="true"] { border-color: var(--lantern); color: var(--lantern); }
+.friend-list { list-style: none; margin: 0 0 6px; padding: 0; max-height: 28vh; overflow-y: auto; display: grid; gap: 6px; }
+.friend-list .sys { font: italic 13px/1.5 var(--font-body); color: var(--ash-dim); padding: 4px 2px; }
+.friend-row { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: rgba(255, 255, 255, 0.03); }
+.friend-text { display: grid; gap: 2px; min-width: 0; flex: 1; }
+.friend-text b { font: 600 15px/1.25 var(--font-display); overflow-wrap: anywhere; }
+.friend-text small { font: 12px/1.4 var(--font-ui); color: var(--ash-dim); overflow-wrap: anywhere; }
+.friend-row .pill { flex: none; }
+.new-dot { display: inline-block; width: 7px; height: 7px; margin-left: 6px; border-radius: 50%; background: var(--lantern, #e6c56f); box-shadow: 0 0 6px var(--lantern, #e6c56f); vertical-align: middle; }
 .chat-form { display: flex; gap: 8px; }
 .chat-form input { flex: 1; min-width: 0; font: 16px var(--font-body); color: var(--ash); background: #0f1614; border: 1px solid var(--line); border-radius: 8px; padding: 9px 11px; }
 .chat-send { padding: 9px 16px; }
@@ -386,6 +416,19 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--lantern); o
 .role-row, .mind { min-width: 0; }
 .mind-name { min-width: 0; flex: 1 1 auto; }
 @media (max-width: 420px) { .hud-right { gap: 4px; } .hud-right .pill { padding: 6px 9px; font-size: 11.5px; } }
+/* Phones: the three right-hand buttons used to take ~230px and squeezed the left column to ~110px, cutting the
+   presence line and the mood name. Sound becomes a small icon button so the left column gets the room back. */
+@media (max-width: 480px) {
+  .hud-right #sound-toggle { font-size: 0; width: 34px; padding: 6px 0; text-align: center; }
+  .hud-right #sound-toggle::before { content: "\266A"; font-size: 15px; line-height: 1; }
+  .hud-right .pill { padding: 6px 7px; }
+  .role-row { gap: 6px; }
+  .role-chip { font-size: 17px; }
+  .mind { gap: 4px; }
+  .mind .orb { width: 18px; height: 18px; }
+  .mind-name { max-width: none; }
+  #presence-count { font-size: 10px; letter-spacing: 0.03em; }
+}
 
 /* =====================================================================
    DESKTOP (>= 900px wide). Everything above is the phone layout and is untouched below that width.
@@ -523,6 +566,38 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--lantern); o
 .profile-sec { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); }
 .profile-sec-title { margin: 0 0 10px; font: 600 18px/1.2 var(--font-display); }
 .profile-sec-title .count { font: 500 12px var(--font-ui); }
+/* a heading and its "i" on one row */
+.heading-row { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.heading-row > h2, .heading-row > h3 { margin: 0; min-width: 0; }
+.heading-row.album-row { margin: 14px 0 8px; }
+.profile-sec > .heading-row { margin-bottom: 10px; }
+.enc-list { display: grid; gap: 6px; }
+.enc-row { display: grid; gap: 2px; width: 100%; padding: 10px 12px; text-align: left; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--line); border-radius: 10px; color: inherit; font: inherit; cursor: pointer; }
+.enc-row b { font: 600 15px/1.25 var(--font-display); overflow-wrap: anywhere; }
+.enc-row small { font: 12px/1.4 var(--font-ui); color: var(--ash-dim); overflow-wrap: anywhere; }
+.enc-view { margin-top: 10px; }
+.enc-group { margin: 12px 0 2px; font: 600 13px/1.3 var(--font-ui); color: var(--ash-dim); }
+.enc-head { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; min-width: 0; }
+.lvl-tag { flex: none; padding: 2px 8px; border: 1px solid var(--line); border-radius: 999px; font: 600 11px/1.5 var(--font-ui); color: var(--ash-dim); }
+.lvl-tag[data-level="quen"] { border-color: var(--lantern); color: var(--lantern); }
+.lvl-tag[data-level="moi"] { border-color: var(--jade); color: var(--jade); }
+.enc-actions { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-top: 10px; }
+.info-conn { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+.info-conn .conn-note { flex: 1; min-width: 0; }
+.enc-view-name { display: block; margin-bottom: 4px; font: 600 16px/1.25 var(--font-display); }
+/* profile tabs: the album's pill look, one scrollable row that sticks while the profile scrolls */
+.profile-tabs { position: sticky; top: 0; z-index: 2; display: flex; gap: 6px; margin: 12px 0 0; padding: 6px 0; background: var(--panel); overflow-x: auto; scrollbar-width: none; }
+.profile-tabs .pill { flex: none; }
+.profile-tabs .pill[aria-selected="true"] { border-color: var(--lantern); color: var(--lantern); }
+.profile-tab-body { min-width: 0; }
+.switch-list { display: grid; gap: 12px; margin-top: 16px; }
+.switch-row { display: flex; gap: 10px; align-items: flex-start; font: 14px/1.45 var(--font-ui); color: var(--ash); cursor: pointer; }
+.switch-row input { flex: none; width: 18px; height: 18px; margin: 2px 0 0; accent-color: var(--lantern); }
+.switch-row small { display: block; font-size: 12px; color: var(--ash-dim); }
+.item-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.item-chip { padding: 3px 9px; border: 1px solid var(--line); border-radius: 999px; font: 12px/1.4 var(--font-ui); color: var(--ash-dim); }
+.info-slot:not(:empty) { margin-top: 4px; }
+.info-more { display: flex; gap: 16px; margin-top: 10px; }
 .album-slot:disabled { cursor: default; }
 .char-body { background: none; border: 0; padding: 0; text-align: left; color: inherit; cursor: pointer; }
 @media (min-width: 900px) {
@@ -621,3 +696,91 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--lantern); o
 .cz-tile.empty::before { opacity: 0.45; }
 .cz-tile.empty .cz-tile-art { background: none; }
 .cz-tile:disabled { cursor: default; }
+
+/* ---- "Người quen" tab: cards, sheet, privacy ---- */
+.people-sec { padding-top: 4px; }
+.enc-list { display: grid; gap: 4px; }
+.enc-cards { display: grid; gap: 8px; }
+.enc-group { margin: 14px 0 6px; font: 600 12px/1.3 var(--font-ui); letter-spacing: 0.06em; text-transform: uppercase; color: var(--ash-dim); }
+.enc-group:first-child { margin-top: 4px; }
+.enc-row { display: flex; align-items: center; gap: 12px; padding: 10px 12px; }
+.enc-row:hover { border-color: rgba(230, 197, 111, 0.45); }
+.enc-row.online { border-color: rgba(159, 210, 193, 0.45); }
+.enc-pic { flex: none; width: 44px; height: 44px; border-radius: 50%; overflow: hidden; background: radial-gradient(circle at 50% 35%, #26302c, #121917); border: 1px solid var(--line); display: grid; place-items: center; }
+.enc-pic > * { width: 100% !important; height: 100% !important; object-fit: cover; }
+.enc-pic.big { width: 64px; height: 64px; }
+.enc-body { display: grid; gap: 2px; min-width: 0; flex: 1; }
+.enc-head { flex-wrap: wrap; row-gap: 2px; }
+.enc-row.online .enc-meta { color: var(--jade); }
+.enc-empty { padding: 14px 0; }
+.privacy-card { margin-top: 20px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; background: rgba(255, 255, 255, 0.02); }
+.privacy-title { margin: 0 0 10px; font: 600 12px/1.3 var(--font-ui); letter-spacing: 0.06em; text-transform: uppercase; color: var(--ash-dim); }
+.privacy-card .switch-row { padding: 6px 0; }
+.privacy-card .switch-row + .switch-row { border-top: 1px solid var(--line); margin-top: 4px; padding-top: 10px; }
+.person-scrim { position: fixed; inset: 0; z-index: 60; display: flex; align-items: flex-end; justify-content: center; background: rgba(4, 8, 7, 0.6); backdrop-filter: blur(2px); }
+.person-card { position: relative; width: 100%; max-width: 440px; max-height: 82vh; overflow-y: auto; padding: 18px 18px calc(env(safe-area-inset-bottom, 0px) + 18px); background: #101816; border: 1px solid var(--line); border-radius: 18px 18px 0 0; box-shadow: 0 -10px 40px rgba(0,0,0,0.5); }
+.person-x { position: absolute; top: 10px; right: 10px; width: 34px; height: 34px; border: 0; border-radius: 50%; background: rgba(255,255,255,0.06); color: var(--ash-dim); font: 16px/1 var(--font-ui); cursor: pointer; }
+.person-head { display: flex; align-items: center; gap: 14px; padding-right: 36px; margin-bottom: 12px; }
+.person-who { display: grid; gap: 2px; min-width: 0; }
+.person-name { font: 600 22px/1.2 var(--font-display); overflow-wrap: anywhere; }
+.person-who small { font: 12.5px/1.4 var(--font-ui); color: var(--ash-dim); }
+.person-card .enc-actions { margin-top: 16px; }
+@media (min-width: 700px) { .person-scrim { align-items: center; } .person-card { border-radius: 18px; } }
+
+/* ---------- catalog popup: "Tất cả các thẻ" (all 52 cards, opened from the profile and the cards album) ---------- */
+/* Reuses the person sheet (.person-scrim / .person-card): bottom sheet on phones, centred from 700px. */
+.catalog-card { max-height: 85vh; }
+@media (min-width: 700px) { .catalog-card { max-width: 600px; } }
+.catalog-head { padding-right: 36px; margin-bottom: 12px; }
+.catalog-title { margin: 0; font: 600 22px/1.2 var(--font-display); }
+.catalog-progress { margin: 4px 0 0; font: 13px/1.4 var(--font-ui); color: var(--lantern); }
+.catalog-body { display: grid; gap: 10px; }
+.cat-open { margin: 6px 0 10px; }
+.cat-group { border: 1px solid var(--line); border-radius: 12px; padding: 0 12px; background: rgba(255, 255, 255, 0.02); }
+.cat-group[open] { padding-bottom: 12px; }
+.cat-sum { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding: 12px 0; cursor: pointer; list-style: none; font: 600 15px/1.3 var(--font-display); }
+.cat-sum::-webkit-details-marker { display: none; }
+.cat-sum::after { content: "+"; flex: none; font: 500 16px/1 var(--font-ui); color: var(--ash-dim); }
+.cat-group[open] > .cat-sum::after { content: "–"; }
+.cat-name { min-width: 0; overflow-wrap: anywhere; }
+.cat-count { flex: none; margin-left: auto; padding-right: 10px; font: 600 12px/1 var(--font-ui); color: var(--lantern); font-variant-numeric: tabular-nums; }
+.cat-group .cat-hint { margin: 0 0 10px; font-size: 12.5px; }
+.cat-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-bottom: 8px; }
+.cat-tile { min-height: 104px; }
+.cat-tile.cat-t-hint { cursor: default; }
+.cat-tile.cat-t-hint .cz-tile-sub { color: var(--ash-dim); }
+/* locked (not in the game yet): small silhouette, no text, so a group of them packs densely */
+.cat-grid-mini { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin-bottom: 0; }
+.cat-mini { display: grid; place-items: center; min-width: 0; padding: 2px 0; line-height: 0; opacity: 0.7; }
+.cat-mini .cza-svg { display: block; }
+.catalog-legend { margin: 6px 0 0; font-size: 12.5px; }
+.catalog-note { margin: 6px 0 0; font-size: 12px; }
+.catalog-intro { margin: 8px 0 0; font-size: 12.5px; }
+
+/* "Tâm, tâm sở và thẻ" sheet: reuses .person-scrim / .person-card, stacks above the catalog popup (z 60) */
+.lore-scrim { z-index: 70; }
+.lore-card { max-width: 440px; }
+@media (min-width: 700px) { .lore-card { max-width: 480px; } }
+.lore-title { margin: 0 36px 12px 0; font: 600 20px/1.25 var(--font-display); }
+.lore-body { display: grid; gap: 12px; }
+.lore-p { margin: 0; font: 14px/1.7 var(--font-ui); }
+@media (min-width: 700px) {
+  .cat-grid { grid-template-columns: repeat(auto-fill, minmax(124px, 1fr)); }
+  .cat-grid-mini { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+}
+
+/* Explanation of thẻ / tâm sở / tâm, shown inside the "Tất cả các thẻ" popup (no button needed) */
+.catalog-lore { margin: 10px 0 4px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: rgba(255, 255, 255, 0.03); }
+.catalog-lore .lore-p { margin: 0; font: 13.5px/1.55 var(--font-ui); color: var(--ash); }
+.catalog-lore .lore-p + .lore-p { margin-top: 8px; }
+.catalog-lore .lore-p b { color: var(--lantern); font-weight: 600; }
+
+/* "Tâm sở là gì?" link and its tooltip inside the catalog popup */
+.catalog-head { position: relative; }
+.catalog-intro { margin: 8px 0 0; font: 13.5px/1.55 var(--font-ui); color: var(--ash); }
+.catalog-what { display: inline; padding: 0; font-size: 13.5px; color: var(--lantern); }
+.catalog-tip { margin: 8px 0 0; padding: 10px 12px; border: 1px solid rgba(230, 197, 111, 0.45); border-radius: 12px; background: #17201d; box-shadow: 0 6px 20px rgba(0,0,0,0.45); }
+.catalog-tip[hidden] { display: none; }
+.catalog-tip .lore-p { margin: 0; font: 13.5px/1.55 var(--font-ui); color: var(--ash); }
+.catalog-tip .lore-p + .lore-p { margin-top: 8px; }
+.catalog-tip .lore-p b { color: var(--lantern); font-weight: 600; }

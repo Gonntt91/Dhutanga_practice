@@ -48,7 +48,7 @@ window.Mind = (() => {
     },
     niem: {
       name: "Niệm", good: true, pali: "sati", plain: "Biết rõ điều đang xảy ra, ngay lúc này.",
-      tip: "Khi lạc đi, chỉ cần biết mình vừa lạc, rồi quay về hơi thở.", where: "Có lẽ gặp khi ngồi yên với một vị sư.",
+      tip: "Khi tâm chạy đi đâu đó, chỉ cần biết 'à, mình vừa chạy đi', rồi quay về hơi thở.", where: "Có lẽ gặp khi ngồi yên với một vị sư.",
       faces: [["Đặc tính", "Không trôi nổi, không lướt qua đối tượng."], ["Phận sự", "Không quên."], ["Biểu hiện", "Canh giữ, đối diện với đối tượng."], ["Nhân gần", "Tưởng vững chắc, hoặc bốn niệm xứ."]],
     },
     hy: {
@@ -543,11 +543,11 @@ window.Mind = (() => {
         setTimeout(() => b.remove(), 1100);
       });
       field.appendChild(b);
-      setTimeout(() => { if (!b.dataset.done && b.isConnected) { lost++; fill = Math.max(0, fill - 0.035); info.textContent = "Lạc theo ý nghĩ một lúc. Biết vậy là đủ, quay về."; } b.remove(); }, 8600);
+      setTimeout(() => { if (!b.dataset.done && b.isConnected) { lost++; fill = Math.max(0, fill - 0.035); info.textContent = "Vừa trôi theo ý nghĩ một lúc. Biết vậy là đủ, quay về."; } b.remove(); }, 8600);
     };
     const choices = [{ label: "Đứng dậy", fn: () => { stopSit(); S.quest.step = "monk"; save(); closeSheet(); api.toast("Người này đứng dậy sớm. Lần sau thử ngồi lâu hơn một chút."); } }];
     if (api.dev()) choices.push({ label: "Tua (dev)", fn: () => { fill = 1; } });
-    showSheet({ label: "Ngồi với sư", lines: ["Thầy nói khẽ: “Cứ biết hơi thở. Lạc đi thì biết là lạc.”"], body: box, choices });
+    showSheet({ label: "Ngồi với sư", lines: ["Thầy nói khẽ: “Cứ biết hơi thở. Tâm chạy đi đâu thì biết là nó đang chạy, rồi dắt nó về.”"], body: box, choices });
     api.setPose("sit");
     spawn();
     sitTimer = setInterval(() => {
@@ -570,7 +570,7 @@ window.Mind = (() => {
       lines: [`Người này đã quay về hơi thở ${noted} lần.`, "Quả cầu đầy nước. Buổi ngồi xong. Còn niệm thì vẫn cần luyện mỗi ngày."],
       choices: [{ label: "Mở mắt", primary: true, fn: () => {
         closeSheet();
-        award("niem", "Người này ngồi với sư, mỗi lần lạc đi lại biết và quay về hơi thở.", () => devaVisit(MONK_SPOT(), true));
+        award("niem", "Người này ngồi với sư, mỗi lần tâm chạy đi lại biết và quay về hơi thở.", () => devaVisit(MONK_SPOT(), true));
       } }],
     });
   }
@@ -779,9 +779,13 @@ window.Mind = (() => {
   }
   function suggestion() {
     const s = S.stats;
-    if (s.san >= 45) return "Sân đang cao. Thử làm một việc tốt cho người vừa làm mình giận.";
-    if (s.tham >= 50) return "Tham đang cao. Thử đem một thứ mình có cho người khác.";
-    if (s.niem < 35) return "Niệm còn yếu. Ghé ngồi với vị sư ở nghĩa địa một lát.";
+    // The sentence must agree with the colour the player sees (same bands as moodLabel in app.js).
+    const g = api && api.mood ? api.mood() : 0.5;
+    if (g < 0.12) return "Lòng đang u tối, dễ nổi nóng. Thử làm một việc tốt cho người vừa làm mình giận.";
+    if (g < 0.35) return "Lòng đang bám víu, muốn giữ cho mình. Thử đem một thứ mình có cho người khác.";
+    if (g < 0.46) return "Lòng đang mờ mịt. Ghé ngồi với vị sư ở nghĩa địa một lát cho tỉnh lại.";
+    if (g >= 0.74) return "Lòng đang sáng và nhẹ. Cứ đi dạo và biết từng bước chân.";
+    if (s.niem < 35) return "Lòng khá yên, chỉ là niệm còn yếu. Ghé ngồi với vị sư ở nghĩa địa một lát.";
     if (s.tin - s.tue > 18) return "Tin nhiều hơn hiểu. Thử đọc một bài kinh ở tịnh thất rồi suy xét.";
     if (s.tue - s.tin > 18) return "Hiểu nhiều hơn tin. Lễ Phật ở tịnh thất, ngồi yên, đừng phân tích.";
     return "Tâm đang khá cân bằng. Cứ đi dạo và biết từng bước chân.";
@@ -854,6 +858,113 @@ window.Mind = (() => {
     }
     return grid;
   }
+  // ---------- catalog popup: all 52 cards, met ones as tiles, the rest as small silhouettes ----------
+  const catalogView = (owned) => Cetasika.catalog({
+    owned, cards: CARDS,
+    count: (g, own) => { const R = MS().rules; return R.effN(CARDS[g], own.n); },
+  });
+  // The button under "Tâm đang tu" (profile) and in the album, under the same heading. X counts the owned cards that map to a cetasika.
+  function catalogButton(owned) {
+    const b = el("button", "pill cat-open", `Xem tất cả các thẻ (${catalogView(owned).met}/${Cetasika.all.length})`);
+    b.type = "button";
+    b.addEventListener("click", () => openCatalog(owned));
+    return b;
+  }
+  let catalogSheet = null;
+  function closeCatalog() {
+    if (catalogSheet) { catalogSheet.remove(); catalogSheet = null; }
+    document.removeEventListener("keydown", catalogKey);
+    tipClose = null;
+  }
+  function catalogKey(e) { if (e.key === "Escape") { e.stopPropagation(); if (tipClose && tipClose()) return; closeCatalog(); } }
+  let tipClose = null; // closes the "Tâm sở là gì?" tooltip if it is open; returns true when it did
+  function openCatalog(owned) {
+    closeCatalog();
+    owned = owned || {};
+    const v = catalogView(owned);
+    const scrim = el("div", "person-scrim catalog-scrim");
+    const card = el("div", "person-card catalog-card");
+    card.setAttribute("role", "dialog"); card.setAttribute("aria-modal", "true"); card.setAttribute("aria-labelledby", "catalog-title");
+    const x = el("button", "person-x", "✕"); x.type = "button"; x.setAttribute("aria-label", "Đóng");
+    x.addEventListener("click", closeCatalog);
+    scrim.addEventListener("click", (e) => { if (e.target === scrim) closeCatalog(); });
+    const head = el("div", "catalog-head");
+    const h = el("h2", "catalog-title", "Tất cả các thẻ"); h.id = "catalog-title";
+    const L = Cetasika.LORE;
+    const intro = el("p", "catalog-intro");
+    intro.append(L.intro);
+    const tip = el("div", "catalog-tip"); tip.hidden = true; // stays empty and hidden while LORE.showTip is false
+    if (L.showTip) {
+    intro.append(" ");
+    const link = el("button", "text-btn catalog-what", L.linkLabel); link.type = "button";
+    link.setAttribute("aria-expanded", "false");
+    tip.setAttribute("role", "tooltip");
+    for (const p of L.paragraphs) { const para = el("p", "lore-p"); para.append(el("b", null, p.lead), p.rest); tip.appendChild(para); }
+    const setTip = (on) => { tip.hidden = !on; link.setAttribute("aria-expanded", String(on)); };
+    link.addEventListener("click", (e) => { e.stopPropagation(); setTip(tip.hidden); });
+    card.addEventListener("click", (e) => { if (!tip.hidden && !tip.contains(e.target) && e.target !== link) setTip(false); });
+    tipClose = () => { if (tip.hidden) return false; setTip(false); return true; };
+    intro.appendChild(link);
+    }
+    head.append(h, el("p", "catalog-progress", `Đã gặp ${v.met} / ${v.total} thẻ`), intro, tip, el("p", "hint catalog-legend", "Ô có dấu ? là thẻ chưa gặp."));
+    const body = el("div", "catalog-body");
+    for (const g of v.groups) body.appendChild(catalogGroup(g, owned));
+    body.appendChild(el("p", "hint catalog-note", "Game sẽ thêm thẻ dần, không hẹn thời điểm nào."));
+    card.append(x, head, body);
+    scrim.appendChild(card);
+    document.body.appendChild(scrim);
+    catalogSheet = scrim;
+    document.addEventListener("keydown", catalogKey);
+    x.focus();
+  }
+  function catalogGroup(g, owned) {
+    const d = el("details", "cat-group");
+    d.open = g.open;
+    const s = el("summary", "cat-sum");
+    s.append(el("span", "cat-name", g.title), el("span", "cat-count", `${g.met}/${g.total}`));
+    d.appendChild(s);
+    d.appendChild(el("p", "hint cat-hint", g.hint));
+    // big tiles (owned, or in-game hints) in a 3-column grid, then the compact locked ones in a 4-5 column grid
+    const big = g.tiles.filter((t) => !t.compact), small = g.tiles.filter((t) => t.compact);
+    if (big.length) {
+      const grid = el("div", "cat-grid");
+      big.forEach((t) => grid.appendChild(catalogTile(t, owned)));
+      d.appendChild(grid);
+    }
+    if (small.length) {
+      const grid = el("div", "cat-grid cat-grid-mini");
+      small.forEach((t) => grid.appendChild(catalogTile(t, owned)));
+      d.appendChild(grid);
+    }
+    return d;
+  }
+  function catalogTile(t, owned) {
+    if (t.state === "owned") {
+      const cz = Cetasika.byId(t.id);
+      const b = el("button", "cz-tile " + (t.good ? "good" : "bad") + " cat-tile");
+      b.type = "button";
+      if (cz) { b.style.setProperty("--band", bandOf(cz)); b.style.setProperty("--tint", glowOf(cz)); }
+      const art = el("span", "cz-tile-art");
+      art.innerHTML = window.CetasikaArt ? CetasikaArt.svg(t.game, 56) : "";
+      b.append(art, el("b", "cz-tile-name", t.name), el("span", "cz-tile-sub", t.sub));
+      b.addEventListener("click", () => { closeCatalog(); showCard(t.game, { own: owned[t.game], owned }); });
+      return b;
+    }
+    // unmet: silhouette only, never a name. In-game but not met: a large tile with the card's "where" line.
+    // Not in the game yet: a compact silhouette with no text at all.
+    if (t.compact) {
+      const mini = el("div", "cat-mini");
+      mini.setAttribute("role", "img"); mini.setAttribute("aria-label", "Thẻ chưa gặp");
+      mini.innerHTML = window.CetasikaArt ? CetasikaArt.silhouette(42) : "";
+      return mini;
+    }
+    const div = el("div", "cz-tile empty cat-tile cat-t-" + t.state);
+    const art = el("span", "cz-tile-art");
+    art.innerHTML = window.CetasikaArt ? CetasikaArt.silhouette(56) : "";
+    div.append(art, el("span", "cz-tile-sub", t.hint));
+    return div;
+  }
+
   let albumTab = "cards";
   function openAlbum(tab) {
     if (tab === "cards" || tab === "bag" || tab === "log") albumTab = tab;
@@ -894,7 +1005,10 @@ window.Mind = (() => {
     for (const sec of cardSections(S.cards)) {
       const h = el("h3", "album-title", sec.title);
       if (sec.extra) h.appendChild(el("span", "album-extra", sec.extra));
-      list.appendChild(h);
+      if (sec.key === "good") {
+        list.appendChild(h);
+        list.appendChild(catalogButton(S.cards));
+      } else list.appendChild(h);
       list.appendChild(cardGrid(sec, (id) => showCard(id)));
     }
     panel.hidden = false;
@@ -957,6 +1071,7 @@ window.Mind = (() => {
     caritaName: (k) => (CARITA[k] ? CARITA[k].name : ""),
     viewCard: (id, own, owned) => showCard(id, { own, owned, then: () => {} }),
     cardSections, cardGrid,
+    catalogButton, openCatalog,
     cardStep: (id, prevN) => MS().rules.cardStep(CARDS[id], prevN),
     milestoneState: () => { ensure(); return { got: S.milestones, counts: S.msCounts, save }; },
     villageState: () => { ensure(); const v = S.village; return { deeds: v.deeds, get said() { return v.said || null; }, set said(x) { v.said = x; }, save }; },

@@ -24,7 +24,7 @@ window.Chapters = (() => {
     villager: {
       c1: { title: "Đêm đầu" },
       c2a: { title: "Theo thầy tu tập", start: "v2a_0", meterStart: 6 },
-      c2b: { title: "Còn ngờ", start: "v2b_0", meterStart: 4 },
+      c2b: { title: "Còn nghi ngờ", start: "v2b_0", meterStart: 4 },
       n1: { title: "Đêm trăng", start: "vn1_0", meterStart: 5 },
       n2: { title: "Đêm mưa phùn", start: "vn2_0", meterStart: 5 },
     },

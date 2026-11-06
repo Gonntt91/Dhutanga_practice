@@ -5,6 +5,9 @@ const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
 const auth = require("./auth");
+const social = require("./social");
+const connections = require("./connections");
+const { createTracker } = require("./encounters");
 
 const PORT = Number(process.env.PORT) || 3000;
 const PUBLIC_DIR = path.join(__dirname, "public");
@@ -28,8 +31,13 @@ const MIME = {
 
 // ---------- state ----------
 /** @type {Map<string, {res: http.ServerResponse, presence: object, lastEmit: number, lastTrace: number}>} */
+// A peer may carry userId / charId / handle (signed-in players only). Those internal ids stay in this map:
+// publicPeers() exposes just the opaque handle.
 const peers = new Map();
 let traces = [];
+const tracker = createTracker({ range: 150, thresholdMs: 20000, maxGapMs: 3000 });
+const CHAR_ID_RE = /^[\w-]{8,64}$/;
+const SEEN_TOUCH_MS = 60000;
 
 // Load recent traces from the shared store; a failure just means starting empty.
 async function restoreTraces() {
@@ -48,7 +56,13 @@ function cleanText(value, max) {
 // Each peer has a secret pid (only its own browser knows it) and a public sid shown to everyone else.
 // Other players only ever see sids, so nobody can post as someone else.
 function publicPeers() {
-  return [...peers.values()].map((p) => ({ pid: p.sid, ...p.presence }));
+  return [...peers.values()].map((p) => ({ pid: p.sid, ...p.presence, handle: p.handle || null }));
+}
+
+// True while a connected peer is bound to this character ("đang chơi"). Used only by connections.js.
+function isCharOnline(charId) {
+  for (const p of peers.values()) if (p.charId === charId) return true;
+  return false;
 }
 
 function send(res, event, data) {
@@ -85,8 +99,10 @@ function json(res, status, data) {
 }
 
 // ---------- routes ----------
-function handleEvents(req, res, url) {
+async function handleEvents(req, res, url) {
   const pid = cleanText(url.searchParams.get("pid"), 40) || crypto.randomUUID();
+  const user = await auth.currentUser(req);
+  const userId = user ? user.id : null; // guests: null
   res.writeHead(200, {
     "Content-Type": "text/event-stream",
     "Cache-Control": "no-cache",
@@ -96,8 +112,16 @@ function handleEvents(req, res, url) {
 
   const existing = peers.get(pid);
   const sid = existing?.sid ?? crypto.randomBytes(6).toString("hex");
+  // Reconnecting as the same account keeps the verified character; another account starts unbound.
+  const same = !!existing && existing.userId === userId;
   peers.set(pid, {
     sid,
+    userId,
+    charId: same ? existing.charId : null,
+    handle: same ? existing.handle : null,
+    boundId: same ? existing.boundId : null,
+    bindSeq: 0,
+    seenAt: 0,
     lastChat: 0,
     res,
     presence: existing?.presence ?? { role: null, scene: null, nick: "", x: 0.5, y: 0.95, pose: null },
@@ -114,9 +138,67 @@ function handleEvents(req, res, url) {
     const current = peers.get(pid);
     if (current && current.res === res) {
       peers.delete(pid);
+      tracker.forget(pid);
+      if (current.charId) auth.store.touchSeen(current.charId).catch((err) => console.error("touch seen failed:", err.message));
       broadcast("peers", publicPeers());
     }
   });
+}
+
+// Binds the peer to one of its account's characters. The character is checked against the session's
+// account (never trusted from the body alone), and the answer is cached until the id changes.
+// Guests stay unbound. Failures leave the peer unbound and are retried on the next presence.
+async function bindCharacter(peer, rawId) {
+  const cid = typeof rawId === "string" && CHAR_ID_RE.test(rawId) ? rawId : null;
+  const seq = ++peer.bindSeq;
+  if (!peer.userId) {
+    peer.charId = null; peer.handle = null; peer.boundId = null;
+    return;
+  }
+  if (cid === peer.boundId) return;
+  let charId = null, handle = null;
+  if (cid) {
+    try {
+      const own = await auth.store.getCharacter(peer.userId, cid);
+      if (own) {
+        handle = await auth.store.ensureHandle(peer.userId, cid);
+        charId = handle ? cid : null;
+      }
+    } catch (err) {
+      console.error("bind character failed:", err.message);
+    }
+  }
+  if (seq !== peer.bindSeq) return; // a newer presence has already started binding
+  peer.charId = charId;
+  peer.handle = handle;
+  peer.boundId = charId ? cid : null;
+}
+
+// The 'Từng gặp' feed. Runs on each presence update and on a 1-second tick, because the client only
+// posts presence when a player moves or changes state, so two standing-still players would never accumulate time.
+function trackEncounters(now = Date.now()) {
+  try {
+    const list = [];
+    const owners = new Map(); // charId -> userId, for the pairs that come back
+    for (const [pid, p] of peers) {
+      if (!p.userId || !p.charId) continue;
+      owners.set(p.charId, p.userId);
+      list.push({ key: pid, userId: p.userId, charId: p.charId, scene: p.presence.scene, x: p.presence.x * WORLD_W, y: p.presence.y * WORLD_H });
+    }
+    for (const [a, b] of tracker.update(list, now)) recordPair(a, owners.get(a), b, owners.get(b), now);
+  } catch (err) {
+    console.error("encounter tracking failed:", err.message);
+  }
+}
+
+// Both directions, unless the two accounts block each other. Errors are logged; nothing waits on this.
+function recordPair(charA, userA, charB, userB, now) {
+  if (!userA || !userB || userA === userB) return;
+  (async () => {
+    if (await auth.store.isBlockedEither(userA, userB)) return;
+    await auth.store.recordEncounter(charA, charB, now);
+    await auth.store.recordEncounter(charB, charA, now);
+  })().catch((err) => console.error("record encounter failed:", err.message));
 }
 
 async function handlePresence(req, res) {
@@ -132,6 +214,13 @@ async function handlePresence(req, res) {
     pose: body.pose === "sit" ? "sit" : null,
     mood: Math.round(Math.min(1, Math.max(0, Number(body.mood) || 0.5)) * 50) / 50,
   };
+  await bindCharacter(peer, body.characterId);
+  const now = Date.now();
+  if (peer.charId && now - peer.seenAt >= SEEN_TOUCH_MS) {
+    peer.seenAt = now;
+    auth.store.touchSeen(peer.charId, now).catch((err) => console.error("touch seen failed:", err.message));
+  }
+  trackEncounters(now);
   broadcast("peers", publicPeers());
   json(res, 200, { ok: true });
 }
@@ -260,7 +349,9 @@ const server = http.createServer(async (req, res) => {
       return res.end(`window.APP_CONFIG = { dev: ${dev} };`);
     }
     if (await auth.handle(req, res, url)) return;
-    if (req.method === "GET" && url.pathname === "/events") return handleEvents(req, res, url);
+    if (await social.handle(req, res, url)) return;
+    if (await connections.handle(req, res, url, { isOnline: isCharOnline })) return;
+    if (req.method === "GET" && url.pathname === "/events") return await handleEvents(req, res, url);
     if (req.method === "POST" && url.pathname === "/api/presence") return await handlePresence(req, res);
     if (req.method === "POST" && url.pathname === "/api/emit") return await handleEmit(req, res);
     if (req.method === "POST" && url.pathname === "/api/trace") return await handleTrace(req, res);
@@ -274,6 +365,7 @@ const server = http.createServer(async (req, res) => {
 });
 
 restoreTraces();
+setInterval(() => trackEncounters(), 1000).unref();
 server.listen(PORT, () => {
   console.log(`Một đêm đầu đà đang chạy ở http://localhost:${PORT}`);
   console.log("Mở nhiều tab hoặc nhiều máy cùng mạng LAN để chơi cùng nhau.");
