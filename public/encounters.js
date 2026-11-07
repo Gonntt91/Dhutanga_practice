@@ -85,6 +85,43 @@
     });
   }
 
+  // Bà Sáu cannot act on living people or carry physical objects. Her quest is observation and memory.
+  function ghostMemory() {
+    const q = Q("ghost_memory"), step = q.step || "none";
+    const next = (name) => { q.step = name; K.save(); K.closeSheet(); K.cooldown(3000); };
+    const show = (lines, choices) => K.showSheet({ label: "Tiếng guốc trong sương", lines, choices });
+    if (step === "none") return show(
+      ["Dưới gốc gạo thấp thoáng bóng một đứa trẻ.", "Bà Sáu nghe như tiếng Hạnh gọi từ mùa nước lớn."],
+      [
+        { label: "Gọi tên Hạnh", fn: () => { q.called = true; next("bamboo"); toast("Không ai quay đầu. Lá gạo vẫn lay."); } },
+        { label: "Dừng lại nhìn kỹ", primary: true, fn: () => { q.looked = true; next("bamboo"); toast("Đó là một đứa trẻ khác, đang về nhà."); } },
+        { label: "Để đêm khác", fn: () => { snooze(q); K.closeSheet(); } },
+      ]
+    );
+    if (step === "bamboo") return show(
+      ["Bụi tre vang lên tiếng guốc lộc cộc.", "Một người mẹ nắm tay con đi qua. Họ không nghe thấy bà."],
+      [
+        { label: "Nhớ con đường nước lớn", fn: () => { q.called = true; next("wall"); } },
+        { label: "Biết đây không phải Hạnh", primary: true, fn: () => { q.looked = true; next("wall"); } },
+        { label: "Để khi khác", fn: () => { snooze(q); K.closeSheet(); } },
+      ]
+    );
+    if (step === "wall") return show(
+      ["Ngoài tường tịnh thất, tiếng kinh vọng ra rất khẽ.", "Bà chỉ có thể đứng nghe, không thể bước vào đời sống của họ."],
+      [
+        { label: "Ở lại nghe một đoạn", primary: true, fn: () => { q.listened = true; next("grave"); } },
+        { label: "Quay về ngôi mộ cũ", fn: () => next("grave") },
+      ]
+    );
+    return show(
+      [q.looked ? "Bà vẫn nhớ tên con, nhưng không gọi người lạ bằng tên ấy nữa." : "Bà vẫn nhớ con, vẫn muốn gọi theo từng bóng người.", "Đêm nay bà có thể ngồi lại cùng nỗi nhớ đó."],
+      [
+        { label: "Ngồi lặng bên mộ", primary: true, fn: () => { q.step = "done"; K.save(); K.closeSheet(); K.cooldown(4000); toast("Một đêm đã khép lại, không cần ép mình buông ngay."); } },
+        { label: "Để khi khác", fn: () => { snooze(q); K.closeSheet(); } },
+      ]
+    );
+  }
+
   // ---------- the hungry-ghost grandmother (Kinh Ngoài Bức Tường) ----------
   function petaMeet() {
     const q = Q("peta");
@@ -246,7 +283,7 @@
     const choices = [
       { label: "Ngồi ngắm một lát", primary: true, fn: () => { K.grow("niem", 0.8); K.grow("dinh", 0.8); K.closeSheet(); api().swingMood(0.25); toast("Người này ngồi yên. Gió mát, lòng lắng xuống như mặt ao."); } },
     ];
-    if (!has("hoa_sen")) choices.push({ label: "Hái nhẹ một đóa sen trắng", fn: () => { K.giveItem("hoa_sen"); K.save(); K.closeSheet(); K.setOpen(true); K.gotItem("hoa_sen", () => { K.setOpen(false); K.cooldown(2500); toast("Có thể dâng hoa lên bàn thờ ở tịnh thất."); }); } });
+    if (villageRole() && !has("hoa_sen")) choices.push({ label: "Hái nhẹ một đóa sen trắng", fn: () => { K.giveItem("hoa_sen"); K.save(); K.closeSheet(); K.setOpen(true); K.gotItem("hoa_sen", () => { K.setOpen(false); K.cooldown(2500); toast("Có thể dâng hoa lên bàn thờ ở tịnh thất."); }); } });
     choices.push({ label: "Đi tiếp", fn: K.closeSheet });
     K.showSheet({ label: "Ao sen", lines: night() ? ["Mặt ao lặng. Trăng in dưới nước, sen trắng khép cánh.", "Có tiếng ếch kêu đâu đó."] : ["Ao sen xanh mát. Chuồn chuồn đậu trên lá."], choices });
   }
@@ -305,11 +342,19 @@
       const out = [];
       if (!K.role()) return out;
       const tq = Q("tree");
-      if (dusk() && tq.step !== "done") out.push({ kind: "treegod", ...spot.tree(), alpha: 0.85, label: "thọ thần" });
-      else if (night() && tq.step === "done") out.push({ kind: "treegod", ...spot.tree(), alpha: 0.5, label: "" });
-      if (tq.step === "child") out.push({ kind: "child", ...spot.child(), crying: true, label: "bé Na" });
-      if (tq.step === "follow") { const p = World.getPlayer(); out.push({ kind: "child", x: p.x - 16, y: p.y + 4, moving: p.moving, crying: !!tq.scared, label: "bé Na" }); }
-      if (tq.step === "follow" || tq.step === "thank" || tq.step === "done") out.push({ kind: "mother", ...spot.mother(), label: "mẹ bé Na" });
+      if (villageRole() && dusk() && tq.step !== "done") out.push({ kind: "treegod", ...spot.tree(), alpha: 0.85, label: "thọ thần" });
+      else if (villageRole() && night() && tq.step === "done") out.push({ kind: "treegod", ...spot.tree(), alpha: 0.5, label: "" });
+      if (villageRole() && tq.step === "child") out.push({ kind: "child", ...spot.child(), crying: true, label: "bé Na" });
+      if (villageRole() && tq.step === "follow") { const p = World.getPlayer(); out.push({ kind: "child", x: p.x - 16, y: p.y + 4, moving: p.moving, crying: !!tq.scared, label: "bé Na" }); }
+      if (villageRole() && (tq.step === "follow" || tq.step === "thank" || tq.step === "done")) out.push({ kind: "mother", ...spot.mother(), label: "mẹ bé Na" });
+      if (K.role() === "ghost") {
+        const gm = Q("ghost_memory");
+        if (gm.step !== "done" && !snoozed(gm)) {
+          const step = gm.step || "none";
+          const pt = step === "none" ? spot.tree() : step === "bamboo" ? spot.child() : step === "wall" ? P().hermitage : spot.peta();
+          if ((step !== "none" || dusk()) && near(pt, 54)) { ghostMemory(); return true; }
+        }
+      }
       if (villageRole()) {
         const pq = Q("peta");
         if (fx.peta) out.push({ kind: "peta", ...spot.peta(), glow: Math.min(1, fx.peta.t / 3), alpha: Math.max(0, 1 - Math.max(0, fx.peta.t - 3) / 1.5), label: "bà ngoại" });
@@ -318,28 +363,35 @@
         if ((pq.step === "offer" || pq.step === "release") && !["monk", "sit", "deva", "done"].includes(dogStep)) out.push({ kind: "monk", ...K.MONK_SPOT(), label: "sư già" });
       }
       const eq = Q("earth");
-      if (eq.step !== "done" && earthReady()) out.push({ kind: "earthgod", ...spot.earth(), alpha: Math.min(1, fx.earth), label: fx.earth > 0.6 ? "địa thần" : "" });
+      if (villageRole() && eq.step !== "done" && earthReady()) out.push({ kind: "earthgod", ...spot.earth(), alpha: Math.min(1, fx.earth), label: fx.earth > 0.6 ? "địa thần" : "" });
       return out;
     },
     targets() {
       const out = [];
       const tq = Q("tree"), pq = Q("peta");
       if (tq.step === "child") out.push({ title: "Tìm bé Na trong bụi tre", body: "Thọ thần nhờ đưa đứa bé lạc về nhà.", ...stand(spot.child(), 24, 8), name: "Bé Na" });
-      if (tq.step === "follow") out.push({ title: "Đưa bé Na về ngõ làng", body: "Mẹ bé đang đứng chờ ở ngõ làng.", ...stand(spot.mother()), name: "Mẹ bé Na" });
-      if (tq.step === "thank") out.push({ title: "Quay lại gốc cây gạo", body: dusk() ? "Thọ thần đang đợi ở gốc gạo." : "Thọ thần chỉ hiện ra lúc chạng vạng trở đi.", ...stand(spot.tree(), -30, 10), name: "Thọ thần" });
+      if (villageRole() && tq.step === "follow") out.push({ title: "Đưa bé Na về ngõ làng", body: "Mẹ bé đang đứng chờ ở ngõ làng.", ...stand(spot.mother()), name: "Mẹ bé Na" });
+      if (villageRole() && tq.step === "thank") out.push({ title: "Quay lại gốc cây gạo", body: dusk() ? "Thọ thần đang đợi ở gốc gạo." : "Thọ thần chỉ hiện ra lúc chạng vạng trở đi.", ...stand(spot.tree(), -30, 10), name: "Thọ thần" });
       if (villageRole()) {
         if (pq.step === "rice") out.push({ title: "Xin một bát cơm ở giếng làng", body: "Để làm phước rồi hồi hướng cho bà ngoại.", ...stand(spot.granny(), -26, 10), name: "Bà cụ" });
         if (pq.step === "offer") out.push({ title: "Dâng cơm cho sư già", body: "Sư già ngồi giữa các ngôi mộ.", ...stand(K.MONK_SPOT(), 30, 4), name: "Sư già" });
       }
-      if (has("hoa_sen")) out.push({ title: "Dâng sen ở tịnh thất", body: "Đóa sen trắng đặt lên bàn thờ Đức Phật.", ...stand(P().hermitage, 0, 30), name: "Tịnh thất" });
+      if (villageRole() && has("hoa_sen")) out.push({ title: "Dâng sen ở tịnh thất", body: "Đóa sen trắng đặt lên bàn thờ Đức Phật.", ...stand(P().hermitage, 0, 30), name: "Tịnh thất" });
       // rumours: no marker, only a hint and a way there
-      if (tq.step === "none") out.push({ title: "Chuyện lạ ở gốc cây gạo", body: "Người làng kể lúc chạng vạng, lá cây gạo có khi sáng lên.", ...stand(P().gao, 0, 30) });
+      if (villageRole() && tq.step === "none") out.push({ title: "Chuyện lạ ở gốc cây gạo", body: "Người làng kể lúc chạng vạng, lá cây gạo có khi sáng lên.", ...stand(P().gao, 0, 30) });
+      if (K.role() === "ghost") {
+        const gm = Q("ghost_memory").step || "none";
+        if (gm !== "done") {
+          const pt = gm === "none" ? spot.tree() : gm === "bamboo" ? spot.child() : gm === "wall" ? P().hermitage : spot.peta();
+          out.push({ title: "Tiếng guốc trong sương", body: "Bà Sáu nhìn lại ký ức về Hạnh; không thể dẫn trẻ hay chạm vào người sống.", ...stand(pt, 0, 30) });
+        }
+      }
       if (villageRole() && pq.step === "none") out.push({ title: "Bóng người bên ngôi mộ thấp", body: "Ban đêm, có ai đó đứng mãi giữa nghĩa địa.", ...stand(spot.peta(), 0, 30) });
       if (place("hang") && Q("cave").step !== "done") {
         if (Q("cave").found) out.push({ title: "Hang đá sau tảng đá", body: has("den_nho") ? "Mang ngọn đèn của địa thần vào hang." : "Trong hang tối om. Cần một ngọn đèn.", ...stand(place("hang"), 0, 30), name: "Hang đá" });
         else if (has("den_nho")) out.push({ title: "Tảng đá lớn phía đông", body: "Địa thần nói: ai chịu ngồi yên bên tảng đá sẽ thấy điều người vội không thấy.", ...stand(place("hang"), 0, 30) });
       }
-      if (has("mandarava") && Q("palace").step !== "done" && place("thap")) out.push({ title: "Tháp cổ trên đồi", body: night() ? "Hoa mạn-đà-la có thể mở lối lên thiên cung." : "Đợi đêm xuống rồi mang hoa mạn-đà-la tới tháp cổ.", ...stand(place("thap"), 0, 30), name: "Tháp cổ" });
+      if (villageRole() && has("mandarava") && Q("palace").step !== "done" && place("thap")) out.push({ title: "Tháp cổ trên đồi", body: night() ? "Hoa mạn-đà-la có thể mở lối lên thiên cung." : "Đợi đêm xuống rồi mang hoa mạn-đà-la tới tháp cổ.", ...stand(place("thap"), 0, 30), name: "Tháp cổ" });
       return out;
     },
     loop() {
@@ -347,7 +399,7 @@
       if (!!Q("cave").found !== !!World.getMap().caveFound) syncCave();
       const near = K.near;
       const tq = Q("tree");
-      if (!snoozed(tq)) {
+      if (villageRole() && !snoozed(tq)) {
         if (tq.step === "none" && dusk() && near(spot.tree(), 60)) { treeMeet(); return true; }
         if (tq.step === "child" && near(spot.child(), 40)) { childFound(); return true; }
         if (tq.step === "follow" && near(spot.mother(), 44)) { childHome(); return true; }
@@ -367,15 +419,15 @@
       if (place("hang") && cq.step !== "done" && !snoozed(cq) && near(place("hang"), 50)) { if (cq.found) caveEnter(); else boulderVisit(); return true; }
       const oq = Q("pond");
       if (place("ao") && !snoozed(oq) && near(place("ao"), 64)) { pondVisit(); return true; }
-      if (has("hoa_sen") && !snoozed(Q("lotus")) && near(P().hermitage, 50)) { offerLotus(); return true; }
+      if (villageRole() && has("hoa_sen") && !snoozed(Q("lotus")) && near(P().hermitage, 50)) { offerLotus(); return true; }
       const sq = Q("palace");
-      if (place("thap") && !snoozed(sq) && near(place("thap"), 52)) { stupaVisit(); return true; }
+      if (villageRole() && place("thap") && !snoozed(sq) && near(place("thap"), 52)) { stupaVisit(); return true; }
       return false;
     },
     fx(ctx, v, dt) {
       if (!K.role()) return;
       // glowing leaves drifting around the silk-cotton tree while the tree spirit is near
-      if (dusk() && Q("tree").step !== "done") {
+      if (villageRole() && dusk() && Q("tree").step !== "done") {
         const g = P().gao;
         if (fx.sparks.length < 26 && Math.random() < 0.5) fx.sparks.push({ x: g.x - 40 + Math.random() * 110, y: g.y - 70 - Math.random() * 60, v: 6 + Math.random() * 10, t: 0, life: 3 + Math.random() * 2 });
       }
@@ -407,7 +459,7 @@
   // địa thần shows up for someone who has already done a kind deed, at dusk or night, with a fairly bright mind
   function earthReady() {
     const did = Q("tree").step === "done" || Q("peta").step === "done" || K.S.quest.step === "done";
-    return did && dusk() && api() && api().mood() >= 0.5;
+    return villageRole() && did && dusk() && api() && api().mood() >= 0.5;
   }
 })();
 
