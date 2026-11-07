@@ -4,6 +4,8 @@
 >
 > Tài liệu liên quan: [he-thong-tam.md](he-thong-tam.md) (mục 4a, 15–18), [kich-ban-vong-ngay.md](kich-ban-vong-ngay.md), [exploration-ux-and-gating.md](exploration-ux-and-gating.md), [map-brief-hang-va-coi-gioi.md](map-brief-hang-va-coi-gioi.md).
 
+> **Nguyên tắc bắt buộc mới (07-11-2026):** đọc [Game Design Principles](game-design-principles.md) trước khi sửa map, quest, thẻ hoặc tài liệu giáo lý. **Game trước — Phật pháp tạo chiều sâu — Người chơi chọn cách trải nghiệm — Mô phỏng minh bạch.** Các khu ngoài phải tự do khám phá, truyện chỉ mở khi người chơi chủ động tương tác. Thẻ tâm và các cổng là logic game, không phải phép tính đạo hạnh hoặc đường đi giữa các cõi như giáo lý. Mọi câu chuyện gắn nguồn `canonical/commentary/game_interpretation/fiction` phù hợp. Xem nguyên tắc 2–5 và 9 của tài liệu chuẩn.
+
 ## 1. Tuyên ngôn trải nghiệm
 
 **Người chơi đến vì tò mò, ở lại vì hiểu thêm, trở lại vì thế giới có điều mới chờ họ.** Không bắt buộc hoàn thành nhiệm vụ mới được ngắm cảnh. Việc đi xa hơn tạo nhu cầu tự nhiên học kinh, kinh hành, ngồi thiền, giữ lời hứa, làm điều thiện.
