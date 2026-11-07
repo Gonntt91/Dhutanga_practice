@@ -369,7 +369,7 @@
     targets() {
       const out = [];
       const tq = Q("tree"), pq = Q("peta");
-      if (tq.step === "child") out.push({ title: "Tìm bé Na trong bụi tre", body: "Thọ thần nhờ đưa đứa bé lạc về nhà.", ...stand(spot.child(), 24, 8), name: "Bé Na" });
+      if (villageRole() && tq.step === "child") out.push({ title: "Tìm bé Na trong bụi tre", body: "Thọ thần nhờ đưa đứa bé lạc về nhà.", ...stand(spot.child(), 24, 8), name: "Bé Na" });
       if (villageRole() && tq.step === "follow") out.push({ title: "Đưa bé Na về ngõ làng", body: "Mẹ bé đang đứng chờ ở ngõ làng.", ...stand(spot.mother()), name: "Mẹ bé Na" });
       if (villageRole() && tq.step === "thank") out.push({ title: "Quay lại gốc cây gạo", body: dusk() ? "Thọ thần đang đợi ở gốc gạo." : "Thọ thần chỉ hiện ra lúc chạng vạng trở đi.", ...stand(spot.tree(), -30, 10), name: "Thọ thần" });
       if (villageRole()) {
