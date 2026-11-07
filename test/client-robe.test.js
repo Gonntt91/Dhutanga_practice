@@ -4,7 +4,8 @@ const { makeSandbox, load } = require("./client-harness");
 
 function setup(role = "monk") {
   const sb = makeSandbox();
-  let day = 1, popup = null, activeRole = role;
+  let day = 1, popup = null, activeRole = role, clock = 100000;
+  sb.Date = class extends Date { static now() { return clock; } };
   const state = { q: {} };
   const places = { gate: { x: 10, y: 10 }, well: { x: 20, y: 20 }, hermitage: { x: 30, y: 30 } };
   let mod;
@@ -18,7 +19,7 @@ function setup(role = "monk") {
   sb.Mind = { kit: k, register: (m) => { mod = m; } };
   sb.World = { PLACES: places };
   load(sb, "robe.js");
-  return { get mod() { return mod; }, get popup() { return popup; }, state, items, setDay: (d) => { day = d; }, setRole: (r) => { activeRole = r; } };
+  return { get mod() { return mod; }, get popup() { return popup; }, state, items, setDay: (d) => { day = d; clock += 61000; }, setRole: (r) => { activeRole = r; } };
 }
 
 test("ghost cannot receive monk's rag-robe physical errands", () => {
