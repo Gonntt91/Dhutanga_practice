@@ -1,0 +1,22 @@
+# Render blueprint: one free web service running the Node server.
+services:
+  - type: web
+    name: dhutanga-practice
+    runtime: node
+    plan: free
+    buildCommand: npm install --omit=dev
+    startCommand: npm start
+    healthCheckPath: /healthz
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: "20"
+      # Neon Postgres connection string (postgresql://...?sslmode=require). Without it accounts go to a file that is wiped on deploy.
+      - key: DATABASE_URL
+        sync: false
+      # Google OAuth client (Web application). Authorized redirect URI: https://<your-app>.onrender.com/auth/google/callback
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
