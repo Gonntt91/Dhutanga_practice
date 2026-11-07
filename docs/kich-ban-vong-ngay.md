@@ -2,6 +2,8 @@
 
 > **Thiết kế mở rộng — không phải toàn bộ đã triển khai.** Đây là bản nội dung để đưa dần vào game trên nhánh `experiment/qls-ideas`. Tham chiếu [he-thong-tam.md](he-thong-tam.md), nhất là mục 4, 9, 15–17. Nội dung liên quan giáo lý, nghi thức, đầu-đà và tâm sở phải được một vị thầy Theravāda kiểm tra trước khi phát hành.
 
+> **Nguyên tắc mới áp dụng cho mọi nhiệm vụ (07-11-2026):** [Game Design Principles](game-design-principles.md). Người mới được **đi dạo, khám phá trước khi nhận quest/khảo sát tâm**. Sự kiện tại NPC và địa danh cần người chơi chủ động nhấn tương tác, không tự popup khi chỉ đi ngang. Có thể nhận/hoãn/khước từ một nhiệm vụ; nếu đã nhận lời thì NPC ghi nhớ để nhân quả không đứt. Kiến thức, vật liệu, cảnh quan và lời hẹn là phần thưởng hợp lệ, không bắt mọi nhiệm vụ rơi thẻ. Kết quả offline **có thật** nhưng không cấp chứng đắc hay thẻ tu tập từ đồng hồ.
+
 ## 1. Lời hứa với người chơi
 
 Một ngày không cần làm nhiều; chỉ cần **một việc có ý nghĩa, một điều bất ngờ, một phút nhìn lại**.
