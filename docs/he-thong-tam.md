@@ -28,6 +28,8 @@
 | Kết quả khi vắng, Sổ kiến thức và kiến thức mở nhiệm vụ | mục 18; [kịch bản vòng ngày](kich-ban-vong-ngay.md) | **Đề xuất mới, chưa code** | Phần thưởng học và vật liệu thật thay chuyện kể đơn thuần |
 | Lời hứa rau má của bà cụ | mục 18.3 | **Cần sửa** | `atMit()/picked2()` cho đổi người nhận bất ngờ |
 
+> **Quyết định thiết kế mới (07-11-2026):** [Game Design Principles](game-design-principles.md) là chuẩn ưu tiên cao hơn các đề xuất cũ về việc bắt buộc khảo sát, thẻ tâm, tăng chỉ số và mở cõi. **Game trước; học thông qua tò mò; tự do đi dạo; phân biệt mô phỏng, kinh điển, chú giải và sáng tác.** Thanh chỉ số tâm là biến nội bộ của game, **không đo tâm sở thực hay nghiệp**. Thẻ là cơ hội tìm hiểu hoặc minh chứng đã tham gia tình huống mô phỏng; không chứng nhận Định/Niệm thực. Không yêu cầu làm bất thiện để lấy thẻ. Cổng cõi không mở bằng cách cộng điểm tâm hay tổng thẻ như công thức giáo lý; dùng sự kiện, vật dẫn, kiến thức và trải nghiệm có bối cảnh. **Không tự popup nhiệm vụ khi đi ngang**, khảo sát đầu game phải có thể bỏ qua. Quy định cụ thể ở tài liệu nguyên tắc.
+
 ## 0. Mục đích và tinh thần
 
 **Mục đích:** qua việc chơi, người chơi hiểu dần về tâm, tâm sở và cách tu tập trong Phật giáo. Lộ trình đi từ tổng quan vào chi tiết (gộp → tách → gộp lại), dựa trên Vi Diệu Pháp (Abhidhamma).
