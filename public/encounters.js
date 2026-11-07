@@ -387,7 +387,7 @@
         }
       }
       if (villageRole() && pq.step === "none") out.push({ title: "Bóng người bên ngôi mộ thấp", body: "Ban đêm, có ai đó đứng mãi giữa nghĩa địa.", ...stand(spot.peta(), 0, 30) });
-      if (place("hang") && Q("cave").step !== "done") {
+      if (villageRole() && place("hang") && Q("cave").step !== "done") {
         if (Q("cave").found) out.push({ title: "Hang đá sau tảng đá", body: has("den_nho") ? "Mang ngọn đèn của địa thần vào hang." : "Trong hang tối om. Cần một ngọn đèn.", ...stand(place("hang"), 0, 30), name: "Hang đá" });
         else if (has("den_nho")) out.push({ title: "Tảng đá lớn phía đông", body: "Địa thần nói: ai chịu ngồi yên bên tảng đá sẽ thấy điều người vội không thấy.", ...stand(place("hang"), 0, 30) });
       }
@@ -416,7 +416,7 @@
       const eq = Q("earth");
       if (eq.step !== "done" && earthReady() && !snoozed(eq) && near(spot.earth(), 56)) { earthMeet(); return true; }
       const cq = Q("cave");
-      if (place("hang") && cq.step !== "done" && !snoozed(cq) && near(place("hang"), 50)) { if (cq.found) caveEnter(); else boulderVisit(); return true; }
+      if (villageRole() && place("hang") && cq.step !== "done" && !snoozed(cq) && near(place("hang"), 50)) { if (cq.found) caveEnter(); else boulderVisit(); return true; }
       const oq = Q("pond");
       if (place("ao") && !snoozed(oq) && near(place("ao"), 64)) { pondVisit(); return true; }
       if (villageRole() && has("hoa_sen") && !snoozed(Q("lotus")) && near(P().hermitage, 50)) { offerLotus(); return true; }
@@ -588,13 +588,13 @@
   }
   Mind.register({
     loop() {
-      if (!K.role() || !cart.on || cart.talked || cart.pause) return false;
+      if (!["monk", "villager"].includes(K.role()) || !cart.on || cart.talked || cart.pause) return false;
       const p = at(cart.d);
       if (K.near(p, 42)) { talk(); return true; }
       return false;
     },
     targets() {
-      if (!cart.on || cart.talked) return [];
+      if (!["monk", "villager"].includes(K.role()) || !cart.on || cart.talked) return [];
       const p = at(cart.d);
       return [{ title: cart.stuck ? "Xe ngựa sa lầy trên đường" : "Xe ngựa đang đi qua", body: cart.stuck ? "Ông lái buôn cần người đẩy giúp." : "Lại gần để bắt chuyện với ông lái buôn.", x: p.x + 30, y: p.y + 10 }];
     },
