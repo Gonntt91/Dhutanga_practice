@@ -347,14 +347,6 @@
       if (villageRole() && tq.step === "child") out.push({ kind: "child", ...spot.child(), crying: true, label: "bé Na" });
       if (villageRole() && tq.step === "follow") { const p = World.getPlayer(); out.push({ kind: "child", x: p.x - 16, y: p.y + 4, moving: p.moving, crying: !!tq.scared, label: "bé Na" }); }
       if (villageRole() && (tq.step === "follow" || tq.step === "thank" || tq.step === "done")) out.push({ kind: "mother", ...spot.mother(), label: "mẹ bé Na" });
-      if (K.role() === "ghost") {
-        const gm = Q("ghost_memory");
-        if (gm.step !== "done" && !snoozed(gm)) {
-          const step = gm.step || "none";
-          const pt = step === "none" ? spot.tree() : step === "bamboo" ? spot.child() : step === "wall" ? P().hermitage : spot.peta();
-          if ((step !== "none" || dusk()) && near(pt, 54)) { ghostMemory(); return true; }
-        }
-      }
       if (villageRole()) {
         const pq = Q("peta");
         if (fx.peta) out.push({ kind: "peta", ...spot.peta(), glow: Math.min(1, fx.peta.t / 3), alpha: Math.max(0, 1 - Math.max(0, fx.peta.t - 3) / 1.5), label: "bà ngoại" });
@@ -404,6 +396,14 @@
         if (tq.step === "child" && near(spot.child(), 40)) { childFound(); return true; }
         if (tq.step === "follow" && near(spot.mother(), 44)) { childHome(); return true; }
         if (tq.step === "thank" && dusk() && near(spot.tree(), 60)) { treeThanks(); return true; }
+      }
+      if (K.role() === "ghost") {
+        const gm = Q("ghost_memory");
+        if (gm.step !== "done" && !snoozed(gm)) {
+          const step = gm.step || "none";
+          const pt = step === "none" ? spot.tree() : step === "bamboo" ? spot.child() : step === "wall" ? P().hermitage : spot.peta();
+          if ((step !== "none" || dusk()) && near(pt, 54)) { ghostMemory(); return true; }
+        }
       }
       if (villageRole()) {
         const pq = Q("peta");
