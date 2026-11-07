@@ -179,3 +179,13 @@ Code: `auth.js` (đăng nhập Google qua OAuth, phiên đăng nhập bằng coo
 - Dev (`?dev`): mục "Chuyện lạ, nơi chốn" để nhảy tới từng nơi, gọi xe ngựa và thêm vật phẩm.
 
 Các câu chuyện chỉ phỏng theo tinh thần Chuyện Thiên Cung và Chuyện Ngạ Quỷ, cần thầy duyệt.
+
+### Thử nghiệm mở rộng vòng ngày và các vai (nhánh tính năng)
+
+Đặc tả đầy đủ: [Kịch bản vòng ngày](docs/kich-ban-vong-ngay.md). Bản tính năng đầu tiên (chưa merge vào nhánh gốc):
+
+- **Vai hồn ma:** không nhận chuỗi tìm/dỗ/dắt bé Na, không đẩy xe ngựa, nhặt hoa hoặc làm những việc thể chất của người sống. Thay bằng cung ngắn **Tiếng guốc trong sương** ở gốc gạo → bụi tre → tường tịnh thất → mộ cũ. Trạng thái lưu theo nhân vật.
+- **Vai nhà sư:** nhiệm vụ **Tấm y màu đất** qua 5 ngày chơi: quan sát và nhặt mảnh vải bỏ đi → giặt → nhuộm → may → hoàn thiện; cất kỷ vật có hình minh họa vào túi. **Chưa** có skin thay trực tiếp trên avatar hay mini-game may y chuyên sâu.
+- **Ngồi thiền:** thẻ Niệm không còn tự động xuất hiện chỉ vì quả cầu đầy; thẻ Định cần ít nhất 2 buổi có ghi nhận chủ động và một khoảng chú ý ổn định (ngưỡng mô phỏng). Có thêm dữ liệu thẻ Si, Phóng dật, Hôn trầm, Hoài nghi để gắn với tình huống có nhận diện ở những đợt sau; **chưa có storylet cấp các thẻ bất thiện mới**. Định chỉ là thẻ học về sự chú tâm, không phải chứng đắc.
+- **Kiểm thử bổ sung:** `test/client-practice-rules.test.js`, `test/client-robe.test.js`. Chạy `npm test` trước khi merge; chưa có kết quả CI được xác nhận từ bản thử nghiệm này.
+

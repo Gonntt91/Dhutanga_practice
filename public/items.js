@@ -89,6 +89,11 @@ window.Items = (() => {
       `<path d="M26 56 C14 54 12 68 24 70" fill="none" stroke="#6a3f1c" stroke-width="2.4" stroke-linecap="round"/>` +
       `<ellipse cx="50" cy="52" rx="19" ry="3.4" fill="#4a3320" stroke="#6a3f1c" stroke-width="1"/>` +
       `<path d="M34 64 C36 74 44 79 50 79" fill="none" stroke="#f0b88a" stroke-opacity=".5" stroke-width="1.4" stroke-linecap="round"/>`,
+    y_mau_dat: (u) =>
+      `<defs><linearGradient id="${u}cloth" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#bca47e"/><stop offset="1" stop-color="#796247"/></linearGradient></defs>` +
+      `<path d="M27 16 L70 20 L83 42 L71 51 L79 85 L25 90 L20 56 L14 39 Z" fill="url(#${u}cloth)" stroke="#5a4834" stroke-width="1.6" stroke-linejoin="round"/>` +
+      `<path d="M26 21 L70 79 M17 44 L78 54 M24 70 L75 67 M47 20 L42 87" stroke="#ddc6a0" stroke-width="1.8" stroke-dasharray="3 3" fill="none"/>` +
+      `<path d="M26 16 L70 20 L83 42" fill="none" stroke="#e2c9a1" stroke-width="2"/>`,
     manh_ky_uc: (u) =>
       `<defs><linearGradient id="${u}p" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#efe3c4"/><stop offset="1" stop-color="#c9b88e"/></linearGradient></defs>` +
       `<g transform="rotate(-6 50 50)"><path d="M22 18 L58 14 L64 24 L60 34 L70 44 L66 58 L74 70 L70 84 L26 86 Z" fill="url(#${u}p)" stroke="#8d7a4e" stroke-width="1.3" stroke-linejoin="round"/>` +
@@ -147,6 +152,12 @@ window.Items = (() => {
       desc: "Một chiếc đèn dầu bằng đất nung, ngọn lửa nhỏ nhưng không tắt.",
       from: "Địa thần ở cổng làng trao lúc rạng đông.",
       use: "Mang vào hang đá sau đồi; đèn sáng khi lòng không sợ.",
+    },
+    y_mau_dat: {
+      name: "Tấm y màu đất",
+      desc: "Tấm y đã được nhặt vải, giặt, nhuộm và khâu qua nhiều ngày.",
+      from: "Tự hoàn thành chuỗi công việc y phấn tảo trong game.",
+      use: "Kỷ vật của hành trình học việc. Hiện chưa thay đổi trang phục nhân vật trên bản đồ.",
     },
     manh_ky_uc: {
       name: "Mảnh ký ức",

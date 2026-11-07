@@ -25,6 +25,10 @@
 | Vòng ngày, quán xét cuối ngày, việc khi vắng, cột mốc | mục 16 | **Một phần** | Có lưu tiến độ, quán xét cuối đêm, hồi hướng, câu hẹn ngày mai, việc khi vắng, "Trong lúc vắng", cột mốc và trang Dấu mốc; chưa có các buổi trong ngày |
 | Lời hẹn thành thật, làng có trí nhớ | mục 17.1 | **Đã có** | 12 lời hẹn có kết quả đêm sau; 5 việc làng nhớ (rau cho bà cụ, rau cho ông Tư, ngồi với sư già, dắt bé Na về, dâng cơm bà ngoại); cột mốc ẩn "Lời hẹn đã đến", "Muốn chơi thêm". Lời cần duyệt |
 | Triền cái khi ngồi, đêm rằm, bộ đôi thẻ, y phấn tảo, đặt hoa | mục 17.2–17.6 | **Đề xuất** | Thứ tự làm và kiểm chứng ở 17.8 |
+| Kết quả khi vắng, Sổ kiến thức và kiến thức mở nhiệm vụ | mục 18; [kịch bản vòng ngày](kich-ban-vong-ngay.md) | **Đề xuất mới, chưa code** | Phần thưởng học và vật liệu thật thay chuyện kể đơn thuần |
+| Lời hứa rau má của bà cụ | mục 18.3 | **Cần sửa** | `atMit()/picked2()` cho đổi người nhận bất ngờ |
+
+> **Quyết định thiết kế mới (07-11-2026):** [Game Design Principles](game-design-principles.md) là chuẩn ưu tiên cao hơn các đề xuất cũ về việc bắt buộc khảo sát, thẻ tâm, tăng chỉ số và mở cõi. **Game trước; học thông qua tò mò; tự do đi dạo; phân biệt mô phỏng, kinh điển, chú giải và sáng tác.** Thanh chỉ số tâm là biến nội bộ của game, **không đo tâm sở thực hay nghiệp**. Thẻ là cơ hội tìm hiểu hoặc minh chứng đã tham gia tình huống mô phỏng; không chứng nhận Định/Niệm thực. Không yêu cầu làm bất thiện để lấy thẻ. Cổng cõi không mở bằng cách cộng điểm tâm hay tổng thẻ như công thức giáo lý; dùng sự kiện, vật dẫn, kiến thức và trải nghiệm có bối cảnh. **Không tự popup nhiệm vụ khi đi ngang**, khảo sát đầu game phải có thể bỏ qua. Quy định cụ thể ở tài liệu nguyên tắc.
 
 ## 0. Mục đích và tinh thần
 
@@ -111,6 +115,8 @@ Mọi bậc đều mở bằng **thẻ thu được từ nhiệm vụ** (mục 4
 | Xả | trung bình (tatramajjhattatā), không phải thọ xả |
 
 ## 4a. Thẻ bài tâm sở: phần thưởng của mỗi nhiệm vụ
+
+> **Lưu ý mới (mục 18):** nhiệm vụ **học kinh khi vắng** có thể cho *thẻ kiến thức đã nghe/đọc*, lưu ở **Sổ kiến thức**, không tự tạo *thẻ tâm sở qua trải nghiệm*. Cùng là hình thẻ nhưng hai trạng thái học và thực hành phải phân biệt.
 
 **Xong mỗi nhiệm vụ thì nhận một thẻ**: tâm sở nổi bật nhất trong cách người chơi vừa làm. Thẻ giải thích tâm sở đó **ngay trong tình huống vừa xảy ra**. Thu thập thẻ là cách chính để học tâm và tâm sở.
 
@@ -862,7 +868,7 @@ Chọn "Nghỉ ở đây" thì người chơi **giao cho nhân vật một việ
 - Lần sau quay lại: *"Có 2 người dừng lại chắp tay khi người này vắng."*
 
 **Ranh giới:**
-- Kết quả khi vắng **nhỏ và có trần**: tối đa bằng một đêm, dù vắng một tuần. Không thẻ mới, không lên cấp thẻ; chỉ chuyện kể và việc chuẩn bị cho ngày mai.
+- **QUYẾT ĐỊNH MỚI (mục 18, thay dòng cũ):** kết quả khi vắng vẫn nhỏ, có trần, nhưng **phải có thành quả thật** theo loại việc (kiến thức đã đọc/học, vật liệu đã chuẩn bị, manh mối, tương tác mới). **Có thể nhận thẻ kiến thức**, không tự nhận thẻ tâm sở thực hành, không tự lên cấp Niệm/Định. Một lượt giao việc chỉ trả kết quả một lần.
 - Vắng không bị phạt: nhân vật không đói, không mất gì.
 - **Không quà điểm danh hằng ngày.** Chuỗi ngày chỉ ở dạng "chuỗi mềm", vắng thì tạm nghỉ chứ không mất (16.8).
 - Lời văn giữ đúng: *"nhân vật vẫn ngồi"*, không ngụ ý tu thay hay tu tự động có kết quả.
@@ -1098,3 +1104,50 @@ Game đã có nhiều chỗ **mở chuyện**: thẻ, cột mốc, quán xét cu
 **Trước khi mời người chơi:** thử lưu tiến độ một lần trên Render với Postgres thật.
 
 **Cần thầy duyệt:** lời các triền cái, giác chi, câu nói của người làng, và cảnh mở từ bộ đôi thẻ (để không gán sai quan hệ giữa các tâm sở).
+
+## 18. Quyết định mới: hoạt động khi vắng phải tạo kết quả (07-11-2026)
+
+**Đổi hướng thiết kế:** giống trò làm vườn, gieo hạt thì lúc quay lại thấy cây đã lớn và có thứ để thu hoạch. Trong game: `giao việc` → `thấy tiến trình` → `nhận phần thưởng hữu hình` → `lưu vào sổ/túi` → `dùng để mở hành động, đối thoại, nhiệm vụ tiếp theo`. Đặc tả đầy đủ, UI mẫu, schema, ví dụ và tests trong [Kịch bản vòng ngày — mục 9](kich-ban-vong-ngay.md).
+
+### 18.1. Kết quả theo đúng loại công việc
+
+| Công việc khi vắng | Kết quả phải nhận được | Cách sử dụng lần sau |
+|---|---|---|
+| Học một đoạn kinh/khái niệm | **Thẻ kiến thức** có tên, giải thích, nguồn và ghi chú trong **Sổ kiến thức** | đối thoại sâu hơn với sư, mở nhiệm vụ phụ, gợi ý thực hành |
+| Chuẩn bị khâu y, phơi vải | vật liệu đã sẵn sàng, vải đổi hình và trạng thái | người chơi chủ động khâu/nhuộm lần sau |
+| Nấu cơm / dệt vải (dân) | bữa cơm đã sẵn / tấm vải dài thêm, có vật dụng khi hoàn tất | mang dâng, giúp người, nối tuyến y |
+| Ngồi thiền/kinh hành khi vắng | nhật ký một buổi sinh hoạt và tình huống thực hành chờ sẵn | thực hành **chủ động** để gặp thẻ tâm sở |
+| Hồn ma nghe kinh / nhìn lại chuyện cũ | mảnh "đã nghe" hoặc ký ức mới | thêm lựa chọn nhìn lại, không thao tác người sống |
+
+**Mỗi lần quay lại:** dù chưa hoàn tất phải thấy progress, không chỉ ba dòng kể. Khi hoàn tất một công việc, có popup nhận kết quả, cất thật vào dữ liệu nhân vật, mở được chi tiết. Không có cơ chế điểm danh hay tăng tốc trả tiền.
+
+### 18.2. Kiến thức khác thẻ tâm sở đã trải nghiệm
+
+Cần mở **Sổ kiến thức** gồm các mục ngắn như *Niệm là gì?*, *Năm triền cái*, *Tâm từ*, *Vô thường*, *Giữ lời hứa*, *Hạnh đầu-đà*. Có tên, nguồn từ kinh hoặc chú giải, câu giải thích đời thường, ví dụ trong làng, nơi dùng về sau. Trạng thái của mỗi mục: **đã nghe/đọc** → **đã ôn** → **đã vận dụng trong câu chuyện**.
+
+Ví dụ người chơi giao nhân vật học về *năm triền cái*, thoát game. Khi quay lại sau khi hoàn tất bài: **"Đã học một đoạn về năm triền cái"**, có nút **Mở Sổ kiến thức**, và gợi ý đến gặp sư già. Lúc gặp sư, nếu có kiến thức này sẽ xuất hiện thêm lựa chọn **"Con muốn học cách kinh hành khi tâm chìm xuống"**. Nếu chưa có, nhiệm vụ chính vẫn chơi được bằng cách thông thường. Kiến thức tạo lợi thế khám phá, **không phải cộng chỉ số tu chứng**.
+
+**Ranh giới:** *đã nghe/đọc về Định* không đồng nghĩa *đã nhận diện Định trong thực hành*; offline không tự cấp thẻ Niệm, Định, giác chi hay "đã chứng". Nhưng **thẻ kiến thức từ học kinh hoàn toàn có thể nhận được khi vắng**, khác với quy tắc cũ.
+
+**Giới hạn phần thưởng:** một `jobId` chỉ sinh một lần kết quả và được lưu trước khi mở popup; quay lại nhiều lần, đổi thiết bị hay mất kết nối không nhân thưởng. Bài đã học có thể ôn sâu, không tạo thẻ mới vô tận. Vắng một tuần không biến một việc thành bảy buổi tu tập.
+
+### 18.3. Lỗi logic: Bà cụ nhờ hái rau nhưng mang sang nhà ông Tư
+
+Đã xác nhận `public/mind.js`: `atWell()` là bà cụ nhờ hái một nắm rau má. Tại `atMit() → picked2()`, lại có ba lựa chọn **đem cho bà**, **đem cho ông Tư**, **giữ nấu canh**, trong khi nhánh sau không giải quyết lời hứa với bà. Đây là lỗi **nhân quả / chủ sở hữu vật phẩm / trí nhớ của NPC**.
+
+**Luồng đề xuất:**
+1. Người chơi **nhận lời** bà, lưu `grannyHerbs.status=accepted`. Hái xong, nhiệm vụ chính là **trả về cho bà**, không tự chuyển nguyên nắm rau đã nhận nhờ sang người khác.
+2. **Sau khi trả bà** (lưu `fulfilled`), bà có thể cho một phần hoặc nhờ **hái thêm nắm khác** để đem cho ông Tư. Khi đó mở nhánh làm lành và có thể nhận Không sân/Không tham theo trải nghiệm.
+3. Nếu vẫn cho phép đổi ý để tặng người khác trước, phải có ký ức "bà vẫn chờ", thừa nhận đã thất hứa, và lựa chọn xin lỗi/quay lại sửa; **không** âm thầm coi là đã hoàn tất.
+4. Không nhân đôi một `rau_ma` thành hai vật phẩm. Cần tests cho save/reload ở từng nhánh và lời thoại bà trong ngày sau.
+
+**Điểm cần thầy Theravāda duyệt:** game hiện cho cả `monk` và `villager` tự hái cây. Tỳ-kheo chủ ý bứt/cắt cây sống có liên quan quy tắc Pācittiya 11; nên ưu tiên **vai dân trực tiếp hái**, sư nhận/quan sát theo nghi thức phù hợp, đồng thời rà lại nhiệm vụ tự hái hoa sen. Nguồn tham khảo để giáo thọ xác nhận: https://www.dhammatalks.org/vinaya/bmc/Section0017.html.
+
+### 18.4. Trạng thái và kế hoạch
+
+**Tất cả hạng mục Sổ kiến thức, phần thưởng offline có tác dụng gameplay và sửa rau má ở mục 18 đều CHƯA CODE.** Không nhầm với nhánh PR thử đã có tuyến ma và y phấn tảo.
+
+Ưu tiên triển khai: **(1)** Sổ kiến thức 6 mục; **(2)** hoạt động `study` trả một mục kiến thức và lưu chống lặp; **(3)** kiến thức mở 2–3 hội thoại phụ; **(4)** `weave/cook` có sản phẩm thật; **(5)** sửa chuỗi rau má và các chỗ cần kiểm tra giới luật; **(6)** thêm hoạt động offline theo vai.
+
+Tiêu chí nghiệm thu quan trọng: quay lại sớm có progress, quay lại muộn có thứ thu hoạch, phần thưởng không nhân bản, không tự nhận thẻ tu chứng, kiến thức mở được nhánh thực sự, và lời hứa với bà cụ không thể bị bỏ quên một cách vô lý.
+

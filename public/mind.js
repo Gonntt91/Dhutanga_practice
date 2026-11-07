@@ -75,7 +75,43 @@ window.Mind = (() => {
       faces: [["Đặc tính", "Vui mừng với thành tựu của người khác."], ["Phận sự", "Không ganh tị."], ["Biểu hiện", "Dứt bỏ bất mãn."], ["Nhân gần", "Thấy thành tựu của người khác."]],
     },
   });
-  const CARD_ORDER = ["san", "hoi_han", "tham", "bon_xen", "khong_san", "khong_tham", "niem", "hy", "bi", "tuy_hy"];
+  Object.assign(CARDS, {
+    dinh: {
+      name: "Định (chú tâm ổn định)", good: true, pali: "ekaggatā", plain: "Trong buổi tập, tâm ít rời đề mục hơn.",
+      tip: "Đừng cố nắm giữ cảm giác yên. Khi biết tâm đi xa, nhẹ nhàng quay về.",
+      where: "Có thể học khi đã nhiều lần thực hành ngồi thiền chủ động.",
+      faces: [["Đặc tính", "Hướng tâm vào một đối tượng."], ["Phận sự", "Giúp các pháp đồng sinh không tán loạn."], ["Biểu hiện", "Sự ổn định trên đối tượng."], ["Nhân gần", "Cần đối chiếu chú giải theo ngữ cảnh."]],
+    },
+    si: {
+      name: "Si", good: false, pali: "moha", plain: "Không thấy rõ điều đang xảy ra trong một tình huống.",
+      tip: "Dừng lại, nhìn bằng chứng; không cần tự trách.",
+      where: "Có thể gặp khi một hiểu lầm được soi sáng.",
+      cure: { card: "niem", text: "Ghi nhận điều chưa thấy rõ, rồi xem lại tình huống từng bước." },
+      faces: [["Đặc tính", "Mờ tối trước đối tượng."], ["Phận sự", "Che lấp sự hiểu rõ."], ["Biểu hiện", "Không nhận ra điều đang diễn ra."], ["Nhân gần", "Cần thầy duyệt theo chú giải."]],
+    },
+    phong_dat: {
+      name: "Phóng dật", good: false, pali: "uddhacca", plain: "Tâm bất thiện xao động, khó ở yên.",
+      tip: "Nhận ra lao xao, không cố đuổi nó đi.",
+      where: "Gặp khi truyện cho thấy tâm bị xao động theo một hướng bất thiện.",
+      cure: { card: "niem", text: "Biết tâm đang lao xao, trở về với điều đang làm." },
+      faces: [["Đặc tính", "Không yên ổn."], ["Phận sự", "Làm tâm xao động."], ["Biểu hiện", "Tâm không đứng vững."], ["Nhân gần", "Cần thầy duyệt theo chú giải."]],
+    },
+    hon_tram: {
+      name: "Hôn trầm", good: false, pali: "thīna", plain: "Tâm trì trệ, thiếu sức sống khi thực hành.",
+      tip: "Thử đứng dậy kinh hành, rửa mặt rồi tiếp tục.",
+      where: "Có thể gặp khi tâm chìm xuống trong buổi tập.",
+      cure: { card: "niem", text: "Nhận ra sự chìm xuống, thử đổi sang kinh hành phù hợp." },
+      faces: [["Đặc tính", "Tâm thiếu linh hoạt."], ["Phận sự", "Làm giảm sự hăng hái."], ["Biểu hiện", "Trì trệ."], ["Nhân gần", "Cần thầy duyệt."]],
+    },
+    hoai_nghi: {
+      name: "Hoài nghi", good: false, pali: "vicikicchā", plain: "Sự phân vân ngăn người này tiếp tục việc đang làm.",
+      tip: "Ghi câu hỏi lại, tìm hiểu với thầy; rồi trở lại thực hành.",
+      where: "Gặp khi sự lưỡng lự thực sự làm gián đoạn một buổi tập.",
+      cure: { card: "niem", text: "Ghi nhận phân vân và tìm hiểu đúng chỗ, không chụp mũ mọi câu hỏi là bất thiện." },
+      faces: [["Đặc tính", "Phân vân."], ["Phận sự", "Làm dao động quyết định."], ["Biểu hiện", "Không giải quyết được hướng đi."], ["Nhân gần", "Cần thầy duyệt."]],
+    },
+  });
+  const CARD_ORDER = ["dinh", "si", "phong_dat", "hon_tram", "hoai_nghi", "san", "hoi_han", "tham", "bon_xen", "khong_san", "khong_tham", "niem", "hy", "bi", "tuy_hy"];
 
   // ---------- temperaments (Visuddhimagga, ch. III) ----------
   const CARITA = {
@@ -521,6 +557,8 @@ window.Mind = (() => {
     // seconds to fill, roughly 55 to 110 depending on the person (simulation)
     const rate = ((0.75 + st.niem / 110) * (car.niemMul || 1) * (1 - st.san / 260) * (1 - st.si / 320) * luck) / 70;
     let fill = 0, secs = 0, noted = 0, lost = 0, spawned = 0;
+    let lastInterruption = 0, longestStable = 0;
+    const observedKinds = [];
     const box = el("div", "sit");
     const orb = el("div", "orb-meter");
     const water = el("div", "orb-water");
@@ -537,13 +575,13 @@ window.Mind = (() => {
       b.style.left = rand(4, 44) + "%";
       b.addEventListener("click", () => {
         if (b.dataset.done) return;
-        b.dataset.done = "1"; noted++; fill = Math.min(1, fill + 0.05);
+        b.dataset.done = "1"; noted++; observedKinds.push(kind); fill = Math.min(1, fill + 0.05);
         b.classList.add("noted"); b.textContent = `${kind}, ${kind}…`;
         info.textContent = "Ghi nhận. Quay về hơi thở.";
         setTimeout(() => b.remove(), 1100);
       });
       field.appendChild(b);
-      setTimeout(() => { if (!b.dataset.done && b.isConnected) { lost++; fill = Math.max(0, fill - 0.035); info.textContent = "Vừa trôi theo ý nghĩ một lúc. Biết vậy là đủ, quay về."; } b.remove(); }, 8600);
+      setTimeout(() => { if (!b.dataset.done && b.isConnected) { lost++; lastInterruption = secs; fill = Math.max(0, fill - 0.035); info.textContent = "Vừa trôi theo ý nghĩ một lúc. Biết vậy là đủ, quay về."; } b.remove(); }, 8600);
     };
     const choices = [{ label: "Đứng dậy", fn: () => { stopSit(); S.quest.step = "monk"; save(); closeSheet(); api.toast("Người này đứng dậy sớm. Lần sau thử ngồi lâu hơn một chút."); } }];
     if (api.dev()) choices.push({ label: "Tua (dev)", fn: () => { fill = 1; } });
@@ -552,25 +590,32 @@ window.Mind = (() => {
     spawn();
     sitTimer = setInterval(() => {
       secs++;
+      longestStable = Math.max(longestStable, secs - lastInterruption);
       fill = Math.min(1, fill + rate);
       water.style.height = Math.round(fill * 100) + "%";
       orb.classList.toggle("full", fill >= 1);
       clock.textContent = `${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, "0")}`;
       if (secs % 5 === 0) spawn();
-      if (fill >= 1) { stopSit(); setTimeout(() => sitDone(noted, lost), 900); }
+      if (fill >= 1) { stopSit(); setTimeout(() => sitDone({ noted, lost, longestStable, kinds: observedKinds }), 900); }
     }, 1000);
   }
   function stopSit() { clearInterval(sitTimer); sitTimer = null; api.setPose(null); }
-  function sitDone(noted, lost) {
-    grow("niem", 4 * rand(0.8, 1.2)); grow("dinh", 2 * rand(0.8, 1.2)); grow("si", -1.5);
+  function sitDone({ noted, lost, longestStable, kinds }) {
+    const sessions = (S.practiceSessions || 0) + 1;
+    S.practiceSessions = sessions;
+    const result = PracticeRules.selectMeditationCard({ noted, lost, longestStable, practicedSessions: sessions, kinds });
+    if (noted >= 1) grow("niem", Math.min(2, noted * 0.5));
+    if (result.card === "dinh") grow("dinh", 1.5);
+    // No assumed insight / reduction of delusion from simply filling a progress orb.
     api.swingMood(0.35);
     S.quest.step = "deva"; deed("sat_with_monk"); save();
     showSheet({
       label: "Ngồi với sư",
-      lines: [`Người này đã quay về hơi thở ${noted} lần.`, "Quả cầu đầy nước. Buổi ngồi xong. Còn niệm thì vẫn cần luyện mỗi ngày."],
+      lines: [`Người này đã ghi nhận xao lãng ${noted} lần; bỏ lỡ ${lost} lần.`, result.reason, "Quả cầu đầy chỉ đánh dấu hết buổi tập, không phải chứng nhận định hay chứng đắc."],
       choices: [{ label: "Mở mắt", primary: true, fn: () => {
         closeSheet();
-        award("niem", "Người này ngồi với sư, mỗi lần tâm chạy đi lại biết và quay về hơi thở.", () => devaVisit(MONK_SPOT(), true));
+        if (result.card) award(result.card, result.reason, () => devaVisit(MONK_SPOT(), true));
+        else { cooldownUntil = Date.now() + 2500; devaVisit(MONK_SPOT(), true); }
       } }],
     });
   }

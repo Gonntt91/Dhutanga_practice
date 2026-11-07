@@ -38,7 +38,7 @@ window.Cetasika = (() => {
       return e;
     });
   }
-  const GAME = { san: "Sân", hoi_han: "Hối", tham: "Tham", bon_xen: "Lận", khong_san: "Vô sân", khong_tham: "Vô tham", niem: "Niệm", hy: "Hỷ", bi: "Bi", tuy_hy: "Tùy hỷ" };
+  const GAME = { dinh: "Nhất hành", si: "Si", phong_dat: "Phóng dật", hon_tram: "Hôn trầm", hoai_nghi: "Hoài nghi", san: "Sân", hoi_han: "Hối", tham: "Tham", bon_xen: "Lận", khong_san: "Vô sân", khong_tham: "Vô tham", niem: "Niệm", hy: "Hỷ", bi: "Bi", tuy_hy: "Tùy hỷ" };
   const byId = (id) => all.find((e) => e.id === id);
   const byName = (n) => all.find((e) => e.name === n);
   const byGame = (gid) => (GAME[gid] ? byName(GAME[gid]) : null);
