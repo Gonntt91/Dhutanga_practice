@@ -16,6 +16,16 @@
 - Người chơi **quay lại vì một kết quả cụ thể**, kể cả sau lượt giao việc 1–2 phút: trang kinh đã học, vật liệu đã chuẩn bị, đoạn ký ức mới, cảnh vật đã đổi.
 - Không ép chơi đủ một đêm, không ép đọc kinh, không streak/phạt nghỉ, không biến nghiệp/công đức thành điểm số có thể mua bán.
 
+## 1a. Nhân vật của người chơi phải độc lập với NPC (quyết định mới 08-11-2026)
+
+**PC do người chơi đặt tên và chọn vai sư/dân/ma; tên gọi chỉ là của PC, không phải danh tính Sư Tịnh, Ông Tư hoặc Bà Sáu.** Ba người có tên là **NPC** mang quá khứ, ký ức, lời hẹn riêng. Tham khảo bắt buộc [Player-centric Narrative Model](player-character-narrative-model.md) trước mọi kịch bản mới.
+
+- Vai xác định cách hành động/tương tác và bối cảnh, **không** tự thêm vợ/con/món nợ/đêm đã tu/ký ức của NPC vào PC.
+- Truyện cũ về ba nhân vật cần chuyển thành `NPC story` / `hears_story` / `npc_flashback` hoặc cảnh PC chủ động tham gia; không chỉ tìm/thay tên bằng `playerName`.
+- Ký ức và lời hứa trải nghiệm thuộc **character**; tư liệu đã xem trong tài khoản không tự coi như nhân vật khác đã trải qua. Save legacy cần migration và test.
+- **Giọng văn:** nhẹ, gần người trẻ bằng câu ngắn, sinh hoạt và hài hước tự nhiên; không giáo điều, không ép trendy slang. Mặc định 1–3 lượt thoại/scene nhỏ, có `Nghe thêm`, `Đi tiếp`, phần kinh/luận dài ở Sổ.
+- Mẫu kiểm tra: PC dân nói chuyện với Ông Tư mà không gặp chính mình; PC ma thấy câu chuyện Bà Sáu mà không tự có con Hạnh; PC sư gặp Sư Tịnh mà không mặc định đã bị xua đuổi.
+
 ## 2. Nhiều động cơ, cùng một thế giới
 
 | Phong cách (không bắt chọn persona) | Động lực chính | Một phiên chơi có giá trị khi… | Không được ép |
