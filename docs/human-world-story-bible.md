@@ -16,6 +16,8 @@
 - **Cảnh đẹp cũng là nội dung:** nên ưu tiên viết kịch bản nắng sớm, chiều vàng, trăng sáng, đom đóm, sen nở, hiên tịnh thất, bóng tre. Mưa thêm cảm giác mới chứ không thay thế những cảnh này.
 - **Ưu tiên triển khai:** đọc [Human World Playable Scenarios](human-world-playable-scenarios.md) để viết/nối các tình huống thực sự chơi được; thời tiết động để sau, chỉ giữ script mưa phùn đã có và viết thêm lời thoại khi phù hợp.
 
+> **Ưu tiên hiện tại:** mở rộng lời thoại, hậu quả, sinh hoạt và cảnh khám phá ở Nhân gian trước khi dựng map hoặc Weather Engine. Xem [Playable Narrative Scenarios](human-world-playable-scenarios.md): 20 đề mục storylet, 3 cung truyện mẫu chi tiết và 3 cảnh khám phá không cần quest. Bầu trời dễ chịu là mặc định, bão chỉ là một chương tự chọn.
+
 ## 1. Vai trò của Nhân gian
 
 Nhân gian là nơi người chơi **muốn trở về**, dù họ đã đi tới hang, cõi dưới hoặc biên cảnh cõi trời. Không chỉ là nơi nhận nhiệm vụ và học thẻ.
