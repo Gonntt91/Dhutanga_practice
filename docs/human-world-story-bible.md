@@ -16,16 +16,16 @@
 - **Cảnh đẹp cũng là nội dung:** nên ưu tiên viết kịch bản nắng sớm, chiều vàng, trăng sáng, đom đóm, sen nở, hiên tịnh thất, bóng tre. Mưa thêm cảm giác mới chứ không thay thế những cảnh này.
 - **Ưu tiên triển khai:** đọc [Human World Playable Scenarios](human-world-playable-scenarios.md) để viết/nối các tình huống thực sự chơi được; thời tiết động để sau, chỉ giữ script mưa phùn đã có và viết thêm lời thoại khi phù hợp.
 
-> **Ưu tiên hiện tại:** mở rộng lời thoại, hậu quả, sinh hoạt và cảnh khám phá ở Nhân gian trước khi dựng map hoặc Weather Engine. Xem [Playable Narrative Scenarios](human-world-playable-scenarios.md): 20 đề mục storylet, 3 cung truyện mẫu chi tiết và 3 cảnh khám phá không cần quest. Bầu trời dễ chịu là mặc định, bão chỉ là một chương tự chọn.
+> **Ưu tiên hiện tại:** hoàn thiện [26 playable scenarios](human-world-playable-scenarios.md), 6 episode chi tiết trong [Episode Pack 01](human-world-episode-pack-01.md) và các tình huống khám phá không quest. Bầu trời đẹp chủ đạo; thời tiết chỉ điểm xuyết.
 
-> **Bộ kịch bản v0.2:** [26 storylet và cung truyện Nhân gian](human-world-playable-scenarios.md) · [Review tính nhất quán](human-world-narrative-review.md) · [Episode Pack 01 — sáu kịch bản có thể triển khai](human-world-episode-pack-01.md). Rà soát đã phát hiện lỗi vai **người dân là ông Tư nhưng tuyến chó cắn/rau má cho gặp một "ông Tư" khác**; cần sửa trong code trước khi dựng thêm. Ưu tiên tăng phản ứng NPC, ký ức và cảnh vật khi quay lại, không nhồi thêm popup.
+> **QUYẾT ĐỊNH CHUYỂN ĐỔI (08-11-2026):** [Player-centric Narrative Model](player-character-narrative-model.md) là chuẩn chính. **PC có tên riêng, vai chỉ là sư/dân/ma; Sư Tịnh, Ông Tư, Bà Sáu đều là NPC.** `develop` vẫn có thiết kế cũ gắn role với NPC; đây là lỗi legacy cần xử lý trong PR code sau, không phải quy tắc khi viết thêm. Xem [Narrative Review v0.3](human-world-narrative-review.md). Lời thoại viết ngắn, ấm, tự nhiên, bớt giáo điều; khung cảnh kể phần lớn câu chuyện.
 
 ## 1. Vai trò của Nhân gian
 
 Nhân gian là nơi người chơi **muốn trở về**, dù họ đã đi tới hang, cõi dưới hoặc biên cảnh cõi trời. Không chỉ là nơi nhận nhiệm vụ và học thẻ.
 
 - **Explorer:** dạo làng, rừng, giếng, ao, nghĩa địa, nghe âm thanh, gặp cảnh lạ, khám phá thay đổi theo mùa/ngày/đêm/thời tiết mà không phải bấm quest.
-- **Story seeker:** theo Sư Tịnh, ông Tư, bà Sáu, Hạnh, chị Ba, bé Na và các mối quan hệ; NPC nhớ lời hẹn và hành động.
+- **Story seeker:** PC gặp Sư Tịnh, Ông Tư, Bà Sáu, Hạnh, chị Ba, bé Na như những NPC riêng, lần theo chuyện của họ và lựa chọn tác động của **chính PC**; NPC nhớ lời hẹn đã nhận.
 - **Learner / Practitioner:** ngồi thiền mô phỏng, kinh hành, học kinh, xem Sổ kiến thức, dùng điều đã học trong tình huống sau.
 - **Casual / Busy:** giao một việc có thể làm khi vắng, quay lại thấy tiến triển và kết quả lưu thật; không tăng thẻ chứng đắc do đồng hồ.
 
@@ -103,7 +103,7 @@ Nhân gian là nơi người chơi **muốn trở về**, dù họ đã đi tớ
 
 **Cảnh 1 — Trước bão:** trời đổi màu, gió mạnh. Ông Tư buộc lại hàng rào, bà cụ cất giỏ, sư già đóng cửa kệ kinh. Người chơi có thể đi dạo xem chuẩn bị hoặc **tự chọn** giúp một việc an toàn theo vai.
 
-**Cảnh 2 — Bão (có thể bỏ qua):** phần ngoài trời không khuyến khích đi lại. Nhân vật người sống ở nơi trú an toàn, có thể nghe tiếng mưa, học kinh, nghe truyện cũ về mùa nước lớn hoặc giúp việc trong nhà. Không yêu cầu người chơi ra ngoài làm việc nguy hiểm để nhận vật phẩm. Vai bà Sáu nghe lại ký ức năm lũ, **không** nhặt đồ hay cứu người sống bằng sức ma.
+**Cảnh 2 — Bão (có thể bỏ qua):** phần ngoài trời không khuyến khích đi lại. PC người sống ở nơi trú an toàn, có thể nghe tiếng mưa, học kinh, nghe truyện cũ về mùa nước lớn hoặc giúp việc trong nhà. Không yêu cầu ra ngoài làm việc nguy hiểm. **PC ma** có thể quan sát ký ức của **NPC bà Sáu** (không phải ký ức của chính PC), không nhặt đồ hay cứu người sống bằng sức ma.
 
 **Cảnh 3 — Sau bão:** một cành cây chắn một lối **phụ**, mái bếp ông Tư dột. Khi người chơi tự chọn xem, có chuỗi **hỏi thăm → nhờ người phù hợp sửa → thấy thay đổi**. Cùng lúc lối men bờ ao xuất hiện vệt đá cũ, mở một manh mối Sổ khám phá.
 
@@ -128,9 +128,9 @@ Nhân gian là nơi người chơi **muốn trở về**, dù họ đã đi tớ
 | WX04 | sư | `rain`, đã giặt vải | vải trên dây phơi ẩm | cất vào hiên | `robe.materialProtected` |
 | WX05 | dân | `cloudy` hoặc `storm_warning`, ngõ | ông Tư buộc hàng rào | giúp buộc lại (nếu muốn) | hàng rào đổi hình |
 | WX06 | sư | `storm_warning`, tịnh thất | sư già cất sách khỏi cửa sổ | giúp cất đúng chỗ | sách khô sau bão |
-| WX07 | ma | `storm_warning`, gốc gạo | tiếng lá giống ký ức mùa lũ | lắng nghe, nhìn lại | mảnh ký ức Hạnh |
+| WX07 | PC ma | `storm_warning`, gốc gạo | tiếng lá gợi câu chuyện mùa lũ của bà Sáu | nghe/quan sát khi đã gặp bà | mảnh lore **về NPC bà Sáu**, không phải ký ức PC |
 | WX08 | người sống | `storm`, nơi trú | tiếng mưa dội mái | tự chọn nghe chuyện/đọc kinh | sổ hoặc câu chuyện, không ra bão |
-| WX09 | ma | `storm`, nghĩa địa | cảnh xưa thấp thoáng trong mưa | quan sát không tương tác vật lý | lore bà Sáu |
+| WX09 | PC ma | `storm`, nghĩa địa | cảnh xưa trong lời kể của bà Sáu | quan sát NPC, không tương tác vật lý | lore về bà Sáu, không tự tăng thẻ tâm PC |
 | WX10 | dân | `after_storm`, làng | mái bếp có vệt hở | hỏi thăm, sửa với NPC khác | cảnh nhà thay đổi |
 | WX11 | explorer | `after_storm`, ao | lộ vệt đá cũ | quan sát, men theo lối an toàn | mốc mới, lối phụ |
 | WX12 | sư/dân | `after_storm`, đường mòn | cành cây nằm ngang | tìm lối vòng hoặc nhờ người phù hợp dọn | đường phụ phục hồi, không khóa chính |
@@ -139,7 +139,7 @@ Nhân gian là nơi người chơi **muốn trở về**, dù họ đã đi tớ
 
 - **Sinh hoạt nền:** NPC hoạt động có lịch trình, vật dụng thay đổi, cảnh không đợi người chơi bấm nhiệm vụ.
 - **Storylet ngắn:** các tình huống nhỏ theo địa điểm × thời gian × vai × thời tiết × việc đã làm, tránh xuất hiện một mẫu liên tục.
-- **Tuyến nhiều ngày:** y màu đất, lời hứa với bà cụ, ông Tư–bà Sáu, Hạnh, người hành hương. Thời tiết làm đổi **hành động và lời thoại**, không ngắt tiến trình vô lý.
+- **Tuyến nhiều ngày:** PC sư tự chuẩn bị y màu đất; PC dân giữ lời với bà; chuyện riêng Ông Tư–Bà Sáu–Hạnh là **tuyến NPC** mà PC có thể dõi theo. Thời tiết làm đổi **hành động và lời thoại**, không ngắt tiến trình vô lý.
 - **Bí mật môi trường:** ao sen, cây gạo, một lối mòn sau mưa, khe hang, bảo tháp, lời đồn khi trời sắp bão.
 - **Phần thưởng khi vắng:** kiến thức, vật liệu, manh mối và thay đổi cảnh có lưu; không tự thưởng thẻ Niệm/Định chỉ từ thời gian offline.
 
