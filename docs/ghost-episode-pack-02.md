@@ -1,0 +1,194 @@
+# Ghost Episode Pack 02 — Hương cơm, lời hẹn và đêm cuối (G02, G05, G06, G07)
+
+> **Story design v0.1, CHƯA code.** Tiếp nối [Ghost Episode Pack 01](ghost-episode-pack-01.md). Các tình tiết có tính siêu nhiên là **game fiction**. Phân biệt PC ma, NPC bà ngoại ngạ quỷ (HG27), NPC bà Sáu bán xôi và bà cụ ở giếng người sống. Không biến **nghe hồi hướng một lần → chắc chắn tái sinh** thành khẳng định Phật học.
+>
+> **Giọng kể:** những câu ngắn vừa đủ để người chơi tò mò, khoảng lặng và cảnh đẹp tự kể. Ba mạch Bến Không Tiếng/Hạnh/HG27 có quan hệ chủ đề, **không buộc cùng một nhân vật hoặc cùng nguyên nhân**.
+
+## 0. Xương sống “Hai điều hồn ma không làm được”
+
+1. **Không thể cầm vật** → G03 giúp người bằng lời thì thầm/giấc mơ, nhận ra mình vẫn có ích.
+2. **Không thể bảo người sống nghe mình theo ý muốn** → G05 chỉ có thể mang theo manh mối, không tự sửa quá khứ của bà Sáu.
+3. **Không thể quyết định số phận bằng một nút phép thuật** → G06 được nghe hồi hướng và G07 lựa chọn khép lại câu chuyện **trong hệ game**, không phải cam kết nghiệp báo hay đắc quả.
+
+Từ cảm giác nghịch ngợm G01 tới cảm xúc ấm của G07, PC ma **không nhất thiết càng chơi càng buồn**. Người chơi được đi ngắm trăng, vui khi NPC tìm đồ, nghe chuyện, thích thú khám phá thế giới khuất.
+
+## 1. G02 — Hương cơm chiều
+
+**Tình huống:** ở nghĩa địa hoặc ngoài tịnh thất, PC ma thấy một làn khói thơm và ánh đèn nhỏ dù không ai nấu ngay cạnh mình. Chỗ người sống cúng dường có dấu hiệu nhưng **không có đồ ăn để PC cầm vào inventory**.
+
+### G02-S01 — Hương ở đâu?
+
+> Có mùi cơm mới chín. Bạn đi theo mùi ấy.
+>
+> Ở phía kia bức tường, một người đang đặt bát cơm xuống trước vị sư.
+
+- `Nhìn người mang cơm` → thấy sự chăm sóc của người sống; `discovery:offering_seen_from_shadow`.
+- `Thử cầm bát` → chỉ một lần phản hồi ngắn: “Bàn tay đi xuyên qua hơi ấm.”; từ đó UI đổi thành `Quan sát`/ `Lắng nghe`.
+- `Đi tiếp` → không bị phạt hoặc ghi chuyện chưa bắt đầu.
+
+**Điều không nên kể:** “Bà ngoại HG27 đã siêu thoát nên PC ma cũng sẽ được như thế.” Cảnh G02 là trải nghiệm riêng, không spam reward.
+
+### G02-S02 — Người sống vẫn nhớ
+
+Đến lúc vị sư nói lời hồi hướng theo diễn tiến câu chuyện, tiếng côn trùng im đi một chút. PC ma không cần tu tập để có quyền nghe.
+
+> **Sư:** “Nguyện điều lành này đến được những ai hữu duyên.”
+>
+> **PC nghĩ:** “Hóa ra có những lời dành cho người không đứng ở đây.”
+
+- `Ở lại nghe hết` → `dedicationHeardOnce=true`.
+- `Tự hỏi ai đang được nhớ đến` → mở một mục Sổ về hồi hướng, không bật bài giảng; **chưa khẳng định chính PC được lợi ích cụ thể**.
+- `Đi sang gốc gạo` → PC tự do khám phá.
+
+**Sau đó:** nếu PC đã gặp một vong khác, có thể thấy họ lắng nghe, nhưng **không tự tan biến mọi bóng ma**. G06 là sự kiện hồi hướng có chiều sâu hơn sau một đêm tu của sư.
+
+## 2. G05 — Bà Sáu chỉ nhớ một nửa
+
+**Vai trò:** một tuyến NPC mở từ G04 Bờ Chìm hoặc từ gốc gạo nếu người chơi chưa vào bến. Bà Sáu **không phải PC**, PC không biết ngay bà có con Hạnh hoặc Hạnh lớn lên thành ai.
+
+### G05-S01 — Người đứng nhìn con đường
+
+**Ambient:** đêm trăng, bóng người đứng dưới cây gạo. Từ xa có tiếng guốc người sống đi qua, bà Sáu quay lại rồi ngừng.
+
+**Chạm `Đến hỏi chuyện`:**
+
+> **PC:** “Bà đang chờ ai ạ?”
+>
+> **Bà Sáu:** “Một người lâu lắm rồi chưa thấy.”
+>
+> **PC:** “Bà còn nhớ người ấy đi hướng nào không?”
+>
+> **Bà Sáu:** “Bà nhớ tiếng nước. Mấy chuyện khác cứ lẫn đi.”
+
+- `Hỏi về tiếng nước` → `baSau.knowsWaterQuestion=true`; bà kể một cảnh ngắn, không có tên Hạnh trong lượt đầu.
+- `Kể bà nghe mình đã thấy bến` (chỉ khi PC đã ở G04) → bà ngạc nhiên, nói “Vẫn còn bến ấy sao?”, không tự giải toàn bộ câu chuyện.
+- `Đi tiếp` → một lúc sau bà quay lại nhìn đường; không bám PC như NPC quest companion.
+
+### G05-S02 — Một lời kể có thể sai
+
+PC quay lại **G04 cột đá** và hỏi người giữ bến về đêm nước lớn. Ông nói đã nghe **tiếng trẻ con khóc**, nhưng không nhìn rõ mặt người lên thuyền. PC có thể ghi:
+
+- `Chỉ ghi điều ông thật sự thấy` → Sổ ghi “Ông nghe tiếng trẻ, không thấy rõ ai qua bờ.”
+- `Thử hỏi lại về điều ông không nhớ` → ông nói “Đêm ấy ai cũng la. Tôi không dám chắc lời mình.”
+- `Tin ngay rằng đó là người bà Sáu chờ` → game cho phép người chơi **nghi ngờ như một giả thuyết** trong Sổ, nhưng **không biến thành factual quest state**.
+
+**Twist mềm:** “Một mảnh ký ức rất cảm động vẫn có thể thiếu hoặc sai.” Đây không phải lừa người chơi vô cớ, mà là động lực tìm chứng cứ từ **phía người sống** khi chơi nhân vật khác.
+
+### G05-S03 — Bà Sáu phản ứng với mảnh manh mối
+
+> **PC:** “Có người nói từng nghe tiếng một đứa trẻ ở bến.”
+>
+> Bà Sáu im lặng, rồi hỏi:
+>
+> “Đứa trẻ có lên được bờ không?”
+
+- `Cháu chưa biết` → **lời đáp chuẩn, có ý nghĩa**, bà nói “Ừ. Vậy đừng vội bảo bà.”; `baSau.trustsPCQuestion=true`.
+- `Kể đúng điều mình nghe` → bà có thêm một góc nhìn, nhưng không tự nhận đó là Hạnh.
+- `Ở lại cạnh bà một lát` → cảnh ấm, không có thưởng thẻ bắt buộc.
+
+**Kết quả bền:** bà Sáu trong lần sau có một câu nói khác về bến; PC biết mình chưa có đủ thông tin. Tại một thời điểm khác, `story.js` reveal về **Hạnh sống sót và trở thành vợ ông Tư** mới được mở bằng một tuyến chứng cứ của PC, **không phải tự nhận nhờ vào G04**.
+
+## 3. G06 — Đêm sư ngồi bên ngôi mộ
+
+**Vai trò:** vừa cho phép tinh nghịch, vừa có cơ hội chạm một cảm xúc thật. Không sử dụng lời kinh như “điều kiện học bài”.
+
+### G06-S01 — Thử xem sư có sợ không?
+
+**Ambient:** sư đang ngồi yên gần mộ dưới ánh trăng; là Sư Tịnh hoặc sư già theo lịch, **không tự gán mọi sư thành cùng một NPC**.
+
+> Gió luồn qua hàng cỏ. Vị sư sửa lại mép y, rồi ngồi yên.
+>
+> Bạn đứng ngay cạnh. Ông không nhìn thấy bạn.
+
+- `Làm lá xào xạc` → sư mở mắt, nhìn một lát rồi trở về tư thế. “Gió mạnh thật.” PC có thể thấy vui; không biến vị sư thành người hoàn hảo bất động/không sợ.
+- `Đứng nghe tiếng thở` → cảnh tĩnh, không thẻ tự động.
+- `Đi chơi chỗ khác` → sư vẫn tiếp tục đêm tu.
+
+### G06-S02 — Một lời hồi hướng không dành riêng ai
+
+Sau đêm tu, nếu PC chủ động quay về hoặc tình cờ ở gần, sư nói một lời hồi hướng ngắn. **Không bắt PC đứng chờ 30 phút thật.**
+
+> **Sư:** “Xin chia sẻ điều lành này đến những ai còn đang chịu khổ.”
+>
+> Bạn nghe một lúc. Tiếng gió ngoài cổng nghĩa địa vẫn vậy, nhưng đêm bớt lạnh.
+
+- `Nghe đến cuối` → `G06.heardFullDedication=true`, mở một câu trong Sổ `Lời hồi hướng bên mộ`.
+- `Nghĩ về bà Sáu / bà ngoại` → nếu PC từng gặp NPC đó, mở **một câu nhớ chuyện**. Không biến PC thành họ, không làm bà Sáu tự rời cảnh giới.
+- `Ở lại nghe tiếng dế` → ambient có thưởng khung cảnh.
+- `Đi tiếp` → không mất đường khám phá.
+
+**Sự kiện hồi hướng** được ghi lại dù PC không chọn kết thúc kiếp ma; nó **không auto giải thoát**. Khi PC đã có một mối duyên riêng hoặc từng giúp người, G07 có thể hiển thị một lời mời **tự chọn**, không phải màn ép đi.
+
+## 4. G07 — Đêm cuối của một bóng người (kết sớm hoặc tiếp tục)
+
+### G07-S01 — Một cơ hội được an, không phải phán xét điểm tâm
+
+**Điều kiện đề xuất:** `G06.heardFullDedication` **và** một trong `G03.helpedGranny`, `G05.metBaSauMeaningfully`, hoặc một nhánh việc tốt của PC sau này. Nếu player chưa làm một trong những việc đó, vẫn được nhìn ánh sáng sớm từ gốc gạo và nghe chuyện nhưng **chưa hiện xác nhận ending**. Không bắt đi Bến Không Tiếng.
+
+> Phía trên tán gạo, trời bắt đầu sáng.
+>
+> Có một khoảng lặng rất dễ chịu. Bạn nghĩ: “Mình còn muốn đi đâu nữa không?”
+
+- `Mình vẫn còn muốn khám phá` → quay lại map, tiếp tục toàn bộ G01–G06; có thể khép vào một lần khác, không phạt.
+- `Mình đã sẵn sàng khép chuyện này` → màn xác nhận **có nói rõ không tiếp tục điều khiển PC này sau khi kết**.
+
+### G07-S02 — Ending chung MVP, ba gợi ý epilogue cho tương lai
+
+**Ưu tiên viết trọn vẹn một ending chung trước**, không giả vờ người chơi chọn cõi tái sinh từ menu:
+
+> Bóng bạn mỏng dần giữa nắng sớm.
+>
+> Một tiếng chuông từ tịnh thất vọng tới. Phía trước là một điều chưa biết.
+>
+> Đêm cũ đã khép. Lời đã nghe và việc đã làm vẫn được giữ trong câu chuyện này.
+
+**Epilogue biến thể (chỉ khi có kịch bản đủ hợp lý và được duyệt):**
+- **Người:** cảnh một gia đình đón em bé mới sinh ở làng, không gán em bé là NPC trẻ nào đang có.
+- **Thọ thần:** gốc gạo đón một điểm sáng mới; không tự khẳng định PC là **thọ thần đang có**.
+- **Chư thiên:** xa xa có mây sáng và tiếng chuông; không có gameplay avatar trời.
+
+Các ending **không dựa công thức** “thẻ tâm X → được chọn deva”, không bảo đảm tái sinh thật theo Phật học và không đồng nghĩa Niết-bàn. Nếu chưa duyệt được các biến thể, ending chung là lựa chọn an toàn và vẫn trọn cảm xúc.
+
+### G07-S03 — Kết thúc không đồng nghĩa mất nhân vật
+
+**Sau xác nhận:** status nhân vật chuyển `story_completed`; vẫn giữ hồ sơ, ảnh cảnh, thẻ, Sổ, dấu đã giúp. Không xóa để tạo lại một avatar ma rồi farm thẻ. Màn chọn nhân vật thể hiện **“Chuyện đã khép”**, có thể mở nhật ký, không vào map như đang chơi. PC khác trên cùng account không được tự nhận lore hoặc thẻ từ PC này.
+
+**Không phải tính năng đã code:** cần migration và transaction an toàn trước khi cho người chơi kết thúc nhân vật thật.
+
+## 5. Chúng ta tạo bất ngờ bằng những chi tiết nhỏ, không phải mọi người đều có bí mật lớn
+
+| Chi tiết xuất hiện sớm | Có ý nghĩa ngay | Có thể trở lại về sau | Không nên ép |
+|---|---|---|---|
+| Con Vàng sủa khi PC ma làm lá rung | một trò nghịch vui | Ông Tư kể lời đồn ở ngõ trong PC dân | con Vàng là “sứ giả cõi dưới” |
+| Túi kim chỉ bà cụ | một việc tốt trọn vẹn | bà ngồi vá quai thúng; có câu chuyện mới | túi là chìa khóa giải cứu Hạnh |
+| Vệt nước ngược nhà hoang | một chỗ để khám phá | dẫn tới Bờ Chìm, rồi Bờ Nổi qua PC người | nhà hoang là nơi mọi NPC từng chết |
+| Ba cột đá | điểm giao thị giác | PC sống bất ngờ nhìn thấy từ phía khác | mọi manh mối của ghost tự chuyển account |
+| Tiếng trẻ trên bến năm lũ | câu hỏi bí ẩn | một mảnh khi tìm Hạnh/bà Sáu | người giữ đò lập tức kể Hạnh là vợ Ông Tư |
+| Lời sư hồi hướng | người chơi ma có một đêm ấm | mở cơ hội kết truyện hoặc một câu Sổ | buộc mọi ma cùng lúc siêu thoát |
+| Gốc gạo | luôn có cảnh đẹp | bà Sáu/thọ thần/ending kết nối theo duyên | mọi câu chuyện đều phải xuất phát từ gốc cây |
+
+## 6. Bản đồ thông tin bí mật — tác giả biết, người chơi chưa biết
+
+**Bí mật CANON đã có trong `public/story.js`:** Hạnh sống sót, lớn lên nhờ dân làng, trở thành vợ ông Tư; mỗi năm mang xôi về tưởng nhớ mẹ bà Sáu. Trong kịch bản PC-centric, không phát sẵn toàn bộ qua lời người giữ đò hoặc một postcard của PC ma.
+
+| Tình huống | PC ma có thể biết | PC sống có thể biết | Chỉ tiết lộ khi chủ động ghép đủ |
+|---|---|---|---|
+| G01 | ngõ làng có Ông Tư/con Vàng và nhà hoang | có ông Tư và một ngôi nhà cũ | không có bí mật bà Sáu |
+| G03 | bà cụ làm rơi túi và tự tìm được | bà cụ từng nhờ người giúp, có thúng được vá | không cố dán vào tuyến Hạnh |
+| G04 | có tiếng trẻ ở bến năm lũ; mặt sau cột đá | mặt trước cột đá, chuyện người từng đi qua hang | danh tính/số phận người ở bến |
+| G05 | bà Sáu nhớ tiếng nước nhưng thiếu chứng cứ | người sống có thể hỏi chuyện hàng xóm và đồ vật | Hạnh là ai hiện nay |
+| G06 | sư hồi hướng, PC ma có lựa chọn phản ứng riêng | sư tu đêm, người dân có thể dâng vật đúng vai | hồi hướng không phải bật tất cả spoiler |
+| G07 | PC ma chọn khép đời mình | PC sống có hành trình mới | không tự nhập ký ức của ending vào PC khác |
+
+**Không cần bảo đảm người chơi thật không đoán được bí mật**; nhiệm vụ là khiến từng vai vẫn hấp dẫn, có sự thật chưa được ghép hoàn chỉnh và không đưa reveal từ save A sang B.
+
+## 7. Các kiểm thử biên kịch trước khi code
+
+- [ ] G02 xem cảnh cúng dường **không cho ghost nhặt/ăn đồ vật vật lý**, cũng không auto được an/tái sinh.
+- [ ] G05 ghép Hạnh không lộ danh tính chỉ bằng một đoạn nghe ferryman; lời kể cũ có thể không chắc và được ghi như giả thuyết.
+- [ ] G06 NPC sư không bất khả xâm phạm trước tiếng động; phản ứng ngắn tự nhiên, không phải bài giảng.
+- [ ] G07 có nút ở lại khám phá, không ép ending, không yêu cầu chơi hết G04/G05.
+- [ ] Ending đã xác nhận không xóa nhân vật/thẻ/Sổ, không biến PC ma thành PC trẻ hay thọ thần để tiếp tục gameplay.
+- [ ] Ở mỗi episode có cảnh đẹp hoặc một câu thoại đáng nhớ ngay cả khi người chơi không nhận nhiệm vụ.
+- [ ] Người chơi nhiều PC không có Sổ/quest được tự điền từ PC khác.
+- [ ] Các kết tái sinh/mộng/hồn ma qua vách là nội dung sáng tác có nhãn, không khẳng định pháp lý/tôn giáo hoặc nghiệp báo máy móc.
