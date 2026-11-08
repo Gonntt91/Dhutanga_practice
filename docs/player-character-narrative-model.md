@@ -109,6 +109,8 @@ Mỗi storylet phải có: `storyId`, `npcOwner` (hoặc `environment`), `eligib
 - [ ] Sư/ma/dân có xưng hô và hành động phù hợp bối cảnh, luật giới và quan hệ.
 - [ ] Người mới đi dạo 5–10 phút không bị popup quest và không cần biết truyện cũ.
 
+> **Quy tắc mở rộng vai để chốt trước coding:** [Ghost Campaign Bible](ghost-playable-campaign-bible.md) và [Role Transition & Spoiler Isolation](role-transition-and-spoiler-isolation.md). `villager → monastic_aspirant/novice` là tiến trình tự nguyện, giữ characterId và memory đúng vai; `ghost → story_completed` là **ending**, không phải đổi role sang deva/thọ thần. Các PC trên cùng account giữ **story spoilers, manh mối và lối khám phá riêng**; phần giao bến chỉ là landmark, không chia sẻ quest flag. **Chưa code.**
+
 ## 6. Thứ tự chuyển đổi an toàn
 
 **P0 — Chốt tài liệu:** chuẩn PC/NPC, giọng kể, chuyển 6 episode và HG01–HG26 về góc nhìn PC; review việc lưu ký ức.
