@@ -111,6 +111,8 @@ Không cần popup ấy ở mọi khu. Thay vào đó:
 
 **Văn phong:** gần gũi, không lên lớp, không phán xét người chơi. Tránh "tâm bạn yếu", "bạn chưa đủ thiện", "bạn đã đắc định", "ma xấu cần giải thoát". Ưu tiên "nhân vật còn sợ", "cần biết thêm điều gì đó", "lần này bạn nhận ra…", "vị ấy đang khổ vì nhớ thương".
 
+> **Trường hợp mẫu HG27:** [Bà ngoại ngạ quỷ — giúp, hồi hướng, được an lành](human-world-early-mysteries-and-peta-quest.md). Đây là **cốt truyện gameplay khiến người chơi muốn làm thiện**, không giao một bài học đạo lý. Thẻ tâm mô phỏng được nhận ở **những quyết định/diễn biến có bối cảnh**: **Bi** (nghe nỗi khổ và quyết giúp) → **Không tham** (bố thí để hồi hướng) → **Tùy hỷ** (sau khi hồi hướng, vui vì bà thoát cảnh khổ trong truyện). Giữ cinematic bà tan vào ánh trăng; việc này không được trình bày như chứng Niết-bàn. Một màn tổng kết thẻ sau cảnh kết, không ba popup cắt nhịp.
+
 ## 6. Thiết kế học tập gắn với khám phá
 
 **Ba lớp giá trị của mỗi nội dung:**
