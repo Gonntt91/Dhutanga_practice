@@ -1,190 +1,151 @@
-# Human World Episode Pack 01 — Sáu kịch bản có thể triển khai
+# Human World Episode Pack 01 — Sáu kịch bản PC-centric v0.3
 
-> **Bản thảo biên kịch v0.2, chưa có trong gameplay.** Sử dụng 11 `World.PLACES` và ba vai **Sư Tịnh (`monk`) · Ông Tư (`villager`) · Bà Sáu (`ghost`)** trong `ROLE_INFO`. Bà cụ giếng, sư già, chị Ba, bé Na, con Vàng là NPC; **không được viết ông Tư như NPC thứ hai khi `role=villager`**. Khung thời gian là *ngày trong game*, không ép người chơi đăng nhập hằng ngày.
+> **Design-only; chưa sửa gameplay.** **PC** là nhân vật do người chơi đặt tên và chọn vai `monk | villager | ghost`. **Sư Tịnh, Ông Tư, Bà Sáu là NPC**, không phải PC. Tham chiếu bắt buộc: [Player-centric Narrative Model](player-character-narrative-model.md). **Không gán ký ức/vợ/con/món nợ của NPC cho PC.**
 >
-> [Review](human-world-narrative-review.md) · [Danh mục kịch bản](human-world-playable-scenarios.md) · [World Bible](human-world-story-bible.md). Trừ nơi ghi chú cần nguồn, truyện là `loreBasis: fiction`; các thao tác thẻ/điều kiện là `game_interpretation`. Phải duyệt lời Phật học/giới luật trước khi đưa vào release.
+> Chỉ dùng địa danh có trong `World.PLACES`. Nhịp kể gần gũi, câu ngắn, cho phép bỏ qua. Trời đẹp chủ đạo; mưa nhẹ là biến thể hiếm; bão không random. Tất cả các lựa chọn và state bên dưới là **đề xuất**, không tương ứng API hiện có.
 
-## Công thức mỗi episode
+## Cách ghi mỗi episode
 
-`ambient` (thấy không cần bấm) → `explicit_interact` (chỉ khi muốn) → `choice` (thay đổi phù hợp) → `immediatePayoff` (cảnh, vật, lời thoại) → `returnPayoff` (lần sau đổi gì) → `exit` (có thể rời bất cứ lúc nào).
-
-**Chính sách:** ngày êm và trời đẹp là mặc định, mưa nhẹ là biến thể hiếm, bão không được xen vào những episode này. Một scene đã xem có thể xem lại theo ngữ cảnh nhưng không nhân quà. Chưa có danh mục kiến thức hoàn chỉnh thì reward kiến thức phải trỏ `lessonId` đã được duyệt, không cấp thẻ tâm bằng timer.
-
----
-
-## HG21 — Ngọn đèn dành cho người về muộn
-
-**Vai chính:** Ông Tư; sư Tịnh có phiên bản quan sát; bà Sáu có phiên bản cảm nhận ánh đèn từ xa. **Nơi:** ngõ làng `village` ↔ bụi tre `bamboo` ↔ cổng nghĩa địa `gate`. **Loại:** 2 lần gặp, truyện không phải bắt buộc. **Không dùng `den_nho` là vật phẩm hang**: đây là đèn đường riêng, không mở cổng thần bí.
-
-**Ambient ngày đầu — chạng vạng:** một góc ngõ hơi tối, vệt ánh đèn từ cửa nhà. Con Vàng nằm gần bậc hiên. Người chơi vẫn đi ngang bình thường.
-
-**Cảnh 1 (chỉ Ông Tư chủ động chạm bậc hiên):**
-
-> "Người ta về qua bụi tre mỗi khi trời tối. Cây cao che ánh trăng, đoạn đường ngắn mà tối sâu."
-
-- **`Treo chiếc đèn cũ cạnh lối đi`** → `laneLamp.stage=installed`; đèn vẽ sáng vùng ngõ ngay; `deedId=lane_lamp_placed`. Không rơi thẻ Không tham ngay vì thao tác treo một chiếc đèn chưa đủ kết luận tâm thật.
-- **`Thử tìm chỗ không chói vào nhà ai`** → `laneLamp.stage=planning`; lần sau có dấu vị trí phù hợp; người chơi vẫn dạo tự do.
-- **`Để tối khác`** → không nhận lời, không phạt; một NPC có thể treo đèn ở ngày khác như ambient, không giành nhiệm vụ.
-
-**Cảnh 2 — lần sau (nếu đã treo):** dưới bụi tre có vệt vàng ấm. Một người qua đường đi ngang không vấp. Khi Ông Tư chủ động nhìn:
-
-> "Có người về muộn, thấy đèn thì bước chậm lại. Người ấy không biết ai đã treo. Ông Tư cũng không đi ra nói."
-
-- **`Ngắm một lúc`** → `discovery:lamp_on_lane`; hiệu ứng được ghi; có thể mở câu chuyện về người khách `HG19`.
-- **`Kiểm tra dầu đèn`** → duy trì đèn trong một nhịp, không tích điểm vô hạn.
-- **`Đi tiếp`** → không mở quest.
-
-**Theo vai khác:** Sư Tịnh đi ngang có thể nhận ra lối sáng, ngồi nghe gió, hoặc hỏi Ông Tư (NPC trong trải nghiệm của vai sư) ai treo; bà Sáu chỉ **nhìn** ánh đèn, liên tưởng một đêm có người về muộn, không chạm vào đèn. Không giả định ba save của ba vai tự chia sẻ cùng một sự kiện, trừ khi đã có hệ trace xã hội hỗ trợ.
-
-**Save:** `laneLamp.stage=unknown|planning|installed|seen_used`; `discovery:lamp_on_lane`; `worldEffect:lane_warm_light`; `story:late_traveler`. **Bỏ qua:** vẫn có lối an toàn sáng từ đèn nhà khác. **Chi phí art:** 1 sprite đèn + vòng sáng nhẹ + pose ngắm.
+- **Chủ câu chuyện** là NPC hoặc `environment`; **góc nhìn** là PC gặp/giúp/quan sát/nghe kể.
+- **Tín hiệu ambient** xuất hiện khi đi ngang; **hội thoại chỉ mở khi nhấn**.
+- Mỗi scene có **kết quả ngay**, **kết quả trở lại**, **lối bỏ qua** và **điều kiện theo vai**.
+- Gắn `loreBasis=fiction` cho truyện sáng tác; cơ chế thẻ/tâm là `game_interpretation`. Nếu dẫn lời kinh phải tách trang kiến thức và ghi nguồn.
+- Không tự cấp thẻ tâm chỉ vì PC xem một ký ức của NPC; việc khi vắng chỉ cho kiến thức/vật liệu được giao hợp lệ.
 
 ---
 
-## HG22 — Tiếng chổi và chiếc lá trở lại
+## HG21 — Ngọn đèn cho người về muộn
 
-**Vai chính:** Sư Tịnh. **Vai phụ:** Ông Tư có thể giúp khi được mời; bà Sáu đứng ngoài hàng rào quan sát trong một cảnh riêng. **Nơi:** `hermitage`. **Loại:** sinh hoạt hai lượt, có thể biến thể nhiều ngày nhưng không farm.
+**Nơi:** `village ↔ bamboo ↔ gate`. **Chủ chuyện:** `npc.ong_tu`. **Vai:** dân chủ động hỗ trợ; sư/dân xem ánh đèn; ma có thể nhìn ánh sáng từ xa. **Nhịp:** 2 lần ghé, không ép.
 
-**Ambient:** nắng sớm xuyên qua cây, vài chiếc lá rơi trên sân. Sư già đang đi chậm dưới hiên. Không giao nhiệm vụ.
+**Ambient:** góc ngõ hơi tối. Ông Tư đứng xem vị trí chiếc đèn cũ. Con Vàng ngủ trên thềm.
 
-**Cảnh 1:**
+**Chạm `Hỏi ông Tư về ngọn đèn`:**
 
-> "Sân vừa quét hôm qua. Sáng nay lá lại phủ một lớp mỏng, như chẳng ai từng quét."
+> **Ông Tư:** “Đường này tối thật. Người về muộn chắc khó thấy bậc đá.”
+>
+> **PC dân:** “Ông định treo đèn ở đây ạ?”
+>
+> **Ông Tư:** “Ừ. Đang nghĩ treo chỗ nào khỏi chói nhà hàng xóm.”
 
-- **`Quét một khoảng sân`** → tương tác ngắn 3–4 lượt quét có dừng; nền hiện một khoảng sạch; `courtyard.stage=partly_swept`; điểm thành quả ngay là **cảnh sạch một khoảng**, không nhất thiết thẻ.
-- **`Nhìn một chiếc lá rơi`** → mở dấu cảnh `discovery:falling_leaf`; nếu từng học ý niệm thay đổi thì Sổ kiến thức có thêm gợi ý, không chứng đắc.
-- **`Để lá ở đó hôm nay`** → vẫn là lựa chọn hợp lý; sư già/khí trời không phê phán.
+- `Chỉ ông chỗ treo` → cùng xem hai vị trí, `laneLamp=planning`; lần sau thấy đèn đã treo.
+- `Phụ ông treo đèn` (dân, khi ông đồng ý) → `laneLamp=installed`, vệt sáng xuất hiện ngay, ghi `helpedLamp` cho PC; vật liệu của ông không tự chuyển thành túi PC.
+- `Ngắm lối nhỏ / Đi tiếp` → một mốc cảnh hoặc không nhận gì, không ép quest.
 
-**Cảnh 2 — ngày khác:** lá vẫn rơi, nhưng lối đi sạch hơn hoặc một phần được sư già dọn tiếp.
+**Vai sư:** nếu chủ động hỏi, chỉ nghe ông Tư kể; không bắt sư tự mua/bán đèn hoặc nhận công đức. **Vai ma:** đứng nhìn đèn sáng, nghe tiếng chân người về muộn, không chạm đồ.
 
-> "Chiếc lá hôm qua đã được mang đi. Một chiếc lá khác nằm đúng chỗ cũ."
+**Lần sau:** ông Tư đang chỉnh bấc, khách đi qua con đường sáng. Nếu PC phụ treo, ông nói “May có người góp tay, đỡ lo.” Nếu PC không tham gia, ông vẫn có thể tự treo đèn sau vài ngày. **Lưu:** `npc.ong_tu.lampStage` theo character/world policy, `pc.helpedLamp`, `discovery:lane_lamp`; thưởng một lần. **Art:** 1 đèn, một vòng sáng, 1 pose ông Tư.
 
-- **`Đi kinh hành qua khoảng sân`** → có thể mở hoạt động tự chọn `HG17`, không tự cấp Niệm/Định.
-- **`Hỏi thầy vì sao ngày nào cũng quét`** → sư già trả lời bình thường: "Vì sân có lá, nên mình quét. Mai có lá thì mai quét." **Đây là lời thoại sáng tác của game, không gắn là lời Phật.**
-- **`Đi dạo`** → không cần kết thúc nhiệm vụ để trở lại.
+## HG22 — Tiếng chổi và chiếc lá
 
-**Ông Tư:** chỉ có tương tác `Xin góp tay quét sân` khi được sư già chấp thuận; nếu không có chuyện trước đó vẫn ngắm được. **Bà Sáu:** có thể nhìn thấy người sống quét sân từ ngoài, nhớ một việc trước đây mình hay làm, không thể cầm chổi.
+**Nơi:** `hermitage`. **Chủ chuyện:** môi trường tịnh thất; Sư Tịnh có thể là NPC gần đó. **Vai:** sư chủ động quét, dân chỉ phụ nếu thích hợp và được mời, ma quan sát từ ngoài.
 
-**Save:** `courtyard.stage=untouched|partly_swept|visited_again`, `discoveries:falling_leaf`. Cảnh sạch một phần **không phải vĩnh viễn** — ngày sau có lá mới, nhưng nhật ký giữ ký ức. **Art:** lá rơi, 2 trạng thái nền, âm chổi ngắn.
+**Ambient:** nắng sớm, vài chiếc lá rơi. Sư Tịnh đã quét một góc sân; người chơi không mặc định đã quét hôm qua.
 
----
+**Chạm `Quan sát sân`:**
 
-## HG23 — Con Vàng và khoảng sân trước nhà
+> Lá lại rơi. Phần sân vừa quét sáng màu đất ướt.
+>
+> **Sư Tịnh:** “Mới quét xong mà lá rơi tiếp rồi.”
 
-**P0 role fix:** `villager` **là chính Ông Tư**, chủ con Vàng. Tuyến `mind.js` hiện nói chó **nhà Ông Tư cắn "bạn"** rồi cho "bạn" mang rau đến nhà Ông Tư; cách viết đó chỉ có nghĩa khi vai "bạn" là người khác. **Không tái sử dụng nguyên hội thoại đó cho Ông Tư**. Phiên bản mới cần chặn va chạm tự bật và phân vai.
+- `Con phụ quét một đoạn nhé` (PC sư; dân hỏi phép trước) → tương tác 3–4 nhịp, một phần sân sạch **ngay**, `courtyard=partly_swept`.
+- `Đứng nhìn chiếc lá` → `discovery:falling_leaf`, không tự thêm thẻ Niệm/Vô thường.
+- `Đi tiếp` → không nhận lời hứa; sư Tịnh có lịch dọn sân của NPC.
 
-**Vai:** Ông Tư hoặc Sư Tịnh. **Nơi:** `village` và `gate`. **Loại:** 2 ngày, có thể bỏ qua. **Không biến con chó thành kẻ xấu**.
+**Lần sau:** lại có chiếc lá mới, nhưng sư Tịnh có thể nói “Hôm nay bạn tới sớm hơn tôi.” hoặc hỏi PC có muốn kinh hành không. Sân không biến thành công trình xây dựng vĩnh viễn; **dấu đã giúp** lưu vào nhật ký. PC ma không cầm chổi; có thể nghe tiếng chổi gợi ký ức **riêng của PC nếu đã chủ động xây** (không tự viết tiểu sử). **State:** `courtyardSeen`, `helpedSweep`, `fallingLeafSeen`.
 
-**Ngày 1 — Ông Tư:**
+## HG23 — Con Vàng và khoảng sân đầu ngõ
 
-> "Con Vàng nằm dài trước cửa, nhưng hễ có người lạ qua thì sủa to. Ông Tư nghe tiếng sủa, bỗng nhớ một buổi sáng mình cũng đứng chắn ngay lối ấy."
+**Nơi:** `village` ↔ `gate`. **Chủ chuyện:** Ông Tư và chó của ông. **Vai:** dân/sư gặp trực tiếp; ma quan sát một cách phù hợp. **Sửa logic cũ:** PC dân **không phải Ông Tư**, không sở hữu con Vàng, không mặc định từng bị chó cắn.
 
-- **`Dắt Vàng vào sân khi có người qua`** → `dog.stage=secured`, hoạt ảnh chó chuyển vào hiên, đường đi yên ổn.
-- **`Hỏi xem ai từng bị Vàng làm sợ`** → một NPC kể có người đã phải đi vòng, mở `dog.stage=needs_attention`.
-- **`Ngồi cạnh Vàng một lát`** → khám phá một cảnh êm, không phạt, vẫn mở chuyện sau.
+**Ambient:** con Vàng sủa khi có người lạ. Ông Tư cất tiếng gọi nó vào hiên. Không có va chạm/chó cắn tự động khi đi ngang.
 
-**Ngày 2 — người qua đường đi ngang:** Vàng nhìn ra nhưng đã đứng bên trong. Một người đi qua bình yên. Ông Tư có thể hỏi thăm, **không có sự cố cắn lặp để farm Sân**.
+**Chạm `Nhìn con Vàng`**:
 
-> "Con Vàng ngẩng đầu rồi lại đặt cằm xuống chân. Ông Tư thấy con đường hôm nay rộng thêm được một chút."
+> **Ông Tư:** “Nó gặp người lạ là làm ầm lên. Đừng lo, tôi giữ nó lại.”
+>
+> **PC:** “Chắc nó chưa quen con thôi.”
 
-- Nếu từng ngăn Vàng sủa → người qua đường gật đầu; `worldEffect:lane_safe`.
-- Nếu chưa → có lời gợi ý Ông Tư chủ động giữ Vàng trong nhà, rồi một hôm khác cảnh đổi.
-- Vai sư đi ngang thấy sự đổi thay của ngõ; nếu từng có xích mích có thêm lời nói về việc xin lỗi, **không ép sư giảng đạo**.
+- `Đứng xa cho Vàng quen mặt` → chó nhìn rồi nằm xuống; `dogMeeting=calm`.
+- `Hỏi ông Tư về Vàng` → ông kể chuyện ngắn về lúc chó mới đến nhà; thêm một mối quan hệ/đối thoại, không gắn sẵn tâm Sân.
+- `Đi vòng qua đường khác` → lối an toàn, không bị phạt hay trừ thẻ.
+- `Nhờ ông giữ chó khi người qua` → ông đồng ý, con Vàng chuyển vào sân; không bắt người chơi gánh trách nhiệm chăm sóc chó của ông.
 
-**Không có cơ chế thưởng thẻ bất thiện khi cố tình chọc chó hoặc làm người khác bị cắn.** Không cần NPC/vật mới trừ một pose chó nằm/đi vào sân. **Save:** `dog.stage=noticed|needs_attention|secured|lane_safe`, `apologySeen`. **Khi vắng:** không tạo thêm lần chó cắn.
-
----
+**Lần sau:** người đi ngang không còn bị sủa; ông Tư nhận ra PC đã gặp, có thể nói “Hôm nay nó hiền hơn hôm trước rồi.” Nếu không tương tác, ông Tư vẫn chăm chó theo lịch. **State:** `npc.ong_tu.dogCare`, `pc.metConVang`, `pc.askedForSafeLane`. **Không** cho cố chọc chó cắn để farm Sân; không tạo cảnh mất an toàn với người chơi chỉ muốn đi dạo.
 
 ## HG24 — Bóng gốc gạo qua ba buổi
 
-**Vai:** cả ba nhưng các góc nhìn khác nhau. **Nơi:** `gao` ↔ `graves`. **Loại:** khám phá môi trường 3 thời điểm, **không phải nhiệm vụ**. **Cảm xúc:** dịu, hơi kỳ ảo, không kinh dị.
+**Nơi:** `gao ↔ graves`. **Chủ chuyện:** môi trường; bà Sáu là một NPC có thể được thấy **nếu tình huống của bà đã mở**. **Vai:** mọi PC được ngắm sáng/chiều/đêm; câu chuyện NPC là lớp tùy chọn.
 
-**Buổi sáng:** ánh sáng rơi dưới tán cây, một chiếc lá lạ nghiêng trên rễ. Chạm `Ngắm chiếc lá`:
+- **Sáng, chạm `Ngắm bóng lá`:** “Ánh nắng xuyên qua tán gạo. Một chiếc lá rơi đúng chỗ sáng.” → `gao.morningSeen`.
+- **Chiều, chạm `Theo bóng cây`:** “Bóng cây kéo dài tới con đường men nghĩa địa.” → `gao.afternoonSeen`, thấy lối phụ.
+- **Đêm trăng, chạm `Nghe tiếng gió`:** “Đom đóm thấp thoáng giữa các rễ cây. Lá vẫn rơi rất khẽ.” → `gao.nightSeen`.
 
-> "Lá gạo nằm im. Chỉ bóng của nó dịch một đoạn nhỏ khi mặt trời lên."
+**Nếu từng gặp bà Sáu**, đêm có một bóng đứng nhìn đường. PC có thể hỏi hoặc chỉ đứng xem:
 
-**Chiều:** bóng cây dài đến con đường men nghĩa địa. Chạm `Theo bóng cây` → nhìn thấy mộ thấp ở xa, chỉ ghi `discovery:gao_shadow_afternoon`, không ép hỏi ai.
+> **Bà Sáu:** “Bà đợi một người. Lâu rồi.”
+>
+> **PC:** “Bà có muốn kể cho con nghe không?”
 
-**Đêm trăng:** một tiếng gió đi qua tán cây, lá lấp lánh nhẹ (không cần giải thích thần linh). Người chơi tự chọn `Đứng lặng một lúc`:
+Bà chưa kể ngay tên Hạnh nếu người chơi chưa có manh mối. **PC ma** không tự có ký ức về Hạnh; có thể nghe hoặc thấy một ký ức thuộc về bà. Nếu PC đã tìm được mảnh chuyện về Hạnh, lời bà sâu hơn một chút.
 
-- **Sư Tịnh:** nhớ buổi tu dưới bóng cây, một câu về việc thấy lá đổi vị trí.
-- **Ông Tư:** nhớ chuyện đã từng ngại bước qua nghĩa địa; nếu đã thay đổi trong truyện cũ, lời nghĩ khác.
-- **Bà Sáu:** có ký ức về Hạnh và tiếng gọi cũ; nếu `ghost_memory.looked`, bà không còn gọi bóng người lạ là Hạnh. **Không khẳng định buông là siêu thoát.**
-
-**Lưu:** `discovery:gao_three_lights` sau khi đã nhìn đủ ba thời điểm, không phát thưởng vật phẩm/thẻ. Mỗi thời điểm vẫn có cảnh để ngắm dù chưa đủ bộ. **Bỏ qua một ngày:** không làm lại ba buổi từ đầu; có thể trở lại khi đúng ánh sáng. **Art:** cùng một cây, ba overlay bóng/màu, không vẽ map riêng.
-
----
+**Kết quả:** `discovery:gao_three_lights` khi nhìn đủ ba biến thể; từng buổi đều có cảnh đẹp riêng. Không cần đi đủ ba lần mới được tới hang. Không biến PC thành bà Sáu để giải khóa. **Art:** cùng cây và ba lớp sáng.
 
 ## HG25 — Hai chiếc gáo bên giếng
 
-**Vai chính:** Ông Tư; Sư Tịnh có phiên bản quan sát hoặc nhận sự giúp đỡ phù hợp vai; bà Sáu không được múc nước. **Nơi:** `well`, `village`. **Loại:** một cuộc gặp và một lần quay lại. **Không gắn với rau má nếu chưa trả lời hứa.**
+**Nơi:** `well ↔ village`. **Chủ chuyện:** `npc.granny`. **Vai:** PC dân sửa được chiếc gáo khi bà đồng ý; PC sư có thể hỏi thăm/nghe và chỉ giúp trong việc phù hợp; PC ma chỉ quan sát cảnh sinh hoạt.
 
-**Ambient sáng sớm:** bà cụ đặt hai chiếc gáo cạnh giếng, một chiếc cán long, một chiếc cán ngắn. Ông Tư đi ngang.
+**Ambient:** bà cụ xoay mãi chiếc cán gáo lỏng. Nước đổ ra mép thùng.
 
-> "Bà cụ phải kéo gầu hơi nghiêng. Cán gáo dài làm nước đổ ra ngoài mép thùng."
+**Chạm `Hỏi bà có cần giúp không`:**
 
-- **`Hỏi bà muốn giúp việc gì`** → bà chỉ chiếc gáo có cán cần buộc lại, nếu ông Tư nhận mới có `wellPromise=accepted`.
-- **`Buộc lại cán gáo`** → một thao tác nhỏ, ghi `wellLadle=secured`, hôm sau bà cụ kéo nước dễ hơn.
-- **`Ngồi nghe tiếng nước`** → nhận `discovery:well_echo_morning`, không tự nhận Niệm.
-- **`Đi tiếp`** → không có lời hứa, NPC có thể tự nhờ người khác sửa; không phạt.
+> **Bà cụ:** “Cái gáo dùng bao năm rồi. Nay nó lỏng cán, cứ nghiêng một bên.”
+>
+> **PC:** “Để con xem thử.”
 
-**Ngày sau:**
+- `Buộc lại cán gáo` (dân) → thao tác ngắn, cảnh gáo ngay ngắn, `ladleStage=fixed`, `pc.helpedGranny`.
+- `Nghe tiếng nước` → `discovery:well_echo`, không tự cấp thẻ Niệm.
+- `Để hôm khác` → **chỉ ghi lời hứa nếu PC chủ động nói sẽ trở lại**; bà cụ có thể tự nhờ người khác sửa.
 
-> "Chiếc gáo nằm ngay ngắn. Nước chảy tròn vào miệng thùng. Bà cụ ngẩng lên: ‘Hôm nay nhẹ tay hơn hẳn.’"
+**Lần sau:** bà kéo nước dễ hơn; nếu PC giúp, bà cảm ơn. **Không nhập nhằng với HG05**: rau má là vật khác, lời nhờ khác; NPC chỉ có một tín hiệu “Có chuyện muốn kể”, khi chọn mới thấy hai chuyện nếu đồng thời có. PC có thể được Ông Tư (NPC) nhắc “Chiếc gáo sửa rồi à?” mà không tự gặp chính mình.
 
-Nếu `wellPromise=accepted` mà chưa sửa, bà hỏi "Con còn nhớ chuyện cán gáo không?" rồi có thể đề xuất sửa, xin để sau hoặc nhờ người khác. Không gắn nhãn đạo đức nếu người chơi bận.
+## HG26 — Nghe chuông, chẳng cần làm gì
 
-**Hệ quả:** một sprite gáo ngay ngắn, NPC nhớ, dấu sinh hoạt. **Tín hiệu cho hệ chung:** cùng một địa điểm có thể có HG05 về rau và HG25 về gáo, nhưng **không được bật cả hai popup hoặc hai quest cùng lúc**. Người chơi chọn `Nghe chuyện với bà` rồi thấy danh sách ngắn; việc đã nhận ưu tiên trên ambient.
+**Nơi:** `hermitage`, chiều hoặc đêm trăng. **Chủ chuyện:** môi trường. **Vai:** mọi PC; PC ghost ở phía ngoài bức tường, không chạm chuông.
 
----
+**Ambient:** tiếng chuông nhỏ, nắng cuối ngày, chim bay về; không có icon quest bắt buộc.
 
-## HG26 — Nghe chuông, không cần làm gì
+**Chạm `Đứng nghe chuông`:**
 
-**Vai:** Sư Tịnh, Ông Tư, Bà Sáu ở ngoài tường. **Nơi:** `hermitage`, hoàng hôn hoặc đêm trăng. **Loại:** **không quest**. **Mục tiêu:** xác nhận người chơi không làm việc vẫn có trải nghiệm được công nhận.
+> Tiếng chuông chậm dần. Một lúc sau, chỉ còn tiếng dế.
+>
+> **Sư Tịnh (nếu đang ở đó):** “Nghe được tiếng cuối không?”
 
-**Ambient:** chuông ngân ngắn, ánh đèn từ mái, đôi chim cuối chiều bay về. Không hiện biểu tượng nhiệm vụ trừ khi người chơi chủ động nhấn chuông/kệ sách.
+- `Ở lại thêm một lát` → ghi `discovery:evening_bell` một lần.
+- `Hỏi về tiếng chuông` (PC sống nếu sư ở gần) → lời đáp ngắn đời thường, lựa chọn `Tìm hiểu thêm` mở Sổ, không thuyết pháp nhiều màn.
+- `Đi tiếp` → không có cảnh thất bại.
 
-**Nếu bấm `Nghe thêm một tiếng chuông`:**
+**Lần sau:** âm thanh/ánh sáng thay đôi chút, ghi dấu đã nghe; không nhận lại thẻ. **PC ma** chỉ nghe từ xa, không mặc định nhớ một bữa cơm, người nhà hoặc quá khứ cụ thể.
 
-> "Tiếng chuông đi qua mái hiên, qua lá cây rồi nhỏ dần. Khi tiếng cuối cùng mất, xung quanh vẫn còn tiếng dế."
+## Kết nối nội dung, tránh NPC trùng và ký ức sai
 
-- **Sư:** có thể `Đi kinh hành dọc hiên` chủ động hoặc `Ở lại nghe`.
-- **Ông Tư:** nếu từng nóng tính với sư, nghĩ lại một câu nói của mình; nếu chưa, chỉ đơn giản thấy trời đẹp.
-- **Bà Sáu:** chỉ nghe từ ngoài, nhớ tiếng người từng gọi về ăn cơm, không vào cầm chuông.
-
-**Kết quả:** `discovery:evening_bell`, một bản ghi tùy chọn trong nhật ký cảnh, không thẻ tâm. **Không spawn cùng dấu sổ mỗi lần nghe**. Sau một thời gian, âm chuông có biến thể khác nhưng không đòi thêm chức năng.
-
----
-
-## Quy tắc phối trộn và hậu quả
-
-| Nếu người chơi… | Không nên làm | Nên làm |
+| Trường hợp | Đúng | Sai |
 |---|---|---|
-| Đã giúp ông Tư / chính Ông Tư đã sửa đường | phát lại mở đầu như chưa có gì | đèn, đường hoặc chó đổi trạng thái; người qua đường có phản ứng mới |
-| Đã học đoạn kinh khi vắng | cộng Niệm/Định tự động | Sổ kiến thức thêm `heard`, lần sau sư có câu hỏi/hướng dẫn |
-| Đã thấy gốc gạo sáng/chiều | bắt học 3 buổi mới được đi hang ngoài | mở một ghi chú cảnh, vẫn cho dạo tự do |
-| Đã bỏ qua một việc | tạo thông báo trách móc/lỡ streak | NPC sinh hoạt tiếp; nhiệm vụ vẫn có thể nhận lại hoặc người khác tự làm |
-| Vai dân là **Ông Tư** | cho "người chơi" đem đồ sang nhà ông Tư (tự gặp chính mình) | dùng đối thoại ngôi thứ nhất hoặc một NPC thật; tách hậu truyện chó theo vai |
-| Vai ma là bà Sáu | cho ma cầm giỏ, thắp đèn, đưa em bé về | quan sát, nghe, nhớ, tự đặt câu hỏi; có thể nhận mảnh ký ức |
-| Người thích dạo 5 phút | mở popup xin quest lần lượt | một vài ambient khác nhau, ít nhất một dấu khám phá nếu tự ngắm |
+| PC chọn dân | gặp Ông Tư đầu ngõ; có thể phụ treo đèn hoặc giúp bà | PC tự là ông Tư, tự về nhà ông Tư |
+| PC chọn sư | gặp Sư Tịnh đang quét sân; có thể học hoặc phụ cùng | PC tự có quá khứ Sư Tịnh bị xua đuổi |
+| PC chọn ma | có trải nghiệm riêng; nghe bà Sáu kể khi đủ duyên | PC mặc định bà Sáu/Hạnh là mẹ con của mình |
+| PC chỉ xem chuyện NPC | mở lore/codex/manh mối nếu phù hợp | cộng thẻ tâm như thể PC tự thực hiện hành động trong hồi tưởng |
+| PC bỏ qua | NPC vẫn làm việc và thế giới thay đổi theo lịch | các nhân vật đứng im chờ vô hạn |
+| PC quay lại | NPC nhớ đã gặp, cảnh đổi, không nhận lại reward | kể lại lời giới thiệu và phát thẻ lần hai |
 
-## Sơ đồ trạng thái tối thiểu để test
+**State gợi ý:** `characterId` sở hữu `metNpc`, `interactedEpisodeIds`, `knowledge`, `inventory`; `world/npcStory` mô tả sự tiến triển của NPC theo timeline đã chọn. Không giả định trạng thái của PC A chia sẻ ngay cho PC B. `npcId` phải ổn định, không dùng `roleId` làm chủ sở hữu một câu chuyện.
 
-```text
-HG21 đèn: unknown → noticed → planning? → installed → seen_used
-HG22 sân: untouched → partly_swept → visited_again (sân vẫn có thể có lá mới)
-HG23 Vàng: noticed → needs_attention? → secured → lane_safe
-HG24 cây gạo: seen_morning + seen_afternoon + seen_night → discovery
-HG25 gáo: available → accepted? → secured → npc_acknowledged
-HG26 chuông: never_heard → heard → (variants; không nhân thưởng)
-```
-
-**Tương thích:** không tạo state mới thay thế `q.tree`, `q.ghost_memory`, `q.robe`, `S.quest` nếu chưa có migration. Vẽ tư duy xong rồi map các effect sang cấu trúc hiện hành. Không có hệ chia sẻ một thế giới liên nhân vật thì các storylet chỉ **tham chiếu bối cảnh**, không khẳng định đã đồng bộ hành động giữa save của Ông Tư, Sư Tịnh và Bà Sáu.
-
-**Kiểm tra chấp nhận:**
-1. Đi ngang 6 cảnh của gói này không bị popup và không ngừng di chuyển.
-2. Cả ba vai có nội dung hợp vai, không có Ông Tư gặp "Ông Tư thứ hai".
-3. Mỗi episode có ít nhất một phản hồi ngay và một biến thể khi quay lại, hoặc chỉ rõ là ambient-only.
-4. Lần thứ hai vào scene không tự nhận lại `discovery`/vật phẩm.
-5. Người chơi để dở vẫn quay lại được, NPC không bị kẹt vĩnh viễn.
-6. Không có cơn mưa/bão bắt buộc để hoàn thành sáu episode.
-7. Không cần thẻ tâm để **được đi dạo** hoặc nghe chuông.
+**Bản kiểm nghiệm trước khi bàn giao developer:**
+1. Có thể dùng tên PC bất kỳ cho 3 vai, NPC độc lập không có nhân vật trùng.
+2. Mỗi episode xuất hiện bằng ambient; chỉ mở khi chủ động chạm.
+3. Vai ma không nhặt/treo/sửa đồ; vai sư không tự làm việc phạm giới.
+4. Có kết quả ngay hoặc dấu ngắm cảnh, có biến thể lần sau.
+5. Người chơi bỏ qua vẫn có thể đi dạo, không mất lối chính.
+6. Lời thoại đủ ngắn để đọc trên điện thoại, không auto-giảng.
+7. Bầu trời đẹp chủ đạo, không ép bão/mưa để mở 6 episode.
+8. Save cũ được giữ nguyên khi chuyển code sau này: tài liệu này **chưa cung cấp migration đã triển khai**.
