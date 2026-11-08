@@ -2,6 +2,8 @@
 
 > **Design-only, chưa code.** Nguồn chuẩn: [Game Design Principles](game-design-principles.md), [World Exploration Bible](world-exploration-bible.md). Áp dụng cho `public/mind.js`, `public/encounters.js`, `public/app.js` và các map mới.
 
+> **Cập nhật PC-centric 08-11-2026:** [Player-centric Narrative Model](player-character-narrative-model.md) là nguồn chuẩn: người chơi **đặt tên nhân vật** và chọn vai sư/dân/ma, **không hóa thân mặc định thành Sư Tịnh/Ông Tư/Bà Sáu**. Marker NPC phải có `npcId` riêng, hội thoại theo `StoryContext(player, npc, perspective)`; không dùng `roleId` làm chủ sở hữu tiểu sử/ký ức NPC. Lời mở cảnh và nhãn tương tác ngắn, tự nhiên, luôn có `Đi tiếp`. Chưa triển khai trong code.
+
 ## 1. Vấn đề hiện tại (xác nhận từ code)
 
 - `Mind.onRoleStart()` gọi `survey(done)` ngay nếu chưa có `carita`: khảo sát đầu game chặn việc đi dạo tự do.

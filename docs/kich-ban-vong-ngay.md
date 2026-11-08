@@ -1,8 +1,10 @@
 # Kịch bản vòng ngày: sống chậm, học tâm, mỗi đêm một chuyện mới
 
-> **Thiết kế mở rộng — không phải toàn bộ đã triển khai.** Đây là bản nội dung để đưa dần vào game trên nhánh `experiment/qls-ideas`. Tham chiếu [he-thong-tam.md](he-thong-tam.md), nhất là mục 4, 9, 15–17. Nội dung liên quan giáo lý, nghi thức, đầu-đà và tâm sở phải được một vị thầy Theravāda kiểm tra trước khi phát hành.
+> **Thiết kế mở rộng — không phải toàn bộ đã triển khai.** Đây là bản nội dung để triển khai dần sau khi duyệt PR trên `develop`; **không** merge ngược vào nhánh `experiment/qls-ideas` đang deploy. Tham chiếu [he-thong-tam.md](he-thong-tam.md), nhất là mục 4, 9, 15–17. Nội dung liên quan giáo lý, nghi thức, đầu-đà và tâm sở phải được một vị thầy Theravāda kiểm tra trước khi phát hành.
 
 > **Nguyên tắc mới áp dụng cho mọi nhiệm vụ (07-11-2026):** [Game Design Principles](game-design-principles.md). Người mới được **đi dạo, khám phá trước khi nhận quest/khảo sát tâm**. Sự kiện tại NPC và địa danh cần người chơi chủ động nhấn tương tác, không tự popup khi chỉ đi ngang. Có thể nhận/hoãn/khước từ một nhiệm vụ; nếu đã nhận lời thì NPC ghi nhớ để nhân quả không đứt. Kiến thức, vật liệu, cảnh quan và lời hẹn là phần thưởng hợp lệ, không bắt mọi nhiệm vụ rơi thẻ. Kết quả offline **có thật** nhưng không cấp chứng đắc hay thẻ tu tập từ đồng hồ.
+
+> **Identity & voice mới (08-11-2026):** xem [Player-centric Narrative Model](player-character-narrative-model.md). Nhân vật người chơi (**PC**) do họ đặt tên và chọn `monk/villager/ghost`; **Sư Tịnh, Ông Tư, Bà Sáu là NPC**. Các tuyến B/C bên dưới là chuyện NPC mà PC có thể gặp/nghe/tìm hiểu; tuyến A là **việc của PC sư** được NPC hướng dẫn. Các đoạn cũ viết “người chơi là Ông Tư/Bà Sáu” chỉ thuộc code legacy; không phải hướng mới. **Lời thoại ngắn, gần gũi, không giáo điều**; không bắt xem cả chương để đi dạo. Tài liệu là thiết kế, chưa sửa mã/chuyển save.
 
 ## 1. Lời hứa với người chơi
 
@@ -12,29 +14,33 @@ Một ngày không cần làm nhiều; chỉ cần **một việc có ý nghĩa,
 - **Chơi 10–15 phút:** một nhiệm vụ chính + một việc tự chọn + quán xét.
 - **Chơi 20–30 phút:** thêm khám phá, trò chơi tương tác, nghe kinh hoặc kinh hành.
 - Không bảng xếp hạng công đức, năng lượng, phạt vắng, ép online, hay thẻ tu chứng. Thẻ chỉ là **dấu đã học/nhận diện trong mô phỏng**, không phải chứng nhận tâm thật.
-- **Mỗi vai có logic hành động riêng:** nhà sư tu học và giữ hạnh; dân làng làm việc, bố thí, giữ giới; bà Sáu (ngạ quỷ) nhìn lại ký ức, nỗi chờ đợi, gặp duyên nghe pháp. Hồn ma **không bế trẻ, nhặt vải, nấu cơm, dắt người sống**.
+- **Mỗi vai PC có logic hành động riêng:** PC sư tu học/giữ hạnh; PC dân làm việc thiện; PC hồn ma quan sát, nghe, tìm hiểu trong câu chuyện **riêng của mình**. **NPC Bà Sáu** giữ ký ức chờ Hạnh, không được gán sang PC ma. Hồn ma **không bế trẻ, nhặt vải, nấu cơm, dắt người sống**.
+
+> **Thời tiết cũng là ngữ cảnh kể chuyện:** xem [Human World Story Bible](human-world-story-bible.md) để biết W01 *Mưa trên mái tịnh thất*, W02 *Bão qua làng*, W03 *Sau cơn mưa, ao sen* cùng 12 storylet theo vai × địa điểm × ngày/đêm × thời tiết. Không chỉ thêm animation mưa: khi mưa phải đổi hoạt động và cảnh; trước/sau bão có NPC, hậu quả và cách hồi phục. Không tự popup bắt làm nhiệm vụ, không khuyến khích ra ngoài khi bão, không thưởng bất thiện hay chứng đắc do thời tiết. Đây là **đề xuất chưa code**.
+
+> **Bộ kịch bản Nhân gian mới:** [Human World Playable Scenarios](human-world-playable-scenarios.md). Phần nội dung ưu tiên trước khi mở rộng cõi giới: học kinh lúc vắng có kiến thức thật, lời hứa rau má, ký ức bà Sáu, ao sen/trăng/ánh đèn và các sinh hoạt nhỏ. Bầu trời đẹp được giữ làm cảm giác chủ đạo; bão chỉ là câu chuyện tùy chọn, không tự xảy ra khi người chơi đang dạo.
 
 ## 2. Vòng ngày chung, nhưng không bắt buộc chơi đủ một lượt
 
-| Buổi trong game | Cảm giác | Sư Tịnh | Ông Tư / dân làng | Bà Sáu |
+| Buổi trong game | Cảm giác | PC nhà sư | PC người dân | PC hồn ma |
 |---|---|---|---|---|
-| Rạng sáng | thanh, có định hướng | tỉnh dậy, khất thực, đi kinh hành | nhóm bếp, ra giếng, dâng cơm | thấy người đi qua mà không gọi được |
-| Buổi sáng | có tay nghề | quét sân, giặt vải, nhận bát | giúp người, dệt vải, trả đồ | ký ức cũ hiện về theo vật quen |
-| Chiều | lựa chọn, ngã rẽ | vá y, nghe thầy, vào rừng | nghe tin đồn, làm lành | theo tiếng xôi, tiếng bước chân |
-| Đêm | tĩnh và bất ngờ | ngồi thiền, nhận diện triền cái | nghe pháp, soi đèn, giữ lời hẹn | nghe tụng kinh, đối diện điều chấp |
-| Cuối đêm | một dấu chấm | quán xét, hồi hướng | quán xét, lời hẹn ngày mai | soi lại một ký ức, không ép "siêu thoát" |
+| Rạng sáng | thanh, có định hướng | kinh hành, khất thực; có thể gặp Sư Tịnh | ra giếng, thấy Ông Tư nhóm bếp | quan sát người qua đường, tìm dấu tích |
+| Buổi sáng | có tay nghề | quét sân, giặt vải, nhận bát | giúp bà cụ, dệt vải, trả đồ | quan sát một vật gợi chuyện **của NPC** |
+| Chiều | lựa chọn, ngã rẽ | vá y, học với sư già, vào rừng | nghe tin đồn, gặp Ông Tư, giúp việc | thấy tiếng rao xôi gợi chuyện bà Sáu |
+| Đêm | tĩnh và bất ngờ | ngồi thiền, nhận diện triền cái | nghe pháp, soi đèn, giữ lời hẹn | nghe tụng kinh, quan sát/đối diện tình huống riêng |
+| Cuối đêm | một dấu chấm | quán xét, hồi hướng phù hợp vai | ghi việc đã làm, lời hẹn | ghi dấu đã thấy/nghe; không ép "siêu thoát" |
 
 **Lịch tự do:** người chơi có thể chơi ngay nhiệm vụ đang mở, thực hành riêng, hoặc kết thúc đêm. Việc hoàn tất một `runId` mới chuyển sang ngày/đêm kế tiếp; đăng nhập lại giữa đêm phải tiếp tục đúng chỗ. Phân biệt `gameDay` với ngày thực; ngày rằm ngoài đời là sự kiện trang trí/tùy chọn, không khóa phần thưởng.
 
 **Chống lặp:** mỗi ngày rút 1 nhiệm vụ tuyến chính còn dang dở, tối đa 2 tình huống sinh hoạt, 1 tình huống ngẫu nhiên; cùng một mẫu không xuất hiện 2 ngày liền. Tình huống chọn theo `role + place + phase + questState + recentStorylets + cards + inventory`. Hoàn thành hoặc bỏ qua đều ghi vào lịch sử để thay câu chuyện hôm sau.
 
-## 3. Tuyến A — Sư Tịnh: "Tấm y màu đất" (5 ngày, có kết thúc)
+## 3. Tuyến A — PC nhà sư: "Tấm y màu đất" (5 ngày, Sư Tịnh/sư già là người hướng dẫn)
 
 Y phấn tảo không phải vật phẩm rơi ngẫu nhiên hay mua bằng điểm. Đây là hành trình **tìm đúng mảnh vải không còn chủ, làm sạch, nhuộm, khâu, rồi học cách dùng**. Các chi tiết thực hành y phấn tảo/hạnh đầu-đà cần kiểm chứng về luật và truyền thống.
 
 | Ngày | Nơi, điều kiện | Cảnh ngắn và hành động trên thế giới | Biến thể/tâm sở | Dấu vết |
 |---|---|---|---|---|
-| 1 – Nhìn thấy | đường ngoài nghĩa địa, sáng/chiều, vai sư | Sư thấy một mảnh vải vướng cành. **Xem kỹ**: đây là vải bị bỏ, không phải áo đang phơi; có thể nhặt hoặc để nguyên. | Vội giật lấy → thấy sự nôn nóng; quan sát rồi nhặt → Niệm/Không tham *nếu đã có minh chứng* | `robe.step=collected`; vải cũ trong túi |
+| 1 – Nhìn thấy | đường ngoài nghĩa địa, sáng/chiều, vai sư | PC sư nhìn thấy một mảnh vải vướng cành. **Xem kỹ**: đây là vải bị bỏ, không phải áo đang phơi; có thể nhặt hoặc để nguyên. | Vội giật lấy → thấy sự nôn nóng; quan sát rồi nhặt → Niệm/Không tham *nếu đã có minh chứng* | `robe.step=collected`; vải cũ trong túi |
 | 2 – Giặt | giếng làng, ngày kế | Nước đục chảy qua mép vải. **Giặt lần lượt**: nhúng, vò, xả, phơi. Có thể nhờ dân làng chỉ chỗ phơi, nhưng không để họ tu hộ. | Làm vội → phải xả lại; kiên nhẫn → Tinh tấn nếu đã mở bài học | `washed`; thay hình vải |
 | 3 – Nhuộm | cạnh tịnh thất, sau phơi | Dùng nguyên liệu màu đất được chuẩn bị phù hợp; đun, ngâm, phơi. Màu không đều cũng có câu chuyện. | Bám vào "phải đẹp" → gặp Tham; chấp nhận màu giản dị → Không tham | `dyed`; hình vải màu đất |
 | 4 – May | hiên tịnh thất, ngày kế | **Nối các mảnh** bằng thao tác xếp, luồn kim, khâu vài đường. Khi rời game có thể giao "chuẩn bị kim chỉ", nhưng đường may quyết định phải chơi trực tiếp. | Tâm động → có thể nghỉ đi kinh hành; tập trung vào mũi kim → Niệm, có cơ hội Định mức đời thường | `sewing`; hiển thị % tiến độ thủ công |
@@ -44,8 +50,8 @@ Y phấn tảo không phải vật phẩm rơi ngẫu nhiên hay mua bằng đi�
 
 > "Một mảnh vải vướng trên nhánh gai. Mưa đã làm phai màu."
 
-- **Nhìn quanh xem có ai để quên:** "Không thấy người nhận. Sư vẫn đứng chờ thêm một lát." → mở thao tác nhặt.
-- **Nhặt vội:** "Gai mắc vào vải. Sư chậm tay gỡ ra." → tự quan sát sự vội vã, không phạt.
+- **Nhìn quanh xem có ai để quên:** "Không thấy người nhận. Bạn đứng chờ thêm một lát." → mở thao tác nhặt.
+- **Nhặt vội:** "Gai mắc vào vải. Bạn chậm tay gỡ ra." → tự quan sát sự vội vã, không phạt.
 - **Để lại:** "Chưa phải lúc. Mai đi qua vẫn còn con đường này." → nhiệm vụ không mất.
 
 **Lời thoại mẫu — Ngày 4**
@@ -58,42 +64,48 @@ Y phấn tảo không phải vật phẩm rơi ngẫu nhiên hay mua bằng đi�
 
 **Biến thể nhiều lượt:** ngày mưa vải lâu khô, lời nhờ từ ông Tư giúp phơi, thiếu kim có thể hỏi sư già, một mảnh rách phải vá. Đây là thay đổi câu chuyện, **không phải khóa vĩnh viễn**. Khi xong y, nhiệm vụ "vá y sau một mùa mưa" có thể tái xuất (không thưởng lại skin/thẻ theo lối cày).
 
-## 4. Tuyến B — Bà Sáu: "Tiếng guốc trong sương" (5 đêm)
+## 4. Tuyến B — NPC Bà Sáu: "Tiếng guốc trong sương" (5 lần khám phá)
 
-Bà Sáu đã mất trong trận nước lớn. Trong câu chuyện chính bà vẫn chờ con gái Hạnh. **Mục tiêu không phải giải cứu trẻ con** mà là từ từ nhận ra mình đang chờ điều gì. Không tự khẳng định "buông được là lập tức tái sinh"; kết thúc mở, tôn trọng tính mô phỏng và câu chuyện nền.
+**Chủ truyện là `npc.ba_sau`, không phải PC hồn ma.** Bà có quá khứ với Hạnh và biến cố nước lớn. PC ở cả ba vai có thể tìm manh mối; PC ma có thể nghe hoặc quan sát bà khi phù hợp bối cảnh, nhưng **không nhận ký ức mẹ con của bà làm tiểu sử mình**. Truyện là sáng tác hư cấu có chất liệu Phật học, chưa khẳng định "siêu thoát" hay quả báo nhất định.
 
-| Đêm | Mồi truyện/điểm đến | Người chơi làm | Nhánh cảm xúc | Kết quả |
-|---|---|---|---|---|
-| 1 | gốc gạo, chạng vạng | Thấy bóng người nhỏ đi qua, chỉ **quan sát**, không thể gọi, chạm hay dẫn đi. Thọ thần có thể nói về những mùa cây đã trải qua. | Chạy theo ký ức / đứng lại nhận ra đang nhớ | Mở `ghost_echo`; gợi ý Tham như bám giữ, nếu đúng ngữ cảnh |
-| 2 | bụi tre | Nghe tiếng guốc: hóa ra là một đứa bé **đang sống** cùng mẹ nó, không phải Hạnh. | Muốn cất tiếng gọi / nhận ra hai người khác nhau | Mở một mảnh ký ức, không có hành động dỗ trẻ |
-| 3 | cổng chùa | Nghe tiếng kinh trong tịnh thất; ngồi ngoài tường, lắng nghe hoặc bỏ đi. | Có/không có dấu vết `chant` do sư khác để lại | Một câu chuyện mới, không nhận thẻ từ việc vắng |
-| 4 | mộ thấp, đêm mưa | Thấy người làng đặt hoa, cơm hoặc nhang; thử phân biệt việc đang xảy ra với chuyện đã qua. | Nếu có `offering`/`incense`, lời kể thay đổi | Mở thẻ nhận diện phù hợp nếu **người chơi chủ động** lựa chọn |
-| 5 | gốc gạo và ngôi mộ | Bà không còn cố biến người lạ thành Hạnh. Có thể ngồi lại hoặc bước tới chỗ nghe kinh. | **Kết không ép:** chấp còn nhiều / đã nhẹ hơn | Khép cung truyện, mở chương sau về lời hẹn cũ chưa giải |
+| Lượt | Tín hiệu từ xa (không popup) | PC chọn tương tác | Điều được biết / kết quả |
+|---|---|---|---|
+| 1 — Bóng người dưới gốc gạo | thấy một bà đứng quay mặt về làng | `Đến gần` / `Đứng nhìn` / `Đi tiếp` | bà nói mình chờ một người, `metBaSau` |
+| 2 — Tiếng guốc sau bụi tre | dấu chân người sống, tiếng guốc lẫn gió | `Quan sát` / `Hỏi người dân` | biết có người sống đi qua; không được mặc định là Hạnh |
+| 3 — Ngoài tịnh thất | tiếng tụng kinh từ xa | `Nghe cùng bà` (ma phù hợp) / `Hỏi sư` (người sống) | câu chuyện bà được hiểu thêm, không cấp Định/Niệm tự động |
+| 4 — Trước mộ cũ | đồ vật từng thuộc về gia đình | `Xem dấu khắc` / `Nghe chuyện` | manh mối về Hạnh, không cho ma nhặt đồ vật |
+| 5 — Trở lại gốc gạo | bóng đứng khác vị trí một chút | `Hỏi bà về người đang chờ` / `Đi tiếp` | bà có lời thoại mới theo manh mối, lưu `npc.ba_sau.arcStage` trong timeline |
 
-**Cảnh mẫu — Gốc gạo**
+**Đối thoại mẫu, ngắn:**
 
-> "Trong sương có dáng một đứa trẻ. Bà nghe như tiếng Hạnh ngày xưa."
+> **PC:** “Bà đợi ai ở đây ạ?”
+>
+> **Bà Sáu:** “Bà đợi một người. Có khi lâu quá rồi.”
+>
+> `Hỏi tiếp` / `Đứng cạnh một lúc` / `Đi tiếp`.
 
-- **Gọi tên Hạnh:** "Không ai quay đầu. Chỉ có lá gạo lay." → nhắc lại chuyện đang giữ.
-- **Đứng yên nhìn kỹ:** "Đó là một người khác. Người sống đang về nhà." → đi bụi tre nghe tiếp ký ức.
-- **Rời đi:** "Một đêm khác, bà có thể trở lại." → giữ nguyên nhánh, không mất cơ hội.
+Trường hợp đã tìm ra tên Hạnh có thể mở câu hỏi mới, không ép câu chuyện kết bằng bà rời cõi. **Hồi tưởng NPC không rơi thẻ tâm cho PC**. NPC bà Sáu không bế trẻ/hái sen/giao vật cho người sống.
 
-**Cảnh mẫu — Cuối cung**
+## 5. Tuyến C — NPC Ông Tư: "Món nợ ba bát xôi" (4 lần gặp)
 
-> "Bà nhớ tên con. Nhưng lần này, không gọi người lạ bằng tên ấy."
+**Chủ truyện là `npc.ong_tu`.** Ông có con Vàng, vợ và món nợ xôi bà Sáu; **PC người dân không tự có gia đình/món nợ của Ông Tư**. Cả ba vai có thể thấy các dấu tích theo góc nhìn, người sống có thể trò chuyện và giúp đỡ phù hợp.
 
-Không bắt nhân vật thành thiên thần, không làm cho bà có thể tác động vật lý đến người sống. **Người chơi nhận sự hiểu biết qua lựa chọn nhìn/biết/bám**, thay vì đi giao đồ.
+1. **Lượt 1 — Giếng làng:** bà cụ vô tình nhắc người bán xôi năm trước. PC chọn hỏi bà hoặc đi tiếp. Nếu đã gặp Ông Tư, thêm câu hỏi nhẹ, không "giải mã" hết truyện.
+2. **Lượt 2 — Gặp Ông Tư bên hiên:** ông nhìn nồi xôi, lặng một lát. PC dân có thể hỏi thăm, PC sư nghe ông kể, PC ma quan sát cảnh. Ông chưa nhất thiết thừa nhận ngay.
+3. **Lượt 3 — Một việc nhỏ:** người sống **tự chọn** phụ gói xôi đem chia cho người khó khăn hoặc góp việc khác; nếu không tham gia, Ông Tư vẫn có thể tự làm và NPC đổi hành vi. Không đưa đồ trực tiếp cho bà Sáu như vật thể.
+4. **Lượt 4 — Điều chưa nói:** Ông Tư kể một câu ngắn về việc hồi nhỏ có người cho ăn chịu. PC có thể lắng nghe, hỏi thêm, hoặc ra ngõ ngắm đèn. Lời ông đổi theo lịch sử; người chơi nhận lore, ký ức lần gặp, không cộng thẻ bằng việc nghe.
 
-## 5. Tuyến C — Ông Tư: "Món nợ ba bát xôi" (4 ngày)
+**Đối thoại mẫu:**
 
-Dựa trên quan hệ đã có giữa ông Tư và bà Sáu trong `story.js`. Không cần phát minh thêm NPC:
+> **Ông Tư:** “Tôi còn nợ người ta ba bát xôi.”
+>
+> **PC:** “Ông định làm gì?”
+>
+> **Ông Tư:** “Chưa biết. Nhưng chắc phải bắt đầu từ việc nhớ cho rõ.”
 
-1. **Ngày 1 – Chuyện cũ ở giếng.** Bà cụ nhắc ba bát xôi ăn chịu. Ông Tư có thể chối, nhận, hoặc xin bà kể lại. Lựa chọn không chặn truyện.
-2. **Ngày 2 – Gói xôi sáng.** Nấu và chia phần xôi cho người cần; không "trả nợ cho ma" bằng cách trực tiếp đưa vật cho hồn ma. Nếu ghé nghĩa địa, ông chỉ đặt hoa và nhớ người cũ.
-3. **Ngày 3 – Tấm vải mộc.** Người làng dệt vải cúng dường đúng cách hoặc mang nước giúp tại giếng. Có thể liên kết vật liệu với tuyến may y của sư (thế giới nhớ một việc, không tự chuyển đồ giữa tài khoản nếu chưa có thiết kế multiplayer).
-4. **Ngày 4 – Nói điều chưa nói.** Ông Tư kể cho người trong nhà nghe chuyện bà Sáu, không đổ lỗi cho người khác. Cảnh cuối thay đổi theo những việc ông đã làm. Bà Sáu nếu tồn tại như NPC chỉ thấy dấu vết, không nhận thông điệp thần giao cách cảm.
+**Payoff:** một chiếc đèn ngõ, nồi xôi chia người khác, lời bà cụ mới và dấu Sổ khám phá; mỗi người có timeline riêng nếu chưa có hệ shared-world sync. Không ép phải nghe đủ bốn lần mới được khám phá làng.
 
-Ví dụ: "Con Vàng nằm dưới chân. Ông Tư đếm ba bát bằng ba đốt ngón tay, rồi buông bàn tay xuống." → **Nấu một phần xôi để chia / ra giếng hỏi cho rõ / im lặng để ngày mai**.
+> **Mạch kỳ ảo đầu game ưu tiên HG27:** [Nhiệm vụ bà ngoại ngạ quỷ](human-world-early-mysteries-and-peta-quest.md). Được thấy sớm, chủ động giúp, bố thí/hồi hướng, giữ cảnh bà sáng lên rồi biến mất. Thẻ đúng mốc: **Bi** khi nghe và chọn giúp; **Không tham** trong lúc bố thí để hồi hướng; **Tùy hỷ** sau hồi hướng khi vui vì bà được an/rời cảnh khổ. Không nhận thẻ do chỉ nhìn, cầm cơm hoặc mở popup; không spam ba màn thưởng.
 
 ## 6. Kho tình huống ngắn để không lặp nhiệm vụ
 
@@ -106,14 +118,14 @@ Ví dụ: "Con Vàng nằm dưới chân. Ông Tư đếm ba bát bằng ba đ�
 | M05 | Sư | tịnh thất, đã đọc kinh | sư già hỏi một câu ứng dụng | học thêm mặt sau thẻ nếu trả lời qua tình huống |
 | V01 | Dân | sáng, thấy gói đồ | tìm người đánh rơi | bài học thật thà, không chọn đáp án đạo đức sẵn |
 | V02 | Dân | chiều, ông lái buôn đến | đẩy bánh xe, nghe một tin | mảnh bản đồ mới |
-| V03 | Dân | sau chó cắn | gặp ông Tư và con Vàng | đổi lời thoại theo lịch sử làm lành |
+| V03 | PC dân | đi qua ngõ có con Vàng | gặp Ông Tư đang trông chó, hỏi chuyện nếu muốn | lời Ông Tư đổi, không bị chó cắn tự động |
 | V04 | Dân | gần chùa, đêm | đặt đèn cho lối đi | người đi sau thấy dấu vết |
 | V05 | Dân | đang dệt vải | chọn giữ một phần hay chia | lời hẹn ngày sau |
-| G01 | Ma | gốc gạo, chạng vạng | nhìn bóng người sống, nhận ra nhầm ký ức | `ghost_echo` |
-| G02 | Ma | nghĩa địa, đêm mưa | thấy mộ bên cạnh có hoa, mộ mình không | nhận diện ganh tị/nỗi buồn, **không cướp hoa** |
+| G01 | PC ma | gốc gạo, chạng vạng | quan sát NPC bà Sáu đang nhìn người sống | `lore:ba_sau_01`, không gán ký ức bà cho PC |
+| G02 | PC ma | nghĩa địa, đêm trăng | thấy hai mộ có hoa khác nhau | nhìn/chọn nghe chuyện, **không cướp hoa** |
 | G03 | Ma | tường chùa, có dấu `chant` | ở lại nghe hoặc quay về | mở hồi tưởng |
-| G04 | Ma | giếng, trời sáng | thấy gánh xôi nhưng không lấy được | phân biệt ký ức và hiện tại |
-| G05 | Ma | sương gần tan | chọn tiếp tục chờ hay thôi gọi người lạ | nhánh kết khác nhau |
+| G04 | PC ma | giếng, trời sáng | thấy người bán xôi; hỏi chuyện bà Sáu nếu gặp | phân biệt lore NPC với trải nghiệm PC |
+| G05 | PC ma | sương gần tan | chọn đứng nghe bà Sáu kể tiếp hoặc rời đi | thêm một mảnh truyện NPC, không ép tự 'buông' |
 
 **Máy chọn storylet:** gắn `cooldownDays=2` cho mẫu thường, `once=true` cho dấu mốc, `weight` theo giờ/trăng/thẻ/sự kiện cộng đồng. Nếu không có mẫu hợp, cho người chơi **thực hành tự chọn** thay vì ép lặp "đưa rau / ngồi với sư".
 
@@ -325,9 +337,11 @@ awayJob = {
 2. **Nâng hoạt động vắng:** `study` và `weave`/`cook` có tiến trình, báo cáo, kết quả `ready` và nhận duy nhất một lần; việc đọc kinh thưởng *kiến thức*, không phải tâm sở thiện đã tu tập.
 3. **Kết quả mở chuyện thật:** 2–3 hội thoại phụ có điều kiện `kn_*`, thêm nút **Xem Sổ kiến thức** ngay trong phần thưởng và trang hồ sơ.
 4. **Sửa lời hứa rau má** theo mục 9.7, thêm kiểm tra giới luật/tuyến vai.
-5. Sau khi kiểm thử vòng giao việc → offline → quay lại → nhận → dùng, mới mở rộng danh mục cho tất cả ba vai.
+5. Trước khi thêm nhiều quest, phải hoàn thiện identity PC/NPC, giữ tên nhân vật riêng và migration; sau khi kiểm thử vòng giao việc → offline → quay lại → nhận → dùng mới mở rộng cho ba vai.
 
 **Tests cần có:** quay lại sớm thấy progress; đủ thời gian có kết quả; reload không nhân thưởng; giao cùng một bài đã học không sinh bản sao; kiến thức mở một nhánh phụ nhưng không chặn nhánh thường; offline không cấp thẻ tâm trải nghiệm; giao việc dệt vải có vật liệu thật; lời nhờ của bà được xử lý nhất quán; vai sư không có thao tác hái cây sống khi chưa duyệt.
+
+> **Review mới của Nhân gian:** [PC-centric & migrate](player-character-narrative-model.md) · [Narrative Review](human-world-narrative-review.md) · [Episode Pack 01](human-world-episode-pack-01.md). **`villager` KHÔNG phải Ông Tư trong hướng thiết kế mới**; đó là cách gán tên sai của code legacy, cần đổi trước khi thêm quest. Ông Tư là NPC có thể gặp, còn PC dân là nhân vật riêng. Chưa sửa code.
 
 ## 10. Thứ tự triển khai và tiêu chí nghiệm thu
 
@@ -354,7 +368,7 @@ awayJob = {
 
 ## 11. Trạng thái hiện tại so với tài liệu
 
-- **Đã có trong mã trước đợt này:** câu chuyện đầu, chuỗi chó cắn, 10 thẻ, ngồi với sư, nhật ký, lời hẹn, hoạt động khi vắng (chủ yếu kể chuyện), truyện ma chính trong `story.js`.
+- **Đã có trong code legacy:** truyện một đêm dưới góc nhìn Sư Tịnh/Ông Tư/Bà Sáu, chuỗi chó cắn, album thẻ (đang phát triển thêm), ngồi với sư, nhật ký, lời hẹn, hoạt động khi vắng chủ yếu kể chuyện. **Chưa tách NPC khỏi PC trong code.**
 - **Thiết kế ở tài liệu này:** vòng ngày 5 buổi, cung y phấn tảo đủ 5 ngày, tuyến ông Tư 4 ngày, hoạt động tự do, **offline rewards + Sổ kiến thức + dùng kiến thức mở tương tác**, và sửa logic lời nhờ hái rau má.
 - **Bản mã thử của đợt A:** xem mô tả PR; các hạng mục chưa code **không** được ghi là "đã triển khai" trong README hoặc tài liệu hệ thống tâm.
 

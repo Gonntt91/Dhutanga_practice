@@ -2,6 +2,8 @@
 
 > Trạng thái: **tài liệu thiết kế, một phần đã có trong game** (xem bảng *Trạng thái triển khai* bên dưới). Nội dung giáo lý (nhóm tâm sở, thẻ tâm sở, gợi ý tu tập, cách hiện giác chi) **cần thầy Theravāda duyệt** trước khi đưa vào game.
 
+> **Quyết định về danh tính người chơi (08-11-2026):** [Player-centric Narrative Model](player-character-narrative-model.md). PC tạo tên và chọn vai `monk/villager/ghost` nhưng **không phải Sư Tịnh, Ông Tư, Bà Sáu**. Thẻ/chỉ số và việc tu tập phải gắn với trải nghiệm **của PC**, không cấp khi xem hồi tưởng của NPC. Các dòng dưới đây mô tả phần code legacy ở `develop`, có những quest vẫn dùng vai nhân vật cố định; cần chỉnh trong PR kỹ thuật sau, chưa triển khai ở đây.
+
 ## Trạng thái triển khai
 
 | Hạng mục | Mục trong tài liệu | Trạng thái | Ghi chú |
