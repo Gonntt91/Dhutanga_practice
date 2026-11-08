@@ -46,6 +46,8 @@ Ba vòng lặp **đồng thời, không ép buộc**:
 
 > **Nhân gian trước, cõi giới sau:** viết và kiểm nghiệm [20 kịch bản/móc chuyện nhân gian](human-world-playable-scenarios.md) theo ngữ cảnh và các vai trước khi dựng các bản đồ sâu. Không dùng thời tiết xấu ngẫu nhiên để làm khó người chơi tìm sự bình yên.
 
+> **Cụ thể hóa lối PC hồn ma:** [Ghost Episode Pack 01](ghost-episode-pack-01.md) viết cảnh nhà bỏ trống, túi kim chỉ, bậc thềm và đường vết nước; [Ghost Episode Pack 02](ghost-episode-pack-02.md) viết chuyện người giữ bến/bà Sáu/nghe hồi hướng/đoạn kết. Hai PC có thể thấy **ba cột đá** từ hai phía nhưng lore/journal mỗi PC lưu riêng. **Nhà hoang và Bờ Chìm chưa có map đi được trong code, chỉ là brief cần graybox.**
+
 ## 3. Từng thế giới phải có lý do tồn tại và người chơi thực sự được làm gì
 
 | Cõi / khu | Trục cảm xúc | Chủ đề hiểu thêm | Khám phá không cần quest | Câu chuyện có chiều sâu | Lối phát triển |
