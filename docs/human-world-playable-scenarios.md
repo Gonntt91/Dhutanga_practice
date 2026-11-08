@@ -1,8 +1,10 @@
-# Nhân gian — Playable Narrative Scenarios v0.1
+# Nhân gian — Playable Narrative Scenarios v0.2
 
 > **Đang viết kịch bản trước khi dựng:** tài liệu dành cho narrative designer, developer và artist; **CHƯA có các scene này trong gameplay**. Phần đã có trong code `develop` là tuyến mở đầu ba vai, đêm tiếp theo/trăng/mưa phùn, thọ thần, bé Na, bà Sáu, ông Tư, chó cắn, giếng, may y 5 ngày... Đừng diễn đạt storylet đề xuất bên dưới là đã code.
 >
 > Đọc [Human World Story Bible](human-world-story-bible.md), [Game Design Principles](game-design-principles.md), [Kịch bản vòng ngày](kich-ban-vong-ngay.md). Thời tiết **đẹp là chủ đạo** (mục tiêu thử 85–90%+ thời gian chơi); mưa nhẹ đôi khi là một cảnh thưởng ngoạn; **bão chỉ là chương truyện tự chọn**, không phải thời tiết ngẫu nhiên. Mọi sự kiện cần đúng vai nhân vật, không tự popup khi đến gần; giáo lý phân loại `canonical | commentary | game_interpretation | fiction`.
+
+> **Rà soát và bổ sung (08-11-2026):** xem [Human World Narrative Review](human-world-narrative-review.md) (trùng truyện, lỗi vai, checklist) và [Episode Pack 01](human-world-episode-pack-01.md) (6 kịch bản có lựa chọn, nhánh, kết quả khi quay lại). **Vai `villager` chính là ông Tư, không phải một dân làng vô danh**; Sư Tịnh là `monk`, bà Sáu là `ghost`. Mọi tuyến dùng cùng nhân vật phải phân biệt người chơi với NPC. Đây mới là thiết kế, chưa sửa code.
 
 ## 0. Kế hoạch nội dung: giàu sinh hoạt trước, bí ẩn sau
 
@@ -40,6 +42,13 @@ Ba nhịp đan xen:
 | HG19 | Người khách không xin gì | dân, sư | cổng làng | cung 3 ngày | nhân vật hành hương, lời hẹn nhỏ | đề xuất |
 | HG20 | Buổi sáng vẫn đến | mọi vai | nhân gian | micro story hậu cung | cảnh hồi phục, ghi nhận đã quay lại | đề xuất |
 
+| HG21 | Ngọn đèn dành cho người về muộn | ông Tư chính; sư/ma quan sát theo vai | ngõ làng/bụi tre | 2 lượt | đèn ấm đổi cảnh, dấu khám phá, người qua đường an toàn | chi tiết trong Episode Pack 01 |
+| HG22 | Tiếng chổi và chiếc lá trở lại | sư chính; dân/ma góc nhìn riêng | tịnh thất | 2 lượt | sân đổi hình, lời sư già, dẫn sang kinh hành | chi tiết trong Episode Pack 01 |
+| HG23 | Con Vàng và khoảng sân trước nhà | ông Tư; sư quan sát | ngõ làng | 2 ngày | chó được trông nom, ngõ an toàn, lời xin lỗi phù hợp | **sửa nhập vai** trong Episode Pack 01 |
+| HG24 | Bóng gốc gạo qua ba buổi | cả ba, 3 góc nhìn | gốc gạo/nghĩa địa | khám phá 3 thời điểm | dấu khung cảnh, câu chuyện thay theo ký ức | chi tiết trong Episode Pack 01 |
+| HG25 | Hai chiếc gáo bên giếng | ông Tư chính | giếng làng | 2 lượt | sửa gáo, bà cụ nhớ, giếng đổi cảnh | chi tiết trong Episode Pack 01 |
+| HG26 | Nghe chuông, không cần làm gì | ba vai, nghe từ vị trí phù hợp | tịnh thất | ambient-only | dấu cảnh nghe chuông, không cần quest/thẻ | chi tiết trong Episode Pack 01 |
+
 **Không tăng tải màn hình:** tại một thời điểm chỉ 1 truyện đang theo, 0–2 chuyện sẵn để nhận, 1–2 dấu khám phá. Các khoảnh khắc cảnh vật không tiêu thụ slot quest.
 
 ## 2. Ba cung truyện nhân gian cần làm trước (đủ lời thoại và trạng thái)
@@ -69,7 +78,10 @@ Ba nhịp đan xen:
 
 ### HG05 — Nắm rau và lời đã hứa (sửa truyện hiện hữu)
 
-**Vai trực tiếp hái rau:** dân làng. Với sư, chỉ có nhánh quan sát/nhận vật được dâng sau khi giáo thọ duyệt, **không tự bứt cây sống**. Người chơi tự bấm bà cụ ở giếng.
+**Cảnh báo quan trọng về vai:** người chơi `villager` là **ông Tư**. Đoạn mã cũ vừa gọi con Vàng là chó của ông Tư vừa cho "người chơi" mang rau sang nhà ông Tư, dẫn tới tình huống **ông Tư đến gặp chính ông Tư**. Trong bản viết lại cho `villager`, ông Tư là người nhận lời giúp bà; **không được có nhánh đưa cho ông Tư như một NPC khác**. Nếu về sau thêm một avatar dân làng khác, viết một nhánh riêng theo `roleId`, không dùng chung lời thoại.
+
+
+**Vai trực tiếp hái rau:** ông Tư (vai `villager`). Với Sư Tịnh, chỉ có nhánh quan sát/nhận vật được dâng sau khi giáo thọ duyệt, **không tự bứt cây sống**. Người chơi tự bấm bà cụ ở giếng.
 
 **Cảnh 1 — Nhận lời:**
 > "Bà định nấu chút canh rau má, mà chân bà đi ra gốc mít lại đau. Con có tiện giúp bà một nắm không?"
@@ -84,12 +96,12 @@ Ba nhịp đan xen:
 > "Ôi, bà tưởng con còn mải đi đâu. Rau còn tươi quá."
 
 - **`Đưa đúng nắm rau cho bà`** → `fulfilled`, bà nấu canh, hôm sau có lời cảm ơn.
-- **`Con muốn giúp ông Tư nữa`** → **chỉ sau khi trả bà**, bà có thể cho phần của mình hoặc gợi ý tự hái **nắm mới**; tạo tuyến phụ `help_tu`, không nhân đôi một món.
+- **`Bà có cần con giúp việc nào khác?`** → sau khi đã trả bà, có thể phụ mang nồi canh ra hiên hoặc sửa chiếc gáo ở giếng (`HG25`). **Không có chuyện ông Tư tặng rau cho một NPC cũng tên ông Tư.** Nếu thiết kế sau này cho avatar dân làng khác, mới mở lựa chọn mang phần rau mới được bà cho sang nhà ông Tư.
 - **`Để hôm khác`** → bà vẫn chờ; nếu nhiều ngày chưa quay lại, bà hỏi thăm, không chê trách.
 
 **Nếu người chơi tự đổi ý:** không thể cho ông Tư toàn bộ `rau_ma_for_granny` rồi game ghi đã trả bà. Nếu viết nhánh thất hứa, phải có trạng thái `unfulfilled` + hội thoại xin lỗi/chuộc lại, không thưởng như hoàn thành thiện hạnh.
 
-**Kết quả thế giới:** nồi canh bà xuất hiện dưới mái; bà nhớ câu chuyện, ông Tư chỉ nhắc đến rau nếu thực sự được nhận phần riêng.
+**Kết quả thế giới:** nồi canh bà xuất hiện dưới mái; bà nhớ câu chuyện, ông Tư (nhân vật người chơi) có ký ức đã giữ lời; bà cụ chỉ nhắc tới việc giúp đỡ nếu người chơi thật sự trả rau.
 
 ### HG18 — Bà Sáu nghe tiếng xôi (vai ngạ quỷ không làm việc vật lý)
 
@@ -212,6 +224,8 @@ const storylet = {
 ## 7. Lộ trình biên kịch trước khi code/asset
 
 **Đợt 1 — cần viết thành playable script đủ chi tiết (ưu tiên):**
+
+> Bản review mới đã bổ sung sáu kịch bản **HG21–HG26** có trạng thái, lời thoại và chi tiết quay lại. Khi bắt đầu code, chọn một vài kịch bản nhẹ từ [Episode Pack 01](human-world-episode-pack-01.md) thay vì triển khai cả 26 ý tưởng. Ưu tiên sửa lỗi nhập vai con Vàng/ông Tư trong HG05/HG23.
 1. HG03 học kinh khi vắng → nhận một kiến thức → quay lại đối thoại sư.
 2. HG05 lời nhờ rau má của bà → trả đúng người → mở việc giúp ông Tư.
 3. HG11/HG12/HG14: ba cảnh khám phá đẹp, không popup và không quest bắt buộc.
