@@ -15,7 +15,7 @@ const EFFECT_KINDS = {
   ghost: ["release"],
   villager: ["incense", "alms"],
 };
-const POSES = ["sit", "walk", "sleep", "eat"];
+const POSES = ["sit", "walk", "sleep", "eat", "collect", "sew"];
 
 const MIME = {
   ".html": "text/html; charset=utf-8",
@@ -90,7 +90,7 @@ function handleEvents(req, res, url) {
   const existing = peers.get(pid);
   peers.set(pid, {
     res,
-    presence: existing?.presence ?? { role: null, scene: null, nick: "", x: 0.5, y: 0.95, pose: null },
+    presence: existing?.presence ?? { role: null, scene: null, nick: "", x: 0.5, y: 0.95, pose: null, robe: 0 },
     lastEmit: 0,
     lastEffect: 0,
   });
@@ -120,6 +120,7 @@ async function handlePresence(req, res) {
     x: Math.min(1, Math.max(0, Number(body.x) || 0.5)),
     y: Math.min(1, Math.max(0, Number(body.y) || 0.95)),
     pose: body.role === "monk" && POSES.includes(body.pose) ? body.pose : null,
+    robe: body.role === "monk" && Number.isSafeInteger(body.robe) ? Math.min(99, Math.max(0, body.robe)) : 0,
   };
   broadcast("peers", publicPeers());
   json(res, 200, { ok: true });

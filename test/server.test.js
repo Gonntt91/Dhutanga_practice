@@ -45,8 +45,8 @@ test('3D game protocol', async (t) => {
     assert.equal(Object.hasOwn(init, 'traces'), false);
     assert.equal(init.peers.length, 1);
   });
-  await t.test('all four monk poses reach other SSE subscribers', async () => {
-    for (const pose of ['sit', 'walk', 'sleep', 'eat']) {
+  await t.test('all six monk poses reach other SSE subscribers', async () => {
+    for (const pose of ['sit', 'walk', 'sleep', 'eat', 'collect', 'sew']) {
       const start = events.length;
       const result = await post('/api/presence', { role: 'monk', scene: 'm1', pose, x: 0.4, y: 0.7 });
       assert.equal(result.status, 200);
@@ -60,6 +60,14 @@ test('3D game protocol', async (t) => {
       assert.equal((await post('/api/presence', body)).status, 200);
       const peers = await waitEvent('peers', list => list[0]?.role === body.role, start);
       assert.equal(peers[0].pose, null);
+    }
+  });
+  await t.test('finished robes are shared and restricted to monks', async () => {
+    for (const [role, robe, expected] of [['monk', 1, 1], ['monk', 999, 99], ['monk', -2, 0], ['monk', '2', 0], ['ghost', 2, 0]]) {
+      const start = events.length;
+      assert.equal((await post('/api/presence', { role, robe })).status, 200);
+      const peers = await waitEvent('peers', list => list[0]?.role === role && list[0]?.robe === expected, start);
+      assert.equal(peers[0].robe, expected);
     }
   });
   await t.test('story effects are live, validated by role and rate limited', async () => {
@@ -76,7 +84,7 @@ test('3D game protocol', async (t) => {
     assert.equal((await post('/api/trace', { kind: 'offering' })).status, 405);
   });
   await t.test('all 3D modules are served locally', async () => {
-    for (const file of ['app.js', 'world.js', 'character.js', 'vendor/three.module.min.js', 'vendor/three.core.min.js', 'vendor/OrbitControls.js', 'vendor/BufferGeometryUtils.js']) {
+    for (const file of ['app.js', 'world.js', 'character.js', 'fabric.js', 'vendor/three.module.min.js', 'vendor/three.core.min.js', 'vendor/OrbitControls.js', 'vendor/BufferGeometryUtils.js']) {
       const result = await fetch(`${base}/${file}`);
       assert.equal(result.status, 200, file);
       assert.match(result.headers.get('content-type'), /javascript/);

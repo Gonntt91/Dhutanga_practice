@@ -3,12 +3,49 @@ import * as THREE from "three";
 // A small articulated figure. The same 3D model supplies the menu portraits.
 const skin = new THREE.MeshStandardMaterial({ color: 0xb98b65, roughness: 0.83 });
 const dark = new THREE.MeshStandardMaterial({ color: 0x35261e, roughness: 0.95 });
-const robe = new THREE.MeshStandardMaterial({ color: 0x8c512c, roughness: 0.98, side: THREE.DoubleSide });
-const sashMat = new THREE.MeshStandardMaterial({ color: 0xa56837, roughness: 1, side: THREE.DoubleSide });
+const sashMat = new THREE.MeshStandardMaterial({ color: 0xb0a181, roughness: 1, side: THREE.DoubleSide });
 const metal = new THREE.MeshStandardMaterial({ color: 0x343b36, roughness: 0.37, metalness: 0.6, side: THREE.DoubleSide });
 const sphere = new THREE.SphereGeometry(1, 20, 14);
 const cylinder = new THREE.CylinderGeometry(1, 1, 1, 12);
 const up = new THREE.Vector3(0, 1, 0);
+const robeMaterials = new Map();
+
+// Uneven salvaged panels, woven grain and small stitches, inspired by the reference.
+function patchworkMaterial(version = 0) {
+  const key = Math.max(0, Math.floor(version)) % 6;
+  if (robeMaterials.has(key)) return robeMaterials.get(key);
+  const width = 256, height = 512, bytes = new Uint8Array(width * height * 4);
+  const palette = [0x263c4d, 0x286273, 0x984332, 0xbf7134, 0xc6bda0, 0x32352e, 0x4c6959, 0x776350].map((c) => new THREE.Color(c));
+  let seed = 9137 + key * 157;
+  const random = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
+  let top = 0, row = 0;
+  while (top < height) {
+    const bottom = Math.min(height, top + 52 + Math.floor(random() * 60));
+    let left = 0;
+    while (left < width) {
+      const right = Math.min(width, left + 42 + Math.floor(random() * 66));
+      const color = palette[(Math.floor(random() * palette.length) + row + key) % palette.length];
+      for (let y = top; y < bottom; y++) for (let x = left; x < right; x++) {
+        const edge = Math.min(x - left, right - 1 - x, y - top, bottom - 1 - y);
+        const stitch = edge === 3 && ((x + y) % 9 < 4);
+        const grain = 0.86 + random() * 0.2 + (x % 2 ? 0.025 : -0.025);
+        const shade = edge < 2 ? 0.34 : grain;
+        const offset = (y * width + x) * 4;
+        for (let c = 0; c < 3; c++) bytes[offset + c] = Math.min(255, Math.round((stitch ? [0.54, 0.47, 0.33][c] : [color.r, color.g, color.b][c] * shade) * 255));
+        bytes[offset + 3] = 255;
+      }
+      left = right;
+    }
+    top = bottom; row++;
+  }
+  const texture = new THREE.DataTexture(bytes, width, height);
+  texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+  texture.magFilter = THREE.LinearFilter; texture.minFilter = THREE.LinearMipmapLinearFilter;
+  texture.generateMipmaps = true; texture.needsUpdate = true;
+  const material = new THREE.MeshStandardMaterial({ map: texture, roughness: 1, side: THREE.DoubleSide });
+  robeMaterials.set(key, material);
+  return material;
+}
 
 function mesh(geometry, material, parent, position, scale) {
   const object = new THREE.Mesh(geometry, material);
@@ -68,7 +105,7 @@ function makeSash() {
 
 export function createMonk({ villager = false } = {}) {
   const root = new THREE.Group();
-  const fabric = villager ? new THREE.MeshStandardMaterial({ color: 0x374747, roughness: 1 }) : robe;
+  const fabric = villager ? new THREE.MeshStandardMaterial({ color: 0x374747, roughness: 1 }) : patchworkMaterial();
   const hips = new THREE.Group(); root.add(hips); hips.position.y = 0.84;
   const torso = new THREE.Group(); hips.add(torso);
   mesh(cloth([[0.19, 0], [0.22, 0.13], [0.24, 0.38], [0.26, 0.51], [0.21, 0.61]]), fabric, torso);
@@ -118,6 +155,20 @@ export function createMonk({ villager = false } = {}) {
   mesh(cylinder, metal, spoon, [0, 0.055, 0], [0.005, 0.11, 0.005]);
   mesh(sphere, metal, spoon, [0, 0.12, 0], [0.019, 0.026, 0.005]);
 
+  const sewingCloth = new THREE.Group(); torso.add(sewingCloth);
+  mesh(cloth([[0.16, 0], [0.19, 0.035], [0.15, 0.065]]), fabric, sewingCloth);
+  const thread = mesh(new THREE.CylinderGeometry(0.002, 0.002, 0.19, 5), sashMat, torso);
+  const robeParts = [];
+  if (!villager) root.traverse((object) => { if (object.isMesh && object.material === fabric) robeParts.push(object); });
+  let robeVersion = -1;
+  function setRobe(version = 0) {
+    if (villager || robeVersion === version) return;
+    robeVersion = version;
+    for (const part of robeParts) part.material = patchworkMaterial(version);
+    root.userData.robe = version;
+  }
+  setRobe();
+
   let lantern = null;
   if (villager) {
     skirt.visible = false;
@@ -131,24 +182,25 @@ export function createMonk({ villager = false } = {}) {
 
   const a = new THREE.Vector3(), b = new THREE.Vector3(), c = new THREE.Vector3();
   function animate(pose, time, moving = false, dt = 1) {
-    const walk = villager || pose === "walk";
+    const collecting = !villager && pose === "collect", sewing = !villager && pose === "sew";
+    const walk = villager || pose === "walk" || collecting;
     const sleeping = pose === "sleep", eating = pose === "eat";
     const blend = Math.min(1, dt * 8);
     const step = moving ? Math.sin(time * 5) : 0;
     const breath = Math.sin(time * (sleeping ? 1.15 : 1.6));
-    hips.position.y = THREE.MathUtils.lerp(hips.position.y, walk ? 0.84 + Math.abs(step) * 0.017 : 0.27 + breath * 0.003, blend);
-    torso.rotation.x = THREE.MathUtils.lerp(torso.rotation.x, sleeping ? 0.09 : 0, blend);
-    head.rotation.x = THREE.MathUtils.lerp(head.rotation.x, sleeping ? 0.48 + breath * 0.025 : eating ? 0.17 : walk ? 0.04 : 0.1, blend);
+    hips.position.y = THREE.MathUtils.lerp(hips.position.y, collecting ? 0.55 : walk ? 0.84 + Math.abs(step) * 0.017 : 0.27 + breath * 0.003, blend);
+    torso.rotation.x = THREE.MathUtils.lerp(torso.rotation.x, collecting ? 0.7 : sleeping ? 0.09 : sewing ? 0.13 : 0, blend);
+    head.rotation.x = THREE.MathUtils.lerp(head.rotation.x, sleeping ? 0.48 + breath * 0.025 : collecting ? 0.28 : sewing ? 0.32 : eating ? 0.17 : walk ? 0.04 : 0.1, blend);
     head.rotation.z = THREE.MathUtils.lerp(head.rotation.z, sleeping ? -0.13 : 0, blend);
     const sitScale = THREE.MathUtils.clamp((0.84 - hips.position.y) / 0.57, 0.001, 1);
-    seated.scale.setScalar(sitScale); seated.visible = !villager && sitScale > 0.02;
-    skirt.visible = !villager && sitScale < 0.96;
+    seated.scale.setScalar(sitScale); seated.visible = !villager && !collecting && sitScale > 0.02;
+    skirt.visible = !villager && (collecting || sitScale < 0.96);
     standingLegs.visible = walk || sitScale < 0.3;
-    skirt.scale.y = 1 - sitScale * 0.97; skirt.rotation.z = step * 0.025;
+    skirt.scale.y = collecting ? 0.62 : 1 - sitScale * 0.97; skirt.rotation.z = step * 0.025;
     for (const leg of legs) {
       const stride = step * leg.side;
-      a.set(leg.side * 0.105, 0.82, 0);
-      b.set(leg.side * 0.11, 0.43, stride * 0.17);
+      a.set(leg.side * 0.105, collecting ? hips.position.y : 0.82, 0);
+      b.set(leg.side * 0.11, collecting ? 0.31 : 0.43, collecting ? 0.2 : stride * 0.17);
       c.set(leg.side * 0.11, 0.07 + Math.max(0, stride) * 0.09, stride * 0.28);
       leg.upper(a, b); leg.lower(b, c); leg.foot.position.copy(c); leg.foot.position.z += 0.055;
       leg.foot.scale.set(0.065, walk ? 0.043 : 0.001, walk ? 0.13 : 0.001);
@@ -163,6 +215,11 @@ export function createMonk({ villager = false } = {}) {
         if (s === -1) { b.set(-0.29, 0.19, 0.12); c.set(-0.075, 0.15, 0.37); }
         else { b.set(0.31, 0.28 + lift * 0.12, 0.19); c.set(0.07, 0.26 + lift * 0.41, 0.39 - lift * 0.17); }
       }
+      if (collecting) { b.set(s * 0.24, 0.09, 0.18); c.set(s * 0.08, -0.23 + lift * 0.04, 0.31); }
+      if (sewing) {
+        b.set(s * 0.28, 0.18, 0.19);
+        c.set(s * 0.08, 0.13 + (s === 1 ? lift * 0.17 : 0), 0.34 + (s === 1 ? lift * 0.04 : 0));
+      }
       if (villager && s === -1) { b.set(-0.3, 0.12, 0); c.set(-0.31, -0.12, 0.1); }
       arm.elbow.lerp(b, blend); arm.wrist.lerp(c, blend);
       arm.upper(a, arm.elbow); arm.lower(arm.elbow, arm.wrist); arm.hand.position.copy(arm.wrist);
@@ -170,11 +227,17 @@ export function createMonk({ villager = false } = {}) {
     bowl.visible = eating; spoon.visible = eating;
     bowl.position.set(-0.025, 0.105, 0.36);
     spoon.position.copy(arms[1].wrist); spoon.rotation.x = -0.65;
+    sewingCloth.visible = collecting || sewing;
+    sewingCloth.position.copy(arms[0].wrist).add(a.set(0.05, -0.015, 0));
+    thread.visible = sewing;
+    thread.position.copy(arms[1].wrist).add(arms[0].wrist).multiplyScalar(0.5);
+    thread.scale.y = Math.max(0.05, arms[1].wrist.distanceTo(arms[0].wrist) / 0.19);
+    thread.quaternion.setFromUnitVectors(up, a.subVectors(arms[1].wrist, arms[0].wrist).normalize());
     if (lantern) lantern.position.copy(arms[0].wrist).add(new THREE.Vector3(0, -0.2, 0));
     root.userData.pose = pose;
   }
   animate("walk", 0);
-  return { root, animate, dispose() { root.traverse((o) => { if (o.isMesh && ![sphere, cylinder].includes(o.geometry)) o.geometry.dispose(); }); if (villager) fabric.dispose(); } };
+  return { root, animate, setRobe, dispose() { root.traverse((o) => { if (o.isMesh && ![sphere, cylinder].includes(o.geometry)) o.geometry.dispose(); }); if (villager) fabric.dispose(); } };
 }
 
 export function createGhost() {

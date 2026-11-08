@@ -1,4 +1,5 @@
 import "./world.js";
+import { FABRIC_STORAGE_KEY, CLOTH_REQUIRED, PICKUP_RADIUS, PICKUP_TIME, SEW_TIME, restoreFabric, fabricCount, nearestFabric, takeFabric, sewRobe } from "./fabric.js";
 
 // Role picker, place-driven story, monk actions and live multiplayer presence.
 (() => {
@@ -9,6 +10,8 @@ import "./world.js";
     walk: { label: "Đi kinh hành", status: "Đang đi kinh hành", description: "Bước đi thong thả, biết rõ từng bước chân chạm đất." },
     sleep: { label: "Ngủ ngồi", status: "Đang ngủ ngồi", description: "Khép mắt, nghỉ trong tư thế ngồi, giữ thân không nằm xuống." },
     eat: { label: "Thọ thực", status: "Đang thọ thực", description: "Nâng bát, dùng từng miếng chậm rãi trong sự biết ơn." },
+    collect: { label: "Nhặt vải", status: "Đang nhặt vải", description: "Nhặt từng mảnh vải bỏ đi ven đường, giữ lại để ghép thành áo." },
+    sew: { label: "May áo", status: "Đang may áo", description: "Ngồi ghép các mảnh vải và khâu từng đường chỉ thành chiếc áo mới." },
   };
   const DARKNESS = {
     "Chiều tàn": 0.42, "Chạng vạng": 0.6, "Đầu hôm": 0.72, "Canh hai": 0.84,
@@ -39,6 +42,8 @@ import "./world.js";
     lastGesture: 0,
     lastSent: { t: 0, x: -1, y: -1, key: "" },
     completed: loadCompleted(),
+    fabric: loadFabric(),
+    work: null,
   };
 
   function makeId() {
@@ -49,6 +54,12 @@ import "./world.js";
   }
   function saveCompleted() {
     try { localStorage.setItem(STORE_KEY, JSON.stringify(state.completed)); } catch {}
+  }
+  function loadFabric() {
+    try { return restoreFabric(JSON.parse(localStorage.getItem(FABRIC_STORAGE_KEY) || "{}")); } catch { return restoreFabric(); }
+  }
+  function saveFabric() {
+    try { localStorage.setItem(FABRIC_STORAGE_KEY, JSON.stringify(state.fabric)); } catch {}
   }
 
   const currentScene = () => (state.role ? STORY[state.role].scenes[state.sceneId] : null);
@@ -70,7 +81,8 @@ import "./world.js";
   function sendPresence(force) {
     if (!state.connected) return;
     const p = World.getPlayer();
-    const key = `${state.role}|${state.sceneId}|${currentPose()}|${state.nick}`;
+    const robe = state.role === "monk" ? state.fabric.robes : 0;
+    const key = `${state.role}|${state.sceneId}|${currentPose()}|${state.nick}|${robe}`;
     const now = Date.now();
     const movedEnough = Math.abs(p.nx - state.lastSent.x) > 0.004 || Math.abs(p.ny - state.lastSent.y) > 0.002;
     if (!force && key === state.lastSent.key && (!movedEnough || now - state.lastSent.t < 350)) return;
@@ -78,6 +90,7 @@ import "./world.js";
     post("/api/presence", {
       role: state.role, scene: state.sceneId, nick: state.nick,
       x: state.role ? p.nx : 0.5, y: state.role ? p.ny : 0.99, pose: currentPose(),
+      robe,
     });
   }
 
@@ -116,6 +129,9 @@ import "./world.js";
     World.setView({
       role: state.role,
       pose: currentPose(),
+      robe: state.fabric.robes,
+      picked: state.fabric.picked,
+      fabricTarget: state.work?.kind === "collect" && state.work.phase === "walking" ? state.work.piece.id : null,
       darkness: sc ? DARKNESS[sc.time] ?? 0.8 : 0.78,
       flags: flags(),
       marker: sc && !state.sceneOpen && !state.practicing ? sc.place : null,
@@ -179,6 +195,7 @@ import "./world.js";
   // ---------- monk action menu ----------
   function buildActions() {
     for (const [pose, info] of Object.entries(ACTIONS)) {
+      if (pose === "collect" || pose === "sew") continue;
       const button = el("button", "action-card");
       button.type = "button";
       button.dataset.action = pose;
@@ -192,6 +209,8 @@ import "./world.js";
       button.addEventListener("click", () => selectAction(pose));
       $("action-list").appendChild(button);
     }
+    $("collect-image").src = World.getPoseImage("collect");
+    $("sew-image").src = World.getPoseImage("sew");
   }
 
   function renderActions() {
@@ -202,14 +221,83 @@ import "./world.js";
     $("app").dataset.action = state.action;
     for (const button of $("action-list").children) button.setAttribute("aria-pressed", String(button.dataset.action === state.action));
     const info = ACTIONS[state.action];
-    const status = state.action === "walk" && !World.getPlayer().moving ? "Sẵn sàng kinh hành" : info.status;
+    const status = state.work?.phase === "walking" ? "Đang đi tới mảnh vải" : state.action === "walk" && !World.getPlayer().moving ? "Sẵn sàng kinh hành" : info.status;
     if ($("action-status").textContent !== status) $("action-status").textContent = status;
-    $("action-description").textContent = info.description;
+    $("action-description").textContent = state.work?.kind === "collect" ? ACTIONS.collect.description : info.description;
     $("resume-story").hidden = !state.practicing;
+    renderFabric();
+  }
+
+  // ---------- discarded cloth and robe making ----------
+  function renderFabric() {
+    const count = fabricCount(state.fabric), p = World.getPlayer();
+    const nearest = nearestFabric(state.fabric, p.x, p.y);
+    const summary = `${count} mảnh vải · ${state.fabric.robes} áo đã may`;
+    if ($("fabric-stock").textContent !== summary) $("fabric-stock").textContent = summary;
+    $("collect-fabric").disabled = !!state.work || !nearest;
+    $("sew-robe").disabled = !!state.work || count < CLOTH_REQUIRED;
+    $("collect-fabric").setAttribute("aria-pressed", String(state.work?.kind === "collect"));
+    $("sew-robe").setAttribute("aria-pressed", String(state.work?.kind === "sew"));
+    $("collect-note").textContent = state.work?.kind === "collect" ? "Đang thu nhặt…" : nearest ? `Gần nhất: ${Math.ceil(Math.hypot(nearest.x - p.x, nearest.y - p.y) / 25)} m` : "Đã nhặt hết vải";
+    $("sew-note").textContent = state.work?.kind === "sew" ? "Đang khâu từng mảnh…" : count < CLOTH_REQUIRED ? `Còn thiếu ${CLOTH_REQUIRED - count} mảnh` : `Ghép ${CLOTH_REQUIRED} mảnh thành áo`;
+    $("sewing-progress").hidden = state.work?.kind !== "sew";
+    if (state.work?.kind === "sew") $("sewing-progress").value = Math.min(100, Math.max(0, 100 * (1 - (state.work.endsAt - Date.now()) / SEW_TIME)));
+  }
+
+  function prepareFabricWork(action) {
+    state.practicing = true;
+    state.action = action;
+    World.stop();
+    $("sheet").hidden = true;
+    $("walk-bar").hidden = true;
+  }
+
+  function collectFabric() {
+    if (state.role !== "monk" || state.work) return;
+    const p = World.getPlayer(), piece = nearestFabric(state.fabric, p.x, p.y);
+    if (!piece) return toast("Bạn đã nhặt hết những mảnh vải dọc đường.");
+    prepareFabricWork("walk");
+    state.work = { kind: "collect", phase: "walking", piece };
+    World.walkTo(piece.x, piece.y);
+    updateFabricWork();
+    pushView(); renderActions(); sendPresence(true);
+  }
+
+  function startSewing() {
+    if (state.role !== "monk" || state.work) return;
+    if (fabricCount(state.fabric) < CLOTH_REQUIRED) return toast(`Cần đủ ${CLOTH_REQUIRED} mảnh vải để may áo.`);
+    prepareFabricWork("sew");
+    World.faceCamera();
+    state.work = { kind: "sew", endsAt: Date.now() + SEW_TIME };
+    pushView(); renderActions(); sendPresence(true);
+  }
+
+  function updateFabricWork() {
+    const work = state.work;
+    if (state.role !== "monk" || !work) return;
+    const now = Date.now(), p = World.getPlayer();
+    if (work.kind === "collect" && work.phase === "walking") {
+      if (Math.hypot(work.piece.x - p.x, work.piece.y - p.y) > PICKUP_RADIUS) return;
+      World.stop(); World.facePoint(work.piece.x, work.piece.y);
+      work.phase = "collecting"; work.endsAt = now + PICKUP_TIME; state.action = "collect";
+      pushView(); sendPresence(true);
+    }
+    if (now < work.endsAt) return;
+    const inventory = work.kind === "collect" ? takeFabric(state.fabric, work.piece.id, p.x, p.y) : sewRobe(state.fabric);
+    state.work = null;
+    state.action = work.kind === "sew" ? "sit" : "walk";
+    if (inventory) {
+      state.fabric = inventory;
+      saveFabric();
+      const count = fabricCount(inventory);
+      toast(work.kind === "sew" ? "Đã khâu xong. Nhà sư mặc chiếc áo ghép mới." : `Đã nhặt mảnh vải ${work.piece.name}. ${count >= CLOTH_REQUIRED ? "Đã đủ vải — bạn có thể may áo." : `Đã góp ${count}/${CLOTH_REQUIRED} mảnh.`}`);
+    }
+    pushView(); renderActions(); sendPresence(true);
   }
 
   function selectAction(pose, destination) {
     if (state.role !== "monk" || !ACTIONS[pose]) return;
+    state.work = null;
     state.practicing = true;
     state.action = pose;
     World.stop();
@@ -226,6 +314,7 @@ import "./world.js";
   }
 
   function resumeStory() {
+    state.work = null;
     state.practicing = false;
     World.stop();
     showWalkOrScene();
@@ -260,6 +349,7 @@ import "./world.js";
   }
 
   function startRole(role) {
+    state.work = null;
     state.nick = $("nick").value.replace(/\s+/g, " ").trim().slice(0, 24);
     state.role = role;
     state.sceneId = STORY[role].start;
@@ -287,6 +377,7 @@ import "./world.js";
   }
 
   function leaveRole() {
+    state.work = null;
     state.role = null;
     state.sceneId = null;
     state.sceneOpen = false;
@@ -454,6 +545,7 @@ import "./world.js";
     const sc = currentScene();
     if (!sc) return;
     const place = World.PLACES[sc.place];
+    state.work = null;
     state.practicing = false;
     state.action = "walk";
     World.walkTo(place.x, place.y + 6);
@@ -469,6 +561,8 @@ import "./world.js";
   $("leave").addEventListener("click", leaveRole);
   $("leave-role").addEventListener("click", leaveRole);
   $("resume-story").addEventListener("click", resumeStory);
+  $("collect-fabric").addEventListener("click", collectFabric);
+  $("sew-robe").addEventListener("click", startSewing);
   $("camera-left").addEventListener("click", () => World.rotateCamera(-1));
   $("camera-right").addEventListener("click", () => World.rotateCamera(1));
   $("camera-closer").addEventListener("click", () => World.zoomCamera(0.8));
@@ -477,6 +571,7 @@ import "./world.js";
 
   // arrival + presence loop
   setInterval(() => {
+    updateFabricWork();
     if (state.role && !state.practicing && !state.sceneOpen && distanceToPlace() <= ARRIVE_DIST) openScene();
     if (state.role === "monk") renderActions();
     sendPresence(false);

@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { OrbitControls } from "./vendor/OrbitControls.js";
 import { createMonk, createGhost } from "./character.js";
 import { mergeGeometries } from "./vendor/BufferGeometryUtils.js";
+import { FABRIC_PIECES } from "./fabric.js";
 
 // Story coordinates stay compatible; 25 units in the story = 1 metre in 3D.
 window.World = (() => {
@@ -17,9 +18,9 @@ window.World = (() => {
   const player = { ...SPAWN.monk, tx: null, ty: null, moving: false, facing: Math.PI, phase: 0 };
   const view = { role: null, pose: "walk", darkness: 0.75, flags: new Set(), marker: null, anchor: 0.4 };
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-  const others = new Map(), ripples = [], bamboo = [], previews = new Map();
+  const others = new Map(), ripples = [], bamboo = [], previews = new Map(), scraps = new Map();
   let renderer, scene, camera, controls, canvas, ground, actor, marker, moon, ambient, warmth;
-  let offering, incense, fireflies, labels, destinationLabel, onTap;
+  let offering, incense, fireflies, labels, destinationLabel, fabricLabel, onTap;
   let width = 1, height = 1, time = 0, last = 0, patrol = null, seed = 87612, contextLost = false;
   const raycaster = new THREE.Raycaster(), pointer = new THREE.Vector2();
   const target = new THREE.Vector3(), delta = new THREE.Vector3();
@@ -175,6 +176,27 @@ window.World = (() => {
     marker = new THREE.Group();
     const ring = add(new THREE.TorusGeometry(0.43, 0.012, 6, 48), new THREE.MeshBasicMaterial({ color: 0xdfc887, transparent: true, opacity: 0.75 }), marker, 0, 0.025, 0); ring.rotation.x = -Math.PI / 2;
     scene.add(marker); marker.visible = false;
+    makeFabricScraps();
+  }
+  function makeFabricScraps() {
+    for (const piece of FABRIC_PIECES) {
+      const group = new THREE.Group(); group.position.copy(to3D(piece.x, piece.y, 0.025));
+      group.rotation.y = piece.x * 0.19; scene.add(group);
+      const geometry = new THREE.PlaneGeometry(0.62, 0.45, 7, 6);
+      geometry.rotateX(-Math.PI / 2);
+      const positions = geometry.attributes.position;
+      for (let i = 0; i < positions.count; i++) {
+        const x = positions.getX(i), z = positions.getZ(i);
+        positions.setY(i, 0.02 + Math.abs(Math.sin(x * 21 + z * 13)) * 0.045 + Math.cos(z * 23) * 0.01);
+        if (i % 8 === 0 || i % 8 === 7) positions.setX(i, x + Math.sin(i * 5) * 0.025);
+      }
+      geometry.computeVertexNormals();
+      const material = new THREE.MeshStandardMaterial({ color: piece.color, roughness: 1, side: THREE.DoubleSide, emissive: piece.color, emissiveIntensity: 0.08 });
+      add(geometry, material, group, 0, 0, 0);
+      const fold = add(geometry, material, group, 0.09, 0.045, 0.02, 0.55, 1, 0.8); fold.rotation.z = 0.15;
+      scraps.set(piece.id, { piece, group });
+    }
+    fabricLabel = makeLabel("Vải bỏ đi · Bấm Nhặt vải"); fabricLabel.classList.add("fabric-label"); fabricLabel.hidden = true;
   }
   // Bake scenery into a few material batches; bamboo keeps its own swaying pivot.
   function batchGroup(group) {
@@ -248,6 +270,7 @@ window.World = (() => {
     const position = to3D(player.x, player.y);
     player.facing = Math.atan2(camera.position.x - position.x, camera.position.z - position.z) - 0.2;
   }
+  function facePoint(x, y) { player.facing = Math.atan2(x - player.x, y - player.y); }
   function rotateCamera(direction) {
     const offset = camera.position.clone().sub(controls.target); offset.applyAxisAngle(new THREE.Vector3(0, 1, 0), direction * Math.PI / 4);
     camera.position.copy(controls.target).add(offset); controls.update();
@@ -262,8 +285,12 @@ window.World = (() => {
       if (actor) removeActor(actor); actor = view.role ? newActor(view.role) : null;
       if (actor) { scene.add(actor.root); actor.label = makeLabel("Bạn"); }
     }
-    offering.visible = view.flags.has("offering"); incense.visible = view.flags.has("incense"); marker.visible = !!PLACES[view.marker];
-    if (marker.visible) marker.position.copy(to3D(PLACES[view.marker].x, PLACES[view.marker].y));
+    if (view.role === "monk") actor?.setRobe(view.robe || 0);
+    const picked = new Set(view.picked || []);
+    for (const [id, scrap] of scraps) scrap.group.visible = !picked.has(id);
+    const destination = view.fabricTarget ? FABRIC_PIECES.find((p) => p.id === view.fabricTarget) : PLACES[view.marker];
+    offering.visible = view.flags.has("offering"); incense.visible = view.flags.has("incense"); marker.visible = !!destination;
+    if (marker.visible) marker.position.copy(to3D(destination.x, destination.y));
     const daylight = 1 - view.darkness;
     scene.background.set(0x15262c).lerp(new THREE.Color(0x6d7160), daylight * 0.7); scene.fog.color.copy(scene.background);
     ambient.intensity = 1.1 + daylight * 1.4; moon.intensity = 1.1 + daylight * 2; if (oldAnchor !== view.anchor) resize();
@@ -286,6 +313,7 @@ window.World = (() => {
         o = { actor: person, role: p.role, x: p.x * W, y: p.y * H, rx: p.x * W, ry: p.y * H, angle: Math.PI, phase: random() * 6 }; others.set(p.pid, o);
       }
       Object.assign(o, { x: p.x * W, y: p.y * H, pose: p.pose }); o.actor.label.textContent = p.nick || window.ROLE_INFO[p.role].name;
+      if (p.role === "monk") o.actor.setRobe(p.robe || 0);
     }
     for (const [id, o] of others) if (!seen.has(id)) { removeActor(o.actor); others.delete(id); }
   }
@@ -302,7 +330,7 @@ window.World = (() => {
     const person = createMonk(); studio.add(person.root);
     const floor = add(new THREE.CircleGeometry(0.8, 48), new THREE.MeshStandardMaterial({ color: 0x394338, roughness: 1 }), studio, 0, -0.015, 0); floor.rotation.x = -Math.PI / 2;
     const portraitCamera = new THREE.PerspectiveCamera(32, 1, 0.1, 10); renderer.setSize(240, 240, false);
-    for (const pose of ["sit", "walk", "sleep", "eat"]) {
+    for (const pose of ["sit", "walk", "sleep", "eat", "collect", "sew"]) {
       person.animate(pose, pose === "eat" ? 0.45 : 0.25, pose === "walk", 1);
       portraitCamera.position.set(1.65, pose === "walk" ? 1.6 : 1.3, pose === "walk" ? 3.45 : 2.9); portraitCamera.lookAt(0, pose === "walk" ? 0.88 : 0.62, 0);
       renderer.render(studio, portraitCamera); previews.set(pose, canvas.toDataURL("image/png"));
@@ -340,15 +368,23 @@ window.World = (() => {
     bamboo.forEach((group, i) => { group.rotation.z = reducedMotion.matches ? 0 : Math.sin(time * 0.7 + i) * 0.012; }); fireflies.material.opacity = 0.35 + Math.sin(time * 1.8) * 0.2; fireflies.position.y = Math.sin(time * 0.5) * 0.1;
     marker.scale.setScalar(1 + Math.sin(time * 2) * 0.08); destinationLabel.hidden = !marker.visible;
     if (marker.visible) {
-      const p = PLACES[view.marker], metres = Math.round(Math.hypot(p.x - player.x, p.y - player.y) / 25); destinationLabel.textContent = `${p.name} · ${metres} m`;
+      const p = view.fabricTarget ? FABRIC_PIECES.find((piece) => piece.id === view.fabricTarget) : PLACES[view.marker];
+      const metres = Math.round(Math.hypot(p.x - player.x, p.y - player.y) / 25); destinationLabel.textContent = `${view.fabricTarget ? "Vải bỏ đi" : p.name} · ${metres} m`;
       const projected = marker.position.clone().add(new THREE.Vector3(0, 0.4, 0)).project(camera);
       destinationLabel.style.left = `${THREE.MathUtils.clamp((projected.x + 1) * width / 2, 100, width - 100)}px`; destinationLabel.style.top = `${THREE.MathUtils.clamp((-projected.y + 1) * height / 2, 100, height * 0.57)}px`;
     }
+    let nearby = null, nearest = 75;
+    if (view.role === "monk") for (const scrap of scraps.values()) {
+      const distance = Math.hypot(scrap.piece.x - player.x, scrap.piece.y - player.y);
+      if (scrap.group.visible && distance < nearest) { nearest = distance; nearby = scrap; }
+    }
+    fabricLabel.hidden = !nearby;
+    if (nearby) projectLabel(fabricLabel, nearby.group.position.clone().add(new THREE.Vector3(0, 0.25, 0)));
     for (let i = ripples.length - 1; i >= 0; i--) {
       const r = ripples[i]; r.age += dt; r.object.scale.setScalar(1 + r.age * 3); r.object.material.opacity = Math.max(0, 0.6 - r.age * 0.25);
       if (r.age > 2.4) { scene.remove(r.object); r.object.geometry.dispose(); r.object.material.dispose(); ripples.splice(i, 1); }
     }
     renderer.render(scene, camera);
   }
-  return { W, H, PLACES, SPAWN, init, setView, setPlayer, walkTo, startWalking, stop, getPlayer, setOthers, ripple, resetCamera, faceCamera, rotateCamera, zoomCamera, getPoseImage: (pose) => previews.get(pose) };
+  return { W, H, PLACES, SPAWN, init, setView, setPlayer, walkTo, startWalking, stop, getPlayer, setOthers, ripple, resetCamera, faceCamera, facePoint, rotateCamera, zoomCamera, getPoseImage: (pose) => previews.get(pose) };
 })();

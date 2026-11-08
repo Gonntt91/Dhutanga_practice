@@ -28,6 +28,7 @@ Mở nhiều tab hoặc cho thiết bị cùng mạng LAN truy cập `http://<IP
 - **Chạm đất** để đi tới vị trí đó. Kéo xoay góc nhìn không làm nhân vật di chuyển.
 - Các nút **↶ / ↷ / + / − / ⌖** hỗ trợ xoay, thu phóng và đặt lại góc nhìn bằng bàn phím hoặc chuột.
 - Nút **Đi tới** dẫn nhân vật đến địa điểm tiếp theo của câu chuyện. Khi tới nơi, khung truyện mở. Chạm cảnh để thu khung truyện, hoặc bấm thanh tiêu đề để mở lại.
+- Nút **Thoát vai** ở góc trên bên phải luôn cho phép quay lại chọn nhân vật khác.
 
 ## Menu hành động của nhà sư
 
@@ -39,8 +40,14 @@ Mỗi nút có hình chụp từ chính mô hình 3D đang dùng trong cảnh:
 | Đi kinh hành | Đi bộ qua lại một đoạn ngắn; có thể chạm đất để chọn hướng đi |
 | Ngủ ngồi | Giữ tư thế ngồi, khép mắt, đầu hơi cúi |
 | Thọ thực | Ngồi ôm bát, đưa thìa lên theo nhịp chậm |
+| Nhặt vải | Đi đến mảnh vải bỏ đi gần nhất rồi cúi xuống nhặt |
+| May áo | Ngồi khâu các mảnh vải, sau đó mặc áo ghép mới |
 
 Chọn một hành động sẽ tạm thu câu chuyện để quan sát nhân vật. Các tư thế ngồi dừng di chuyển ngay. Bấm **Về câu chuyện** để tiếp tục; tiến độ truyện được giữ trong lượt chơi. Hành trì tự do không tự tăng điểm hoặc thay đổi kết thúc. Những người đang chơi cùng thấy tư thế và vị trí được đồng bộ.
+
+Áo nhà sư ghép từ các mảng xanh chàm, nâu đỏ, vàng đất và trắng ngà, có đường vá và chỉ khâu. Dọc lối đi có **18 mảnh vải bỏ đi**. Bấm **Nhặt vải** để tự đi đến mảnh gần nhất; mỗi mảnh chỉ được nhặt một lần. Góp đủ **6 mảnh** thì nút **May áo** mở. Nhà sư khâu khoảng 5 giây, dùng 6 mảnh và mặc chiếc áo có cách ghép màu mới. Có thể tiếp tục góp vải để may thêm áo.
+
+Vải đã nhặt và áo đã may được lưu trong trình duyệt, kể cả khi đổi vai hoặc tải lại trang. Mỗi người có phần vải riêng. Chuyển hành động, chạm đất hoặc thoát vai sẽ dừng việc nhặt/may đang làm; vải chỉ được dùng khi may xong. Những người chơi cùng thấy tư thế nhặt, may và chiếc áo mới.
 
 ## Nhiều người chơi
 
@@ -59,7 +66,8 @@ server.js             static + SSE + API, không phụ thuộc gói ngoài
 public/index.html     giao diện và import map
 public/style.css      bố cục điện thoại và máy tính
 public/world.js       thế giới 3D, camera, di chuyển, người chơi và ảnh menu
-public/character.js   mô hình nhân vật, khớp và bốn tư thế nhà sư
+public/character.js   mô hình nhân vật, áo ghép vải và sáu tư thế nhà sư
+public/fabric.js      vị trí vải bỏ đi, túi vải và quy tắc may áo
 public/story.js       lời văn, địa điểm, lựa chọn và kết thúc
 public/audio.js       âm thanh môi trường bằng Web Audio
 public/app.js         engine truyện, menu hành động và kết nối realtime

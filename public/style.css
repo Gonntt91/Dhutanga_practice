@@ -10,7 +10,7 @@
   --ember: #d08a4d;
   --jade: #9fd2c1;
   --lantern: #e6c56f;
-  --practice-height: 212px;
+  --practice-height: 300px;
 
   --font-display: "Cormorant Garamond", "Iowan Old Style", Georgia, serif;
   --font-body: "Literata", Georgia, "Times New Roman", serif;
@@ -32,6 +32,7 @@ body { background: #070b0a; color: var(--ash); font: 16px/1.65 var(--font-body);
 .world-vignette { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse at 50% 35%, transparent 25%, rgba(5, 12, 10, 0.26) 100%); }
 .world-labels { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
 .world-label { position: absolute; left: 0; top: 0; color: #ede5d4; font: 500 10px/1.5 var(--font-ui); letter-spacing: 0.04em; text-shadow: 0 1px 8px #000, 0 1px 3px #000; white-space: nowrap; }
+.fabric-label { border: 1px solid #bfa77966; border-radius: 6px; padding: 3px 7px; background: #15201ce6; color: #eed49c; }
 .destination-label { position: absolute; z-index: 2; transform: translate(-50%, -100%); border: 1px solid #c2aa7055; border-radius: 20px; padding: 5px 12px; background: #15201ce0; color: #e6d4a0; font: 11px/1.4 var(--font-ui); white-space: nowrap; pointer-events: none; }
 
 .label { font: 500 11px/1.4 var(--font-ui); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ash-dim); }
@@ -165,6 +166,18 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--lantern); o
 .action-dot { position: absolute; width: 5px; height: 5px; top: 7px; right: 7px; border-radius: 50%; background: #d4b879; opacity: 0; }
 .action-card[aria-pressed="true"] .action-dot { opacity: 1; }
 .action-description { margin: 9px 0 0; font: 11px/1.55 var(--font-ui); color: #aab4a1; }
+.fabric-work { position: relative; margin-top: 8px; padding-top: 8px; border-top: 1px solid #a7b08c30; }
+.fabric-stock { font: 10px/1.5 var(--font-ui); color: #d5c194; margin-bottom: 6px; }
+.fabric-tools { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; }
+.fabric-action { display: flex; align-items: center; gap: 4px; min-height: 48px; min-width: 0; padding: 2px 7px 2px 0; border: 1px solid #8b9c8050; border-radius: 9px; background: #1b2723; text-align: left; }
+.fabric-action img { flex-shrink: 0; object-fit: contain; }
+.fabric-action > span { min-width: 0; }
+.fabric-title { display: block; font: 500 12px/1.4 var(--font-ui); color: #e9debe; }
+.fabric-note { display: block; font: 9px/1.4 var(--font-ui); color: #aab4a1; }
+.fabric-action:hover:not(:disabled), .fabric-action[aria-pressed="true"] { border-color: #d4b879; background: #28372c; }
+.fabric-action:disabled { cursor: default; }
+.fabric-action:disabled:not([aria-pressed="true"]) { opacity: 0.5; }
+.sewing-progress { position: absolute; left: 0; bottom: -9px; display: block; width: 100%; height: 4px; margin: 0; accent-color: var(--lantern); }
 
 /* ---------- picker ---------- */
 .picker {
@@ -202,7 +215,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--lantern); o
 .world-error p { max-width: 520px; }
 
 @media (max-height: 660px) and (max-width: 959px) {
-  :root { --practice-height: 175px; }
+  :root { --practice-height: 268px; }
   .monk-actions { padding: 8px 12px; }
   .practice-head { min-height: 28px; margin-bottom: 6px; }
   .action-card { height: 80px; gap: 1px; padding-bottom: 4px; }
@@ -218,7 +231,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--lantern); o
   .hud { padding: 22px 28px; }
   .game-title { font-size: 28px; }
   .hud .label { font-size: 10px; }
-  .monk-actions { width: 370px; height: 217px; left: auto; right: 24px; bottom: 24px; border: 1px solid #a7b08c40; border-radius: 16px; padding: 14px; }
+  .monk-actions { width: 370px; height: 310px; left: auto; right: 24px; bottom: 24px; border: 1px solid #a7b08c40; border-radius: 16px; padding: 14px; }
   .action-card { height: 103px; }
   .sheet, .app[data-role="monk"] .sheet { left: 24px; right: auto; bottom: 24px; width: 430px; max-height: 50%; border: 1px solid var(--line); border-radius: 16px; }
   .walk-bar, .app[data-role="monk"] .walk-bar { left: 24px; right: auto; bottom: 24px; width: 430px; padding: 18px; border: 1px solid #a7b08c40; border-radius: 14px; background: #102019e8; }

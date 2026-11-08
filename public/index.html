@@ -84,6 +84,20 @@
     </div>
     <div id="action-list" class="action-list" role="group" aria-label="Chọn tư thế"></div>
     <p id="action-description" class="action-description"></p>
+    <div class="fabric-work">
+      <div id="fabric-stock" class="fabric-stock" role="status" aria-live="polite">0 mảnh vải · 0 áo đã may</div>
+      <div class="fabric-tools" role="group" aria-label="Nhặt vải và may áo">
+        <button id="collect-fabric" class="fabric-action" type="button" aria-pressed="false">
+          <img id="collect-image" width="44" height="44" alt="" aria-hidden="true">
+          <span><span class="fabric-title">Nhặt vải</span><span id="collect-note" class="fabric-note">Tìm vải bỏ đi ven đường</span></span>
+        </button>
+        <button id="sew-robe" class="fabric-action" type="button" aria-pressed="false" disabled>
+          <img id="sew-image" width="44" height="44" alt="" aria-hidden="true">
+          <span><span class="fabric-title">May áo</span><span id="sew-note" class="fabric-note">Còn thiếu 6 mảnh</span></span>
+        </button>
+      </div>
+      <progress id="sewing-progress" class="sewing-progress" max="100" value="0" aria-label="Tiến độ may áo" hidden></progress>
+    </div>
   </section>
 
   <!-- role picker -->
