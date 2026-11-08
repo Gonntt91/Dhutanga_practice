@@ -105,6 +105,8 @@ Trường hợp đã tìm ra tên Hạnh có thể mở câu hỏi mới, không
 
 **Payoff:** một chiếc đèn ngõ, nồi xôi chia người khác, lời bà cụ mới và dấu Sổ khám phá; mỗi người có timeline riêng nếu chưa có hệ shared-world sync. Không ép phải nghe đủ bốn lần mới được khám phá làng.
 
+> **Mạch kỳ ảo đầu game ưu tiên HG27:** [Nhiệm vụ bà ngoại ngạ quỷ](human-world-early-mysteries-and-peta-quest.md). Được thấy sớm, chủ động giúp, bố thí/hồi hướng, giữ cảnh bà sáng lên rồi biến mất. Thẻ đúng mốc: **Bi** khi nghe và chọn giúp; **Không tham** trong lúc bố thí để hồi hướng; **Tùy hỷ** sau hồi hướng khi vui vì bà được an/rời cảnh khổ. Không nhận thẻ do chỉ nhìn, cầm cơm hoặc mở popup; không spam ba màn thưởng.
+
 ## 6. Kho tình huống ngắn để không lặp nhiệm vụ
 
 | ID | Vai | Điều kiện | Tương tác chính | Kết quả/đường mở |
