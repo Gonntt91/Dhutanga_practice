@@ -19,6 +19,8 @@ Ba nhịp đan xen:
 
 **Giữ các NPC arcs, không áp lên PC:** Sư Tịnh khất thực/tu nghĩa địa; Ông Tư nghi ngờ rồi thay đổi; Bà Sáu–Hạnh–nước lớn. PC có thể **nghe, gặp, chứng kiến và lựa chọn phản hồi**, không tự có quá khứ những nhân vật ấy. Tuyến y màu đất trở thành hoạt động của **PC sư** với người hướng dẫn, khác tiểu sử Sư Tịnh.
 
+> **Tuyến hồn ma không được gói vào một dòng HG18:** xem [Ghost Campaign Bible](ghost-playable-campaign-bible.md) với các cảnh G01–G07 (nhà hoang/hù người, hương cơm cúng, giúp người qua mộng, lối Bờ Chìm, bà Sáu, nghe hồi hướng, ending tùy chọn). Đây là campaign **độc lập** với 27 mạch HG ở Nhân gian, không gán PC ma thành bà Sáu. Mối giao với người sống qua Hang/Bến và quy tắc tránh spoil giữa nhiều nhân vật nằm trong [Role Transition & Spoiler Isolation](role-transition-and-spoiler-isolation.md).
+
 ## 1. Bảng nội dung để viết và chơi dần
 
 | ID | Tên câu chuyện | Vai | Vùng | Thời lượng / kiểu | Kiến thức, vật liệu hoặc mở đường | Trạng thái |
