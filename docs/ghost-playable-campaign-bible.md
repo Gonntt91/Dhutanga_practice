@@ -1,8 +1,8 @@
-# Ghost Campaign Bible v0.1 — Hồn ma: vui tinh nghịch, khám phá cõi khuất và một cuộc đời riêng
+# Ghost Campaign Bible v0.2 — Hồn ma: vui tinh nghịch, khám phá cõi khuất và một cuộc đời riêng
 
 > **Thiết kế trước coding, KHÔNG triển khai gameplay.** Người chơi tự tạo tên và chọn `ghost` — **KHÔNG phải bà Sáu**. `npc.ba_sau` và `npc.peta_grandmother` là hai NPC khác nhau, giữ nội dung đã có trong `story.js` và `encounters.js`. Chưa khẳng định hồn ma có thân thể thật, phép thuật hay khả năng tái sinh chủ động theo giáo lý; các cơ chế thì thầm/giấc mơ/đi xuyên ranh giới là **fiction/game_interpretation**, phải có chú thích nguồn nếu đưa vào game.
 >
-> Cùng chuẩn [Player-centric Narrative Model](player-character-narrative-model.md), [World Exploration Bible](world-exploration-bible.md), [Early Mysteries & HG27](human-world-early-mysteries-and-peta-quest.md). Thiết kế vai dân → xuất gia và ending vai ma nằm ở [Role Transition & Spoiler Isolation](role-transition-and-spoiler-isolation.md).
+> **Bản có thể đọc và review theo cảnh:** [Ghost Episode Pack 01 — G01/G03/G04](ghost-episode-pack-01.md) và [Ghost Episode Pack 02 — G02/G05/G06/G07](ghost-episode-pack-02.md). Tài liệu này là **khung campaign và năng lực**, còn hai pack là **lời thoại, lựa chọn, hậu quả**. Cùng chuẩn [Player-centric Narrative Model](player-character-narrative-model.md), [World Exploration Bible](world-exploration-bible.md), [Early Mysteries & HG27](human-world-early-mysteries-and-peta-quest.md). Thiết kế vai dân → xuất gia và ending vai ma nằm ở [Role Transition & Spoiler Isolation](role-transition-and-spoiler-isolation.md).
 >
 > **Ranh giới game:** Nhân gian vẫn là nơi bình yên, phần cõi khuất **hơi kỳ ảo và man mác**, không làm thành game kinh dị. Cho phép chơi ngắn, tự do đi dạo và không bị khóa vì thiếu thẻ/tổng điểm tâm. Cảnh đáng nhìn hoặc pha hù người vô hại cũng là phần thưởng.
 
@@ -115,7 +115,7 @@ Nhân gian (PC ma): Gốc gạo → nghĩa địa → nhà hoang → lối nư�
 
 **Cảnh B:** PC ma đến nhà hoang, bức tường có mảng sơn tróc; **đi xuyên qua vết nứt** tới sân sau. Tại đó có `vệt dấu bàn tay` chỉ PC ma thấy; ghi Sổ `discovery:abandoned_house_backroom`.
 
-**Cảnh C:** thấy người sống đang tìm chiếc chìa rơi trước nhà, PC biết nó ở dưới bậc thềm nhưng **không nhặt**. Gợi `G03 — Vật người sống bỏ quên`.
+**Cảnh C (đã chốt trong Episode Pack 01):** thấy **chiếc túi kim chỉ của bà cụ giếng** kẹt dưới bậc thềm nhà bỏ trống, PC biết vị trí nhưng **không nhặt**. Bà cụ tự đi qua đó, từng đặt túi xuống lúc sửa quai thúng. Gợi `G03 — Chiếc túi kim chỉ của bà cụ`.
 
 **Bỏ qua:** vẫn thoải mái đi ngắm gốc gạo và bến, không ép thử hù, không ép quest bắt buộc.
 
@@ -127,11 +127,11 @@ Nhân gian (PC ma): Gốc gạo → nghĩa địa → nhà hoang → lối nư�
 
 **Nhu cầu “kiếm cơm cúng”:** thiết kế thành mini route `nghe tin → tới mộ có dấu mới → nhận ra ai còn nhớ mình → nghe/dự phần hồi hướng`. **Không biến cơm vật chất thành item nhặt được**. Trò chơi có thể diễn tả “hương cơm, sự ấm áp” như hình tượng, phải gắn là giả tưởng, không khẳng định peta nào cũng nhận được lợi ích từ mọi đồ cúng.
 
-### G03 — Vật dưới gốc tre: giúp người mà không chạm được (2–3 lần ghé)
+### G03 — Chiếc túi kim chỉ của bà cụ: giúp người mà không chạm được (2–3 lần ghé)
 
-**Chủ:** một NPC người dân độc lập, không phải Ông Tư/Hạnh, để tránh nhân vật ai cũng có twist. **Mục tiêu:** người sống đang tìm **hộp thuốc của người già** hoặc **chiếc túi chứa giấy quan trọng** (chốt một vật phù hợp art), PC ma thấy nơi rơi ở sân nhà hoang nhưng không nhặt.
+**Chủ:** **bà cụ ở giếng** (`npc.granny`, người sống; **không phải** bà ngoại ngạ quỷ HG27 hay bà Sáu). **Mục tiêu:** bà tìm **chiếc túi kim chỉ** để vá lại quai thúng; PC ma thấy túi ở dưới bậc thềm nhà hoang nhưng không thể nhặt. Đây là câu chuyện đời thường trọn vẹn, **không bắt nối với bí mật Hạnh**.
 
-1. **Thấy mà không thể lấy:** `discovery:lost_item_location` và `ghostKnowsItemSpot`. Không cần quest marker to; PC tự nghe NPC lẩm bẩm tìm đồ.
+1. **Thấy mà không thể lấy:** `discovery:lost_item_location` và `ghostKnowsItemSpot`. Không cần quest marker to; PC tự nghe bà cụ lẩm bẩm tìm túi.
 2. **Thử thì thầm:** khi NPC đi qua, PC chọn `Lá dưới bậc…`; người nghe chỉ cảm thấy “Có ai nói gì không nhỉ?”, `npc.noticedHint`. Chọn hù quá mạnh có thể khiến NPC đi xa tạm thời, nhưng không khóa vĩnh viễn, có cách khắc phục.
 3. **Báo mộng nếu không được nghe:** sau khi PC đã **biết vật gì đang mất và gặp người tìm vật**, đến lúc NPC ngủ có dấu `dreamAnchor`. PC chọn hình ảnh **bậc thềm với một chiếc lá** để hiện trong mộng, không gửi nguyên text giải đố. Sáng hôm sau NPC kiểm tra chỗ ấy.
 4. **Thế giới đổi:** NPC nhặt lại vật, nói “Hóa ra nó nằm ở đây!”; PC ma thấy cảnh người đó giúp được người khác. Nếu chọn khiến NPC hoảng, hôm sau có đoạn xin lỗi gián tiếp hoặc chỉ dẫn lại, **không khóa**.
@@ -139,7 +139,7 @@ Nhân gian (PC ma): Gốc gạo → nghĩa địa → nhà hoang → lối nư�
 
 **Đường bỏ qua:** sau vài ngày NPC hoặc người khác tự tìm ra; PC vẫn có thể nghe hậu chuyện. Truyện không cần thần linh xuất hiện để chỉ từng bước.
 
-### G04 — Lối nước khuất (khám phá ghost-only sau G01, không cần theo chuỗi)
+### G04 — Lối nước khuất (khám phá ghost-only, không yêu cầu xong G01)
 
 **Nơi:** nhà hoang → bến bờ chìm. **Đầu mối:** trong nhà hoang PC thấy đường nước loang mà người sống chỉ thấy vệt ẩm. Chạm `Lắng nghe dưới vách` → tiếng mái chèo nhẹ. Chọn `Theo tiếng mái chèo`, vào **Bến Không Tiếng — Bờ chìm**.
 
@@ -207,7 +207,7 @@ Khi muốn kết, PC thấy ánh sáng đầu sáng, nghe một câu: “Con đ�
 - **Hai lớp cùng thế giới:** Nhân gian ngày êm/ánh vàng; PC ma có vùng mát xanh bạc, nhưng không làm toàn bộ map u ám. Ban đầu chỉ dùng shader/overlay/sprite/âm thanh nhẹ trên nền Canvas có sẵn.
 - **Không jumpscare:** ánh đom đóm, bụi trăng, bóng nước, tiếng gõ xa, lời thì thầm mơ hồ. Khi hù NPC là tình huống hài duyên, không horror.
 - **Ghost UI:** icon `Lắng nghe`, `Thì thầm`, `Tạo dấu hiệu`, `Mộng`, `Theo dấu`, `Đi tiếp`; không có `Nhặt vật`/inventory vật chất hoặc `Dâng cơm` như người sống.
-- **MVP map:** reuse 11 địa danh, nhà hoang đang tồn tại trong `FINDS`; thêm 1 **bờ chìm** như scene nhỏ, 1 **Cột đá cũ** dùng lại landmark cho route người sau này, 1 NPC người tìm đồ, 1 dấu mất đồ. Không cần dựng ngay cả cõi dưới.
+- **MVP map:** dùng lại các địa điểm và cảnh sẵn có làm lối dẫn, nhưng **nhà bỏ trống chưa phải khu đi lại trong `World.PLACES` của `develop`** (đừng nhầm các ô `ruin` với một nhà hoang có interior). Khi coding cần **graybox một gian nhà nhỏ** và một **Bờ Chìm** mới; 1 cột đá giao giữa các góc nhìn; **bà cụ giếng hiện có** là NPC tìm túi, nên không cần thêm một NPC người sống chỉ cho G03. Chưa cần dựng cả cõi dưới.
 - **Một hành động ma chỉ tác động nhỏ lên người sống:** âm thanh/lời nhắc/mộng, không có hiệu ứng vật lý làm thay đổi cây cầu, mở cửa hay kéo người.
 
 ## 7. Ranh giới Phật học và nguồn cần duyệt
