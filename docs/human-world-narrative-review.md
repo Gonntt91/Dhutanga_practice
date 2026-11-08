@@ -1,134 +1,102 @@
-# Narrative Review — Nhân gian v0.2
+# Narrative Review — Nhân gian v0.3 · PC riêng, NPC riêng
 
-> **Biên tập nội dung, chưa thay đổi gameplay.** Review dựa trên `develop` và bộ tài liệu hiện tại. Chuẩn áp dụng: [Game Design Principles](game-design-principles.md) và [Human World Story Bible](human-world-story-bible.md). Các kết quả/bản ghi trong tài liệu này là **đề xuất**, không phải tính năng đã chạy.
+> **Review thiết kế, chưa sửa code.** Nguồn chuẩn: [Player-centric Narrative Model](player-character-narrative-model.md), [Game Design Principles](game-design-principles.md). Kịch bản đã chỉnh theo chuẩn mới trong [Human World Playable Scenarios](human-world-playable-scenarios.md) và [Episode Pack 01](human-world-episode-pack-01.md).
 >
-> Xem [Human World Playable Scenarios](human-world-playable-scenarios.md) (danh mục) và [Human World Episode Pack 01](human-world-episode-pack-01.md) (cảnh, lựa chọn, thay đổi thế giới, điều kiện quay lại).
+> **Quyết định thay thế v0.2:** Role `monk/villager/ghost` là **vai do PC chọn**, không phải Sư Tịnh/Ông Tư/Bà Sáu. Review cũ nói `villager = ông Tư` chỉ mô tả **lỗi thiết kế legacy code**, tuyệt đối không áp dụng cho kịch bản tiếp theo.
 
 ## 1. Kết luận review
 
-**Không nên viết 40 nhiệm vụ mới rồi mới thử.** Nhân gian đã có truyện khởi đầu đáng giữ, nhưng còn thiếu **lịch sống của NPC**, **cảnh đẹp không giao việc**, **hậu quả hiện trên map**, **tình huống ngắn thay đổi theo người chơi**, và **tính nhất quán khi trở lại**. Viết sâu 4–6 cụm dùng chung nhân vật và địa điểm sẽ tiết kiệm asset hơn thêm 20 NPC.
+**Giữ ba tuyến truyện có sẵn như truyện NPC**, không vứt chất liệu cũ, nhưng người chơi phải có tên, quá khứ và lựa chọn riêng. Lời thoại nên gần gũi, ngắn, bớt giải thích. Nhân gian cần trở nên sống động qua cảnh, NPC có lịch sinh hoạt và hậu quả nhỏ khi quay lại; **không cần thêm hàng chục nhiệm vụ bắt buộc**.
 
-| Trục kiểm tra | Đã có ở code/tài liệu | Khoảng trống chính | Hướng biên tập |
+| Hiện trạng trên `develop` | Vấn đề | Quyết định cho kịch bản mới |
+|---|---|---|
+| `app.js` đã lấy tên PC từ `Save.character().name` khi tạo nhân vật | Picker vẫn hiện `ROLE_INFO.who` và tiểu sử một trong ba người có sẵn | Giữ tên PC; role card là phong cách sống/chơi, không phải chọn người nổi tiếng trong truyện |
+| `story.js`: `ROLE_INFO.who = Thầy Tịnh / Ông Tư / Bà Sáu` | Người chơi đóng vai NPC cố định | Chuyển ba người thành `npc.su_tinh / npc.ong_tu / npc.ba_sau` |
+| `story-nights.js` | Các chương đêm hai/ba tiếp tục quá khứ ba NPC | Lưu làm NPC arcs/hồi tưởng, viết đoạn PC gặp hoặc nghe/quan sát |
+| `chapters.js` + `progress.js` | Chương/scene phụ thuộc role và checkpoint cũ | Cần migration/version, không thay ID đột ngột |
+| `mind.js` chó cắn → rau má → mang sang Ông Tư | Cùng `villager` đã được code hiểu là ông Tư, gây tự gặp mình; còn lời hứa rau | Với PC dân mới, Ông Tư là NPC; phải trả rau đúng bà rồi mới mở nhánh khác |
+| `save.js`: `dhutanga.memory/runs/completed` cấp account | Ký ức chung có thể biến thành ký ức của nhiều PC | Tách event cá nhân khỏi codex meta; migrate từng loại với test |
+| Truyện hiện tại khá dài/giải thích nhiều | Mất nhịp dạo chơi, người trẻ dễ bỏ qua | Giọng tươi, câu ngắn, điều muốn học sâu nằm trong Sổ |
+
+## 2. Ma trận chuyển các nhân vật legacy thành NPC
+
+| Truyện/chi tiết | Cốt lõi nên giữ | PC tương tác với truyện như thế nào |
+|---|---|---|
+| Sư Tịnh đi khất thực bảy nhà | sự kiên nhẫn, bị hiểu lầm, con chó vàng | PC sư hỏi hoặc đi cùng khi phù hợp; PC dân có thể quan sát/giúp; PC không tự đã bị đuổi |
+| Ông Tư và con Vàng | người dân cộc nhưng có khả năng thay đổi | PC gặp ông và con chó ở ngõ, có thể nói chuyện/hỗ trợ/lặng lẽ đi |
+| Món nợ ba bát xôi | một việc cũ còn giữ trong lòng | PC tìm manh mối, nghe chuyện ông Tư, tùy chọn giúp người sống làm điều thiện |
+| Bà Sáu–Hạnh–nước lớn | bí ẩn nhiều góc nhìn, lòng thương và ký ức | PC gặp bà hoặc dấu tích, ghép manh mối; PC ma không thành bà Sáu |
+| Kết ba đôi mắt, reveal Hạnh | sự thật chỉ mở khi ghép đủ các mảnh | người chơi tìm hiểu NPC theo nhiều điểm nhìn, không ép chơi đủ ba role trong cùng tài khoản |
+| Tuyến y phấn tảo | hoạt động và câu chuyện của nhà sư có thể tiếp tục | **PC sư** thực hành với hướng dẫn của Sư Tịnh/sư già; không gán y đã có trong truyện NPC cho PC |
+| Cảnh đêm trăng/mưa phùn | bầu không khí | sự kiện môi trường/đối thoại theo vai PC, không tự thêm tiểu sử NPC |
+
+**Lưu ý:** không sửa đơn thuần `Thầy Tịnh` → `{playerName}`; nhiều đoạn chứa vợ, con, năm tháng cũ, lời nợ, đã xin lỗi, đã ngồi ở nghĩa địa. Đó là **tiểu sử NPC**, cần chuyển thành **hears_story / player_observes / npc_flashback**. Hồi tưởng không cộng thanh tâm và thẻ PC như thể PC thực hiện hành động.
+
+## 3. Tiêu chuẩn kịch bản (9 điểm)
+
+1. **Người sở hữu câu chuyện:** `ownerNpcId` hoặc `environment`; không dùng role để làm ID NPC.
+2. **Góc nhìn:** PC gặp/chứng kiến/tham gia, nghe kể hay xem hồi tưởng; người kể không lẫn.
+3. **Vai hợp lệ:** sư/dân/ma có hành động và xưng hô phù hợp; không tự nhặt vải, hái hoa cho ma hoặc sư tự bứt cây sống.
+4. **Tín hiệu ambient:** thấy/nghe được từ xa mà không bật popup.
+5. **Tương tác chủ động:** `explicit_interact` mới mở hội thoại; có nút `Đi tiếp`.
+6. **Lựa chọn có ý nghĩa:** thay đổi lời thoại, vật thể, quan hệ, ký ức, manh mối hoặc đường mới; không biến tất cả thành bài quiz.
+7. **Kết quả tức thì:** được nghe, thấy, ghi vào Sổ hoặc thay đổi hình; quest không cần luôn rơi thẻ.
+8. **Kết quả khi quay lại:** NPC nhớ, cảnh biến đổi, chống nhận lại reward; nếu không chọn thì NPC vẫn có lịch sinh hoạt riêng.
+9. **Giọng/nguồn:** thoại tự nhiên 1–3 lượt, không giáo điều; `canonical|commentary|game_interpretation|fiction`, lời kinh có nguồn, lời tự viết không mạo nhận trích kinh.
+
+## 4. Nhịp sống có sẵn ở 11 địa điểm — thiết kế không cần quest
+
+| Giờ | Làng, giếng, gốc mít | Ao, bụi tre, cổng nghĩa địa | Tịnh thất, gốc gạo, nghĩa địa, tháp |
 |---|---|---|---|
-| Truyện chính ba vai | `story.js`, `story-nights.js`; sư / ông Tư / bà Sáu | nhiều tuyến chỉ có một kết, không đủ sau 2–3 ngày | **hậu truyện ngắn theo ký ức**, không kể lại mở đầu |
-| Quest quanh làng | `mind.js`, `encounters.js` | auto popup; lời hứa rau má lệch; lựa chọn không đổi NPC/đồ vật nhiều | giao việc chủ động, lời hứa và hậu quả |
-| Tịnh thất / tu tập | ngồi với sư, `robe.js` 5 ngày, hoạt động `reflect.js` | bước y còn dùng nút để qua; không có mô hình học → vận dụng | lời sư đổi theo thẻ học, tiến trình vật dụng hiển thị |
-| Cảnh khám phá | ao, gốc gạo, bia đá, hang và tháp | đa phần chỉ một popup hoặc chữ | chu kỳ cảnh, ánh sáng, dấu tích, đường vòng nhỏ |
-| Khi vắng | `reflect.js` có báo cáo narrative | chưa có sản phẩm / kiến thức được lưu server đúng một lần | kết quả thật, tránh thưởng trải nghiệm thiền tự động |
-| Thời tiết | `story-nights.js` có đêm trăng, mưa phùn; `world.js` có sương | chưa cần engine thời tiết toàn cục | **nắng dịu/trăng/sương là chủ đạo**; mưa nhẹ đôi khi; bão chỉ episode tự chọn |
+| Sớm | Ông Tư nhóm bếp, bà cụ kéo nước; PC mới có thể chỉ đi ngang | sen mở, chim hót, sương trên tre | Sư Tịnh quét sân, kệ sách yên, bóng gạo ngắn |
+| Trưa | chị Ba phơi đồ, bé Na vẽ **nếu đã về nhà** | chuồn chuồn, cá khẽ nổi | y đang phơi nếu đúng tiến trình của **PC sư** |
+| Chiều | ông Tư sửa hàng rào, con Vàng nằm dưới hiên | nắng xiên, tiếng bánh xe nhỏ | tiếng chuông, Sư Tịnh gặp khách, tháp chuyển sắc |
+| Chạng vạng | đèn ngõ, người về sau buổi làm | đom đóm, gió qua tre | gốc gạo xa, nghĩa địa đổi bóng |
+| Đêm trăng | hiên sáng, tiếng dế | bóng trăng trên ao, tre chuyển động | bà Sáu có thể hiện ở gốc gạo khi story đã mở; sư già ngồi ở tịnh thất |
 
-## 2. Ma trận chống viết trùng với kịch bản trong code
+**Không ép một NPC ở nhiều nơi cùng lúc**. Cảnh thời tiết đẹp (nắng dịu, trăng, sương) là trải nghiệm chủ đạo; mưa nhẹ đôi khi thêm biến thể, **bão chỉ chương truyện tự chọn**. Để tiết kiệm asset, có thể đổi pose/ánh sáng/âm thanh trước khi lập AI schedule thật.
 
-| Ý tưởng trong danh mục | Nền đang tồn tại | Cách viết tiếp hợp lý | Cần tránh |
-|---|---|---|---|
-| HG02 "Bảy ngôi nhà — một chiếc bát" | `STORY.monk.scenes.a0...a3` đã có nhà có trẻ, chó vàng, nhà thứ bảy từ chối | **hậu truyện của người ở nhà thứ bảy**: lần sau thấy người quét sân hoặc để bát nước, không bắt người ta phải tin | làm lại y nguyên màn khất thực 7 nhà |
-| HG06 "Ba bát xôi chưa trả" | `STORY.villager` đã nhắc việc ông Tư ăn chịu xôi bà Sáu | câu chuyện **nhận nợ/nhớ ơn người cũ** sau đêm nghĩa địa; không trao vật trực tiếp cho ma | lặp đoạn ông Tư bỗng nhớ nợ lần đầu |
-| HG09 "Bức tranh bé Na" | `encounters.js` có tuyến bé Na và thọ thần | **hậu chuyện** chị Ba/bé Na khi nhiệm vụ bé Na đã xong; nếu chưa chơi vẫn có một hình vẽ ngoài sân để ngắm | tiếp tục bắt người chơi dỗ trẻ lần hai |
-| HG18 "Bà Sáu nghe tiếng xôi" | `STORY.ghost`, `ghost_memory` đều kể ký ức bà Sáu–Hạnh | phản ứng mới của bà **sau khi đã phân biệt bóng người khác với con**; viết cả trường hợp chưa nhận ra | "khám phá" lại thông tin Hạnh là con bà |
-| HG04 "Mũi khâu dưới hiên" | `robe.js` đã có 5 bước theo ngày | tăng tương tác cụ thể + dấu y trong cảnh; **không** tạo quest y mới độc lập | nhân đôi `robe.step` hoặc nhận hai tấm y |
-| HG05 rau má | `mind.js` hiện cho mang cho bà hoặc ông Tư sau khi đã nhận lời bà | sửa **vật phẩm đã hứa**, phát sinh nhánh giúp ông Tư riêng sau đó | tự thưởng Không tham khi không giữ lời |
+## 5. Kiến trúc kết quả và hồi tưởng
 
-**Vấn đề hiển thị thẻ:** album, Sổ kiến thức và Sổ khám phá phải tách ý nghĩa; môi trường có thể thưởng một dấu khám phá mà không cấp tâm sở. Các lời kể như "ngồi xong được định", "tâm nào cõi nấy" cần rà lại vì game chỉ đang dùng mô phỏng, không được quảng bá là quan hệ nghiệp báo chính xác.
+- `ambient`: ánh sáng, tiếng dế, lá rơi, vị trí NPC theo thời gian, không cần lưu từng giọt mưa.
+- `personal`: PC đã gặp Sư Tịnh/Ông Tư/Bà Sáu, biết điều gì, nhận lời gì, thẻ tâm trải nghiệm nào; **per-character**.
+- `npcStory`: ông Tư đã treo đèn/đã biết chuyện cũ, bà Sáu đã kể ký ức nào; có thể được phản ánh trong timeline của từng character cho MVP, về sau có sync chung nếu chốt luật.
+- `worldEffect`: đèn sáng, sân sạch, gáo đã sửa, lối hiện; theo timeline có nguồn `sourceEpisode`, tránh tự chuyển effect giữa các save.
+- `accountMeta`: người chơi đã *xem* một truyện như tư liệu, không mặc định nhân vật thứ hai đã gặp NPC ấy.
 
-### P0 — Vai người dân là Ông Tư, không phải avatar vô danh
+**Ví dụ Giếng làng:** lần đầu PC thấy bà cụ và gáo lỏng; PC dân sửa → lần sau bà cảm ơn và gáo đúng chỗ; PC không sửa → một NPC khác có thể giúp và bà kể về việc ấy. Nếu PC nhận lời rau má → chỉ hoàn thành khi trả đúng bà, không được chuyển nguyên đồ đã hứa sang Ông Tư. Nếu vai ma, chỉ quan sát, không múc nước.
 
-`public/story.js` định nghĩa `ROLE_INFO.villager.who = "Ông Tư đầu xóm"`, con Vàng là chó **nhà ông Tư**. Trong khi `public/mind.js` dùng cùng chuỗi chó cắn/rau má cho vai người chơi, rồi cho lựa chọn **"Mang rau sang nhà ông Tư"**. Nếu `role=villager`, nhân vật vừa là ông Tư vừa đi gặp ông Tư — **lỗi nhập vai có thật**, cần sửa trước khi thêm bất kỳ quest phụ cùng tuyến. Không chỉ đổi lời thoại: cần viết riêng phản ứng khi chủ chó chính là người chơi, chủ động xử lý chuyện con Vàng, và giữ lời hứa với bà cụ. [HG23](human-world-episode-pack-01.md#hg23--con-vàng-và-khoảng-sân-trước-nhà) là phương án biên kịch.
+**Ví dụ Gốc gạo:** trước khi biết chuyện, chỉ có bóng cây đẹp. Sau khi có `metBaSau`, bà có một lời thoại ngắn. Khi tìm ra mảnh chuyện Hạnh, bà mới kể sâu hơn. Người chơi ma không tự hồi tưởng tuổi thơ của Hạnh.
 
-**Phân tuyến rõ:** Sư Tịnh (`monk`) có thể bị chó làm sợ trong một chuyện nếu hợp lý nhưng không được ép bị cắn mỗi lần đi ngang; Ông Tư (`villager`) chịu trách nhiệm với chó nhà; Bà Sáu (`ghost`) chỉ quan sát. Hiện trạng code **chưa sửa** trong PR tài liệu này.
+## 6. Quy tắc văn phong: đời thường, nhẹ, có khoảng trống
 
-## 3. Quy tắc biên tập mới: một cảnh đáng chơi gồm 9 thông tin
+- Câu kể ngắn, một ý một lượt; không giải thích từ `Niệm`, `Định`, `Vô thường` ngay khi nhìn thấy lá.
+- Nhân vật cũ giữ tiếng nói riêng: Ông Tư hơi cộc, duyên; Sư Tịnh bình thản mà không thuyết pháp liên tục; bà Sáu giàu cảm xúc nhưng không kể lể mọi cảnh.
+- Người chơi được quyết định sự tò mò; gợi ý `Nghe thêm`, `Hỏi thầy`, `Để sau` thay cho màn đọc bắt buộc.
+- Không cố nhồi slang Gen Z. Tính trẻ trung đến từ nhịp nhanh, sự thân thiện và các lựa chọn có tính đời sống.
+- Phật pháp: xuất hiện qua hành động rồi mới có thể học trong Sổ. Mô phỏng và giáo lý được phân loại rõ.
 
-Mỗi scene nộp để dựng phải có:
+## 7. Việc ưu tiên trước code
 
-1. **Promise:** vì sao đáng dừng lại dù không cần quest?
-2. **Signal/ambient:** người chơi thấy/nghe gì từ xa, không ngắt điều khiển?
-3. **Trigger chủ động:** bấm `Quan sát / Nghe / Làm thử`, không auto popup theo khoảng cách.
-4. **Prerequisite:** điều kiện vai, nơi, thời điểm, ký ức, weather; điều kiện không đạt thì có cảnh bình thường nào?
-5. **Choice có khác biệt:** mỗi lựa chọn tối thiểu thay đổi một trong **lời thoại, dấu sổ, vật thể, quan hệ, lối phụ**. Nếu hai nút chỉ cùng một lời kết, gom lại.
-6. **Payoff ngay:** ít nhất một phản hồi hữu hình (animation, đồ vật, NPC, khung cảnh, dòng Sổ), không yêu cầu đợi ngày hôm sau để có thứ gì.
-7. **Payoff lần sau:** một chi tiết đổi khi trở lại, nhưng NPC không đứng chờ vô hạn khi người chơi bỏ qua.
-8. **Skip/revisit:** bỏ qua vẫn đi tiếp, xem lại không nhân quà, không mở lại cảnh giới thiệu đã biết.
-9. **Lore & role:** `loreBasis` rõ, hành động phù hợp vai, lời Phật học dẫn nguồn nếu ghi là kinh/chú giải.
+**P0 (docs):** chốt PC/NPC, viết lại Episode Pack 01, cập nhật HG03/HG05/HG18 và catalog, thống nhất các file world/day/game rules. **Chưa code**.
 
-**Một scene không quest vẫn cần phần thưởng**: dấu cảnh trong Sổ, biến thể của âm thanh/ánh sáng, một góc nhìn hoặc một câu gợi tò mò. Không phải lúc nào cũng tăng thẻ.
+**P1 (PR kỹ thuật riêng):** chuẩn role picker; thêm `StoryContext`, `npcId` và các cảnh PC mới tới làng; giữ legacy scene dưới dạng hồi tưởng; phải có migration/compat để không mất thẻ/vật phẩm.
 
-## 4. Nhịp sinh hoạt tại 11 địa danh không cần quest
+**P2 (content prototype):** HG21 ngọn đèn, HG22 quét sân, HG23 gặp Ông Tư và Vàng, HG25 sửa gáo, HG26 nghe chuông; test không popup.
 
-Bản sau là **lịch diễn xuất ambient, không phải lịch mở khóa cưỡng bức**. Không thêm NPC mới nếu có thể dùng nhân vật hiện hữu.
+**P3 (narrative depth):** HG24 gốc gạo theo 3 buổi, HG03 học kinh offline và HG18 bà Sáu, liên kết kiến thức và khám phá.
 
-| Khung giờ trong game | Làng / giếng / gốc mít | Ao / bụi tre / cổng nghĩa địa | Tịnh thất / gốc gạo / mộ / tháp |
-|---|---|---|---|
-| Rạng sáng | ông Tư nhóm bếp, bà cụ kéo gầu | sương ao, tiếng chim nhỏ, con Vàng ngủ | sư già bước chậm dưới hiên, giọt sương trên lá gạo |
-| Sáng | chị Ba phơi khăn, bé Na vẽ (nếu đã về nhà), đồ hàng đổi | sen mở, chuồn chuồn, bước chân qua tre | sư xem y, mặt tháp sáng hơn; mộ có bóng tre |
-| Chiều | ông Tư sửa giỏ/nhà, bà cụ ngồi đan | ánh nắng xiên, tiếng bánh xe xa | tiếng chuông, sách còn mở, bóng cây gạo dài |
-| Chạng vạng | đèn nhà thắp, người đi về | đom đóm, gió qua tre | ánh đèn dưới tháp, vệt rêu nổi, nghĩa địa tĩnh |
-| Đêm | đèn hiên, con Vàng nằm yên | trăng trên ao, tiếng ếch | sư ngồi, bà Sáu nhìn từ xa, chuông rất khẽ |
+**P4 (map/cõi giới):** chỉ khi Nhân gian có vòng đi dạo → tò mò → lựa chọn → thay đổi khi trở lại.
 
-**Phụ thuộc trạng thái:** bé Na chỉ xuất hiện ở nhà trong cảnh "đã về" nếu nhiệm vụ cứu trẻ hoàn tất; không có hậu cảnh cho NPC chưa được giới thiệu làm lộ bí mật. Bà Sáu chỉ quan sát người sống, không cầm vật; sư không hái cây sống. Khi không có người chơi, NPC vẫn có một chu kỳ tự đi từ trạng thái *đang làm → xong* để làng không bị đứng hình.
+## 8. Acceptance checklist
 
-**Phương án giảm chi phí:** ban đầu dùng chuyển sprite/pose và lời thoại ambient, không lập hệ AI NPC tự do. Đúng thời điểm và trạng thái là đủ.
-
-## 5. Thế giới nhất quán qua từng lần trở lại
-
-### 5.1. Ba loại thay đổi
-
-- **Ambient (không lưu từng hạt bụi):** ánh sáng, hoa, gió, tiếng bước chân, sinh hoạt thường; mỗi ngày thay một ít, không cần đếm "đã thu thập".
-- **World effects (lưu):** sân đã quét; đèn đã treo; vải dưới hiên; rau đã trả; hình bé Na đã đặt trên tường; mái đã sửa. Ghi `effectId`, `sourceQuestId`, `visibleAtPlace`, `expiresOrEvolves`.
-- **Character memory (lưu):** ai đã nhận lời, ai đang chờ, ai đã xin lỗi, ai đã nghe câu chuyện nào; dùng mở lời thoại/lối phụ, không "tăng thân thiện" vô hạn.
-
-### 5.2. Ví dụ cùng một vị trí, ba thời điểm
-
-**Giếng làng**:
-- Lần đầu: bà cụ đang rửa chiếc rổ. Có thể ngắm giếng; bà chủ động nhờ rau nếu người chơi nhấn hỏi.
-- Sau khi trả rau: bà cụ đun nồi canh dưới hiên; khi gặp nói "Con giúp bà hôm trước đó" thay vì lại nhờ cùng một việc.
-- Sau vài ngày: bà cụ đã tự làm việc khác; nồi canh không đứng mãi như phần thưởng treo; có thể hỏi về ông Tư hoặc chiếc giỏ mới.
-
-**Tịnh thất**:
-- Chưa đọc: cuốn kinh còn khép.
-- Giao học: nhân vật đang học; khi trở lại có trang được đánh dấu.
-- Đã học: cuốn kinh được xếp lại; sư hỏi về một ý đã nghe. Không phát lại popup "Lần đầu thấy kệ kinh".
-
-**Gốc gạo**:
-- Lúc quang: bóng mát, tiếng lá.
-- Có câu chuyện bà Sáu: có một lời nói về ký ức, tùy vai người nghe.
-- Trở lại đêm khác: sự thay đổi là âm thanh/đốm sáng và một mảnh chuyện, không tự xuất hiện quest bé Na với vai ma.
-
-## 6. Nguyên tắc xác suất câu chuyện (phân bổ không phải luật cứng)
-
-- **Cảnh thư giãn/tự khám phá:** luôn sẵn hoặc xuất hiện theo giờ/mùa, không cần random quest.
-- **Một câu chuyện theo quan hệ/NPC:** có 1 lựa chọn ngắn rõ; có cooldown; chỉ đề nghị khi đúng điều kiện.
-- **Một bất ngờ trong ngày:** có thể có hoặc không; không phải ngày nào cũng 2–3 nhiệm vụ. `recentStoryletIds` ngăn lặp và tránh spam.
-- **Thời tiết:** bầu trời đẹp/dễ chịu **85–90%+ thời gian dạo chơi** là mục tiêu thử; mưa nhẹ đôi khi mở cảnh riêng. **Bão không random; chỉ là chương tự chọn**. Không khóa thưởng chính bởi mưa/bão.
-- **Một góc nhìn được phát hiện nhưng chưa hiểu:** cho phép Sổ ghi `seen`; khi học được kiến thức hoặc gặp người khác mới thêm `understood`, không xóa `seen`.
-
-## 7. Rủi ro biên tập và Phật học cần duyệt
-
-- **Thực hành của vai sư:** trong `story.js` có cảnh mang cơm đặt lên mộ; `mind.js` có nhánh hái rau và `encounters.js` có hái sen. Cần **giáo thọ duyệt** tính phù hợp với giới luật và truyền thống; không lấy logic game làm cách mô tả nghi thức Theravāda.
-- **Ngạ quỷ:** không trao vật trực tiếp cho hồn ma, không cho bà Sáu dắt trẻ/hái hoa/giao hàng; hồi hướng phải là mạch truyện có nguồn và được duyệt, không bảo đảm kết quả siêu nhiên.
-- **Cơ chế thẻ và tâm:** không nói một lựa chọn "lấy điểm Định" tương đương tu chứng; Tín không được dùng để trừng phạt người ham đặt câu hỏi.
-- **Truyện mới HG21–HG26:** mặc định `loreBasis=fiction` hoặc `game_interpretation` đối với thao tác, chưa tuyên bố là trích kinh.
-- **Trẻ nhỏ:** bé Na là người sống có mẹ chị Ba; không làm trẻ bị lạc liên tục chỉ để tạo nhiệm vụ.
-- **Bối cảnh xã hội:** vật thể/trace có thể phản ánh ảnh hưởng của người khác nếu đã có hệ thống phù hợp, nhưng không bắt online/chờ người chơi khác, không biến nơi vắng thành trống rỗng.
-
-## 8. Ưu tiên sau review
-
-**P0 — viết & rà nội dung:** thống nhất vai và hậu truyện; giữ lời hứa; phân loại nguồn; mô tả "đi ngang không popup"; gói tập nhân gian nhỏ trong [Episode Pack 01](human-world-episode-pack-01.md).
-
-**P1 — prototype nội dung không asset mới:** HG01 sân tịnh thất → HG03 kiến thức học lúc vắng → HG05 rau má (sửa) → HG11/HG12 cảnh nhìn → HG21 đèn đầu ngõ. Việc có thể dùng cùng 11 địa danh và asset tạm.
-
-**P2 — chiều sâu theo vai:** HG18 ký ức bà Sáu; HG23 chuyện con Vàng; HG24 chuyện chiếc khăn/cây gạo; tạo phản hồi khác theo lịch sử đã làm.
-
-**P3 — sau thử nghiệm người thật:** phát triển 2–3 biến thể cho mỗi cảnh được quay lại nhiều; tính tiếp hang, cõi ngạ quỷ và trời. **Không dựng map mới trước khi vòng Nhân gian gây tò mò và để lại kết quả hoạt động.**
-
-## 9. Checklist review PR về sau
-
-- [ ] Từng story có owner NPC/role rõ, không biến nhân vật khác thành vai không phù hợp.
-- [ ] Đường vào và đường ra thuộc 11 địa danh hiện hữu, hoặc ghi rõ cần asset/map mới.
-- [ ] Một lần nhìn đầu tiên có đủ giá trị, không bắt quest.
-- [ ] Lời thoại không dạy đạo một cách máy móc; những câu giải thích kinh/luận có nguồn.
-- [ ] Khi trở lại sau 1, 3, 7 ngày có sự thay đổi/đường tiếp, nhưng không phạt vì nghỉ.
-- [ ] Vật phẩm và phần thưởng được lưu đúng một lần, không nhân do mở lại popup.
-- [ ] Một NPC không thể ở hai nơi không tương thích cùng lúc trong cùng thời điểm.
-- [ ] Một sự kiện đã hoàn thành không bị phát lại ở trạng thái "chưa biết".
-- [ ] Trong ngày có thể **không làm gì** mà vẫn ngắm cảnh, nghe âm thanh, trở lại.
-- [ ] Mọi feature chưa có đều ghi **design-only**, không lẫn với code đã ship.
+- [ ] Tên PC bất kỳ không bị thay bởi tên NPC trong picker/câu thoại/nhật ký.
+- [ ] PC `villager` gặp Ông Tư như một NPC khác; con Vàng thuộc Ông Tư.
+- [ ] PC `monk` gặp Sư Tịnh; không tự có tiểu sử thầy từng bị xua đuổi.
+- [ ] PC `ghost` gặp hoặc biết chuyện bà Sáu, không tự có con gái Hạnh.
+- [ ] Hồi tưởng NPC không tự nhận thẻ tâm hoặc sửa ký ức riêng của PC.
+- [ ] Lịch/nhánh NPC trong game không va chạm vai, nơi, giờ hoặc thời tiết.
+- [ ] Có thể đi dạo 5–10 phút mà không bị popup và chưa nhận quest.
+- [ ] Cảnh bình yên, lời thoại ngắn và không bão ngẫu nhiên.
+- [ ] Trả đồ cho đúng người đã nhận lời; NPC nhớ kết quả.
+- [ ] Guest, account nhiều nhân vật, save cũ và đổi tên đều không mất tiến trình sau migration khi code.
