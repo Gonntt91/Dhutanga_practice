@@ -26,6 +26,8 @@
 - **Giọng văn:** nhẹ, gần người trẻ bằng câu ngắn, sinh hoạt và hài hước tự nhiên; không giáo điều, không ép trendy slang. Mặc định 1–3 lượt thoại/scene nhỏ, có `Nghe thêm`, `Đi tiếp`, phần kinh/luận dài ở Sổ.
 - Mẫu kiểm tra: PC dân nói chuyện với Ông Tư mà không gặp chính mình; PC ma thấy câu chuyện Bà Sáu mà không tự có con Hạnh; PC sư gặp Sư Tịnh mà không mặc định đã bị xua đuổi.
 
+> **Một vai, một trải nghiệm đáng chơi:** [Ghost Campaign Bible](ghost-playable-campaign-bible.md) quy định PC ma phải có **cơ chế khác** thay vì chỉ bị cấm làm việc của người sống: hù nhẹ/âm thanh/giấc mơ, giúp người dù không nhặt đồ, khám phá cõi khuất và nghe hồi hướng. [Role Transition & Spoiler Isolation](role-transition-and-spoiler-isolation.md) quy định **dân phát nguyện xuất gia không chỉ vì đạt điểm tâm**, kết hồn ma tái sinh là **ending chứ không phải đổi sang avatar trời**, và manh mối phải **per-character** khi cùng account tạo nhiều nhân vật. **Cần review trước code.**
+
 ## 2. Nhiều động cơ, cùng một thế giới
 
 | Phong cách (không bắt chọn persona) | Động lực chính | Một phiên chơi có giá trị khi… | Không được ép |
