@@ -9,6 +9,10 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Literata:opsz,wght@7..72,400;7..72,500&family=Be+Vietnam+Pro:wght@400;500&display=swap">
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="items.css">
+<link rel="stylesheet" href="palace.css">
+<link rel="stylesheet" href="milestones.css">
+<link rel="stylesheet" href="reflect.css">
 </head>
 <body>
 <div id="app" class="app">
@@ -17,15 +21,123 @@
   <header class="hud">
     <div class="hud-left">
       <div id="presence-count" class="label">Đang kết nối…</div>
-      <div id="role-chip" class="role-chip" hidden></div>
+      <div class="role-row">
+        <div id="role-chip" class="role-chip" hidden></div>
+        <button id="mind" class="mind" type="button" hidden aria-label="Màu tâm trạng">
+          <span class="orb"></span><span id="mind-name" class="mind-name"></span>
+        </button>
+      </div>
     </div>
     <div class="hud-right">
+      <button id="map-btn" class="pill" type="button">Bản đồ</button>
       <button id="traces-btn" class="pill" type="button">Dấu vết <span id="traces-count" class="count">0</span></button>
       <button id="sound-toggle" class="pill" type="button" aria-pressed="false" aria-label="Bật âm thanh">Âm thanh</button>
     </div>
   </header>
 
+  <div id="sky" class="sky" hidden aria-live="polite">
+    <canvas id="sky-canvas" class="sky-canvas" width="168" height="64"></canvas>
+    <div class="sky-text"><span id="sky-name" class="sky-name"></span><span id="sky-hint" class="sky-hint"></span></div>
+  </div>
+  <div class="left-btns">
+    <button id="quest-btn" class="pill quest-btn" type="button" hidden>Nhiệm vụ</button>
+    <button id="cards-btn" class="pill" type="button" hidden>Thẻ <span id="cards-count" class="count">0</span></button>
+  </div>
+  <section id="quest-panel" class="quest-panel" hidden aria-label="Việc đang chờ">
+    <div class="mind-info-head"><span class="label">Việc đang chờ</span><button id="quest-close" class="text-btn" type="button">Đóng</button></div>
+    <div class="quest-tabs">
+      <button id="qtab-tasks" class="pill" type="button" aria-pressed="true">Việc đang chờ</button>
+      <button id="qtab-book" class="pill" type="button" aria-pressed="false">Sổ khám phá <span id="book-count" class="count"></span></button>
+    </div>
+    <div id="quest-tasks">
+    <p id="quest-title" class="quest-title"></p>
+    <p id="quest-body" class="hint"></p>
+    <p id="quest-tip" class="quest-tip" hidden></p>
+    <div class="quest-actions">
+      <button id="quest-go" class="primary" type="button">Đưa tôi tới đó</button>
+      <button id="quest-tip-go" class="pill" type="button" hidden>Về tịnh thất đọc kinh</button>
+      <button id="quest-cancel" class="pill" type="button" hidden>Bỏ, quay lại chỗ cũ</button>
+    </div>
+    <div id="quest-side" class="quest-side" hidden>
+      <p class="label">Việc nhỏ và chuyện lạ</p>
+      <div id="quest-side-list"></div>
+    </div>
+    <div id="quest-save" class="quest-side" hidden>
+      <p class="label">Lưu nhân vật</p>
+      <p class="hint">Bạn đang chơi thử, tiến trình chỉ nằm trên máy này. Đăng nhập để lưu nhân vật và chơi tiếp lần sau, ở máy nào cũng được.</p>
+      <button id="quest-login" class="pill" type="button">Đăng nhập để lưu</button>
+    </div>
+    <p class="hint">Bạn có thể đi dạo và khám phá tự do bất cứ lúc nào. Việc đang chờ vẫn ở đây.</p>
+  </div>
+    <div id="quest-book" hidden></div>
+  </section>
   <div id="toast" class="toast" aria-live="polite"></div>
+  <div id="kbd-hint" class="kbd-hint" hidden>
+    <span>WASD / mũi tên: đi · M: bản đồ · +/−: phóng to · Enter: trò chuyện · Esc: đóng</span>
+    <button id="kbd-hint-close" class="text-btn" type="button" aria-label="Ẩn gợi ý phím">Ẩn</button>
+  </div>
+  <button id="look-back" class="pill look-back" type="button" hidden>Về chỗ</button>
+
+  <div id="zoom-ctl" class="zoom-ctl" hidden>
+    <button id="zoom-in" class="pill zoom-btn" type="button" aria-label="Phóng to">+</button>
+    <button id="zoom-out" class="pill zoom-btn" type="button" aria-label="Thu nhỏ">−</button>
+  </div>
+
+  <section id="mind-info" class="mind-info" hidden aria-label="Ý nghĩa màu tâm">
+    <div class="mind-info-head"><span class="label">Màu của tâm</span><button id="mind-info-close" class="text-btn" type="button">Đóng</button></div>
+    <div id="mind-stats" class="mind-stats" hidden></div>
+    <ul class="mind-legend">
+      <li><i style="background:#0b0b0d"></i><b>Đen</b>: sân, u tối, tức giận.</li>
+      <li><i style="background:#c62a1e"></i><b>Đỏ</b>: tham, bám chấp, nhớ nhung không buông.</li>
+      <li><i style="background:#c9893a"></i><b>Xám cam</b>: mê mờ, lưỡng lự, chưa thấy rõ.</li>
+      <li><i style="background:#e6c56f"></i><b>Vàng</b>: tin tưởng, hoan hỷ, an ổn.</li>
+      <li><i style="background:#eef3ff"></i><b>Trắng như ánh trăng</b>: trong sáng, thấy rõ.</li>
+    </ul>
+    <p class="hint">Màu đổi theo lựa chọn của bạn. Điều xấu làm màu tối đi một lúc, đọc kinh, ngồi quan sát, buông bỏ làm màu sáng lên rồi dần trở về. Người khác cũng thấy màu tâm của bạn quanh nhân vật.</p>
+    <p class="hint">Ý tưởng mượn từ Thanh Tịnh Đạo (chương 3), nơi người ta ví màu máu nơi tim của người nặng về tham, sân, si, tín, tuệ khác nhau (đỏ, đen, đục như nước rửa thịt, vàng như hoa kaṇikāra, và trong sáng như dầu mè). Game chỉ mượn để vẽ, không phải giáo lý chính xác, và chưa được thầy Theravāda duyệt.</p>
+  </section>
+
+  <!-- nearby chat -->
+  <button id="chat-btn" class="pill chat-btn" type="button" hidden>Trò chuyện <span id="chat-badge" class="count" hidden>0</span></button>
+  <section id="chat-panel" class="chat-panel" hidden aria-label="Trò chuyện với người ở gần">
+    <div id="chat-tabs" class="chat-tabs" role="tablist" hidden>
+      <button id="chat-tab-near" class="pill" type="button" role="tab" aria-selected="true">Quanh đây</button>
+      <button id="chat-tab-friends" class="pill" type="button" role="tab" aria-selected="false">Người quen</button>
+    </div>
+    <div class="chat-head">
+      <span id="chat-head-label" class="label">Chỉ người ở gần nghe thấy</span>
+      <span class="chat-head-actions">
+        <button id="chat-mute" class="text-btn" type="button" aria-pressed="false">Tắt chat</button>
+        <button id="chat-close" class="text-btn" type="button">Đóng</button>
+      </span>
+    </div>
+    <div id="chat-near">
+      <ol id="chat-log" class="chat-log" aria-live="polite"></ol>
+      <p id="chat-note" class="chat-note"></p>
+      <form id="chat-form" class="chat-form" autocomplete="off">
+        <input id="chat-input" maxlength="80" placeholder="Chào một tiếng…" enterkeyhint="send">
+        <button class="primary chat-send" type="submit">Gửi</button>
+      </form>
+    </div>
+    <div id="chat-friends" hidden>
+      <ol id="chat-friends-list" class="friend-list"></ol>
+      <p id="chat-friends-note" class="chat-note"></p>
+    </div>
+  </section>
+
+  <!-- map panel -->
+  <section id="map-panel" class="panel map-panel" hidden aria-label="Bản đồ nghĩa địa">
+    <div class="panel-head">
+      <h2 class="label">Bản đồ</h2>
+      <button id="map-close" class="text-btn" type="button">Đóng</button>
+    </div>
+    <p id="map-hint" class="hint">Chạm vào một chỗ để nhìn sang đó. Nhân vật vẫn ở yên.</p>
+    <canvas id="minimap" class="minimap" aria-label="Bản đồ nghĩa địa"></canvas>
+    <div class="map-actions">
+      <button id="map-look" class="pill" type="button" disabled>Nhìn sang đó</button>
+      <button id="map-go" class="primary" type="button" disabled>Đi tới đó</button>
+    </div>
+  </section>
 
   <!-- walking prompt -->
   <div id="walk-bar" class="walk-bar" hidden>
@@ -57,8 +169,72 @@
       <div id="choices" class="choices"></div>
       <div class="sheet-foot">
         <button id="gesture" class="pill" type="button"></button>
+        <button id="explore" class="pill" type="button">Đi dạo</button>
         <button id="leave" class="text-btn" type="button">Đổi vai</button>
       </div>
+    </div>
+  </section>
+
+  <!-- find card: a small side scene when the player examines something lying around -->
+  <section id="find-card" class="sheet find-card" hidden aria-live="polite">
+    <div class="sheet-body">
+      <div class="label find-label">Một thứ bị bỏ quên</div>
+      <div id="find-lines" class="lines"></div>
+      <div id="find-choices" class="choices"></div>
+    </div>
+  </section>
+
+  <!-- mind: quest beats, survey, sitting -->
+  <section id="mind-card" class="sheet find-card mind-card" hidden aria-live="polite">
+    <div class="sheet-body">
+      <div id="mind-label" class="label find-label"></div>
+      <div id="mind-lines" class="lines"></div>
+      <div id="mind-extra"></div>
+      <div id="mind-choices" class="choices"></div>
+    </div>
+  </section>
+
+  <!-- a mental-factor card being revealed -->
+  <section id="card-reveal" class="card-reveal" hidden aria-live="polite">
+    <p id="card-reveal-label" class="label"></p>
+    <div id="card-reveal-slot"></div>
+    <button id="card-reveal-ok" class="primary" type="button">Giữ thẻ này</button>
+  </section>
+
+  <!-- album of cards -->
+  <section id="cards-panel" class="panel" hidden aria-label="Thẻ tâm sở">
+    <div class="panel-head">
+      <h2 class="label">Thẻ tâm sở</h2>
+      <button id="cards-close" class="text-btn" type="button">Đóng</button>
+    </div>
+    <p class="hint">Mỗi việc bạn làm có những tâm sở đi kèm. Gặp lại một tâm sở thì thẻ mở thêm một mặt. Đây là mô phỏng giản lược để chơi.</p>
+    <div id="cards-list"></div>
+  </section>
+
+  <!-- inside the abandoned house (2.5D) -->
+  <section id="room" class="room" hidden aria-label="Bên trong nhà hoang">
+    <canvas id="room-canvas" class="room-canvas"></canvas>
+    <button id="room-close" class="pill room-close" type="button">Ra ngoài</button>
+    <p id="room-caption" class="room-caption"></p>
+    <div id="room-shrine" class="room-shrine" hidden>
+      <canvas id="shrine-canvas" class="shrine-canvas"></canvas>
+      <p id="shrine-caption" class="room-caption shrine-caption"></p>
+      <div class="shrine-actions">
+        <button id="shrine-bow" class="primary" type="button">Đảnh lễ ba lần</button>
+        <button id="shrine-close" class="pill" type="button">Quay lại</button>
+      </div>
+    </div>
+    <div id="room-letter" class="room-letter" hidden>
+      <article class="paper" aria-live="polite">
+        <h3 id="letter-title" class="paper-title"></h3>
+        <div id="letter-body" class="paper-body"></div>
+        <div id="paper-nav" class="paper-nav" hidden>
+          <button id="paper-prev" class="pill" type="button">‹ Trước</button>
+          <span id="paper-page" class="paper-page"></span>
+          <button id="paper-next" class="pill" type="button">Sau ›</button>
+        </div>
+        <button id="letter-close" class="pill paper-close" type="button">Gấp thư lại</button>
+      </article>
     </div>
   </section>
 
@@ -67,10 +243,29 @@
     <div class="picker-inner">
       <h1 class="display">Đêm nay, bạn là ai?</h1>
       <p class="lede">Một đêm ở nghĩa địa đầu làng, nhìn qua ba đôi mắt. Người khác đang chơi cùng lúc sẽ hiện lên trong cảnh, và việc họ làm có thể đổi điều bạn thấy.</p>
-      <label class="label" for="nick">Tên hiển thị (không bắt buộc)</label>
+      <p id="night-note" class="hint" hidden></p>
+      <div id="account" class="account"></div>
+      <div id="char-list" class="char-list" hidden></div>
+      <h2 id="new-title" class="label new-title">Chơi ngay</h2>
+      <label id="nick-label" class="label" for="nick">Tên hiển thị (không bắt buộc)</label>
       <input id="nick" maxlength="24" autocomplete="off" placeholder="Một người lạ">
       <div id="role-list" class="roles"></div>
+      <p class="disclaimer credits">Tiếng gà, quạ, chó, cú, chim là ghi âm thật từ Wikimedia Commons (alys, National Park Service, Amada44, Vianney Bajart, L. Shyamal, Saurmandal, V. Arkhipov, Ashwin Baindur). Chi tiết giấy phép trong sounds/CREDITS.md.</p>
+      <p class="disclaimer">Các chỉ số tâm trong game là mô phỏng để chơi, không phải thước đo tâm thật.</p>
       <p class="disclaimer">Đây là trải nghiệm mô phỏng để chiêm nghiệm hạnh đầu đà. Xin đừng tự ý ngủ ở nghĩa địa hay nhà hoang ngoài đời thật.</p>
+    </div>
+  </section>
+
+  <!-- profile: the signed-in player's characters -->
+  <section id="profile" class="panel profile" hidden aria-label="Nhân vật của tôi">
+    <div class="panel-head">
+      <h2 class="label">Nhân vật của tôi <span id="profile-user" class="profile-user"></span></h2>
+      <button id="profile-close" class="text-btn" type="button">Đóng</button>
+    </div>
+    <p id="save-status" class="save-status" role="status" aria-live="polite">Đã lưu</p>
+    <div class="profile-body">
+      <nav id="profile-list" class="profile-list" aria-label="Danh sách nhân vật"></nav>
+      <div id="profile-detail" class="profile-detail"></div>
     </div>
   </section>
 
@@ -86,9 +281,30 @@
   </section>
 </div>
 
+<script src="config.js"></script>
 <script src="story.js"></script>
+<script src="story-nights.js"></script>
+<script src="chapters.js"></script>
 <script src="audio.js"></script>
 <script src="world.js"></script>
+<script src="buddha.js"></script>
+<script src="room.js"></script>
+<script src="items.js"></script>
+<script src="save.js"></script>
+<script src="social.js"></script>
+<script src="progress.js"></script>
+<script src="cetasika-art.js"></script>
+<script src="cetasika.js"></script>
+<script src="milestones.js"></script>
+<script src="village.js"></script>
+<script src="palace.js"></script>
+<script src="practice-rules.js"></script>
+<script src="mind.js"></script>
+<script src="encounters.js"></script>
+<script src="robe.js"></script>
+<script src="avatar.js"></script>
+<script src="profile.js"></script>
+<script src="reflect.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
