@@ -52,6 +52,20 @@
 >
 > `Đi dạo tiếp` → không quest.
 
+## 2.3. Thẻ tâm cho PC ma — thu thập bằng lựa chọn, không sao chép HG27
+
+Hồn ma cũng được nhận thẻ **qua hành động có ngữ cảnh của mình**, không chỉ nhìn NPC làm. Đây là **trải nghiệm mô phỏng**, không chẩn đoán tâm thật; không nhất thiết thu đủ trong một quest.
+
+| Tình huống | Mốc chủ động để xét thẻ | Tránh cách làm sai |
+|---|---|---|
+| G03 người đi tìm đồ | PC nghe người ấy lo lắng, **chọn giúp thay vì bỏ qua** → có thể ghi **Bi** | chỉ nhìn thấy vật rơi không tự rơi Bi |
+| G03 người tìm lại được đồ | PC chứng kiến người đó vui và **chọn vui theo** → có thể ghi **Tùy hỷ** | không cấp Tùy hỷ chỉ vì NPC tự xong quest |
+| G01 hù nhẹ | PC nhận ra đã làm người khác sợ, **chọn ngừng hù và dẫn họ về an toàn** → tình huống minh họa **Không sân**, tùy catalog | không khuyến khích hù gây hại để farm thẻ bất thiện rồi “chuộc” |
+| G04 tiếng vọng bến | PC chủ động phân biệt âm vọng giả với tiếng gọi thật, thử quan sát nhiều lần → cơ hội **Niệm** theo luật thực hành trong game | không coi việc đi qua bến là đạt Niệm/Định |
+| Chuyện sâu hơn về vật PC còn luyến tiếc (viết sau) | PC chủ động không cố chiếm giữ một kỷ vật/ý niệm của người khác → có thể minh họa **Không tham** | **không** tặng Không tham chỉ vì PC ma không thể nhặt đồ |
+
+**Quy tắc:** cùng một thẻ có thể được học ở nhiều vai bằng **tình huống khác nhau**, nhưng không bắt ma lặp chính xác chuỗi HG27 **Bi → Không tham → Tùy hỷ** để cân bằng. Mỗi `cardId + eventId + characterId` nhận một lần; người chỉ chơi hồn ma có một album thẻ có tiến triển thực tế.
+
 ## 3. Ghost-only map: “Lối nước khuất” và Bến Không Tiếng
 
 **Đề xuất đồ thị theo góc nhìn:**
