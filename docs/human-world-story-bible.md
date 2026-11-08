@@ -20,6 +20,8 @@
 
 > **QUYẾT ĐỊNH CHUYỂN ĐỔI (08-11-2026):** [Player-centric Narrative Model](player-character-narrative-model.md) là chuẩn chính. **PC có tên riêng, vai chỉ là sư/dân/ma; Sư Tịnh, Ông Tư, Bà Sáu đều là NPC.** `develop` vẫn có thiết kế cũ gắn role với NPC; đây là lỗi legacy cần xử lý trong PR code sau, không phải quy tắc khi viết thêm. Xem [Narrative Review v0.3](human-world-narrative-review.md). Lời thoại viết ngắn, ấm, tự nhiên, bớt giáo điều; khung cảnh kể phần lớn câu chuyện.
 
+> **Signature quest mở thế giới kỳ ảo sớm:** [HG27 — Bà ngoại ngạ quỷ](human-world-early-mysteries-and-peta-quest.md) giữ cảnh giúp bà hồi hướng, bà sáng rồi tan vào ánh trăng. Bộ ba thẻ là **Bi** khi nghe bà kể và chọn giúp → **Không tham** lúc thực sự bố thí để hồi hướng → **Tùy hỷ** sau hồi hướng khi vui vì bà được an/rời cảnh khổ. Phân biệt bà ngoại với **NPC Bà Sáu**. Cùng hệ thống, thọ thần và chư thiên có lời đồn/dấu hiệu sớm nhưng không đứng xuất hiện thường xuyên; xem tài liệu HG27.
+
 ## 1. Vai trò của Nhân gian
 
 Nhân gian là nơi người chơi **muốn trở về**, dù họ đã đi tới hang, cõi dưới hoặc biên cảnh cõi trời. Không chỉ là nơi nhận nhiệm vụ và học thẻ.
