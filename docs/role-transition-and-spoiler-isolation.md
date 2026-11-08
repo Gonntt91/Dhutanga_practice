@@ -4,6 +4,8 @@
 >
 > **Mục tiêu:** người chơi có thể tạo nhiều PC độc lập; PC dân **có thể phát tâm xuất gia, chuyển hành trình sang nhà sư**; PC ma có thể nhận hồi hướng và **tự chọn khép lại truyện sớm**, với đoạn kết gợi tái sinh làm người/thọ thần/chư thiên nhưng **không trở thành một avatar thiên giới có gameplay**. Không ép người chơi có chỉ số tâm cố định để được "xuất gia" hoặc "siêu thoát".
 
+> **Bản thoại / scene chi tiết cho việc thử nghiệm trước coding:** [Ghost Episode Pack 01 — G01/G03/G04](ghost-episode-pack-01.md) và [Ghost Episode Pack 02 — G02/G05/G06/G07](ghost-episode-pack-02.md). G03 đã chọn **bà cụ giếng + chiếc túi kim chỉ**, G04 dùng **một phần bến giao**, G07 ưu tiên **ending chung** cho MVP; các epilogue tái sinh riêng để duyệt sau. **Chưa đổi schema hoặc code.**
+
 ## 1. Năm quyết định an toàn cần chốt
 
 1. **PC là một người duy nhất qua thời gian:** tên/characterId giữ nguyên khi người dân xuất gia; `role` phải có lịch sử và giai đoạn, không đổi `characterId` hoặc xóa quan hệ cũ.
