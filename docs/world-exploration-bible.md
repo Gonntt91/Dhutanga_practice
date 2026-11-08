@@ -132,16 +132,18 @@ Ba vòng lặp **đồng thời, không ép buộc**:
 
 Mỗi nơi có **phần thưởng khám phá tối thiểu** dù không gặp quest: ảnh cảnh/tên cảnh, một dấu vết để suy đoán, một mục Sổ khám phá và một đường dẫn đến nơi khác. Không bắt buộc thu thập toàn bộ để qua cốt truyện.
 
+> **Chuẩn nhân vật mới:** xem [Player-centric Narrative Model](player-character-narrative-model.md). Mọi hành trình cõi giới thuộc PC có tên và progress riêng; Sư Tịnh, Ông Tư, Bà Sáu là NPC trong thế giới, không phải ba nhân vật mà player buộc phải hóa thân. Phân biệt **quy tắc hành động của PC `ghost`** với chuyện ký ức **NPC Bà Sáu**.
+
 ## 7. Hệ nhân vật và phép hành động theo vai
 
 - **Nhà sư:** tu học, quán sát, nghe pháp, thực hành trong rừng, phù hợp giới luật; cần kiểm tra trước khi cho thao tác nhặt cây/hoa, tiền, đồ vật.
 - **Dân làng:** làm việc thiện, giữ lời, chăm sóc người và đồ vật, hỏi chuyện; có thể tự học/thực hành tùy nhân duyên, không buộc xuất gia.
-- **Bà Sáu (peta):** khám phá ký ức, được nghe, hiểu câu chuyện đời trước, nhận cảnh hồi hướng nếu viết hợp giáo lý; **không dắt người sống, cầm nấu vật dụng, mua bán**. Bà có thể biết lối ở cõi dưới theo ký ức riêng, nhưng không mở cửa bằng cùng logic thẻ/đèn như người sống.
+- **PC hồn ma:** có hành trình và trải nghiệm do người chơi tự khám phá, không mặc định có con Hạnh hoặc nhớ việc bán xôi. **Không dắt người sống, cầm nấu vật dụng, mua bán**. **NPC Bà Sáu (peta)** giữ ký ức riêng về Hạnh và có thể trở thành nhân vật người chơi tìm hiểu hoặc nghe chuyện; không nhầm bà với PC.
 - **Các loài phi nhân:** không tự động là quái để đánh hoặc vật để farm. Chúng là **chủ thể có cuộc sống, lựa chọn và duyên nghiệp** trong câu chuyện.
 
 ## 8. Ranh giới biên tập Phật học
 
-1. **Phân biệt kinh điển / chú giải / sáng tác:** mỗi truyện gắn `loreBasis = canonical | commentary | inspired | fiction` và danh mục nguồn. Không quảng bá phần sáng tác như lời Phật nguyên văn.
+1. **Phân biệt kinh điển / chú giải / sáng tác:** mỗi truyện gắn `loreBasis = canonical | commentary | game_interpretation | fiction` và danh mục nguồn. Không quảng bá phần sáng tác như lời Phật nguyên văn.
 2. **Cõi giới không chỉ là mood:** tâm hiện tại có thể thay đổi *trải nghiệm nhìn/đối diện* trong game, nhưng không khẳng định thay đổi tâm trong vài giây làm nhân vật tái sinh/thành một cõi khác. Việc bước vào cảnh là **ẩn dụ narrative**, không diễn đạt thành định luật nghiệp báo.
 3. **Tránh quy chụp:** "đã gặp Sân trong truyện" khác với "người chơi là người sân"; không gắn "sợ" = yếu hay "thiếu Tín" = sai.
 4. **Hội thoại hồi hướng:** không bảo đảm mọi peta đều lập tức được siêu thoát; dựa truyện cụ thể, có nhãn "phỏng theo" và để thầy duyệt.
