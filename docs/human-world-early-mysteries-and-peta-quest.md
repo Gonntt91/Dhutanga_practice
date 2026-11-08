@@ -47,7 +47,7 @@ Người chơi **gặp một chúng sinh khổ rất sớm**, tự tìm cách gi
 | **3 — Làm việc tốt** | Bếp bà cụ có cơm nóng; có người cần bát cơm | PC người dân có thể giúp chuẩn bị và trao cơm; PC sư chỉ tiếp nhận/vận hành đúng vai, không tự hái cây/cầm tiền; nghe sư già hướng dẫn nếu cần | `peta=offering_prepared`; **mới chuẩn bị cơm, chưa nhận Không tham**; mốc này xảy ra lúc thực sự bố thí để hồi hướng ở chặng 4 |
 | **4 — Hồi hướng** | Sư già nhận vật cúng phù hợp; âm thanh nhẹ dần | PC chọn `Cùng hồi hướng` (không bấm hàng chục lần) | `peta=dedication_done`; ghi mốc **Không tham** khi thực sự bố thí/cúng dường để hồi hướng; chỉ chốt hoàn thành quest sau cảnh kết |
 | **5 — Kết thúc kỳ ảo** | Bà ngẩng đầu, lần đầu có nét yên trên mặt; sáng dần rồi **tan vào ánh trăng** | Một câu ngắn, chẳng hạn: “Bà nhận được rồi… Cảm ơn con.” | **Giữ cinematic cũ** (sáng, biến mất), không hiện hộp thưởng phủ che khoảnh khắc; khi PC vui vì bà được an, rời cảnh khổ, ghi mốc **Tùy hỷ** |
-| **6 — Phần thưởng** | Sau cảnh kết, người chơi có một hơi thở trống để ngắm mộ | Một màn **tổng kết ba mốc**: **Bi → Không tham → Tùy hỷ**. Giải thích bằng 1 câu/thẻ, không 3 popup; từng thẻ đã được ghi nhận đúng thời điểm | `rewardBundleId=peta_grandmother_first_release` cấp duy nhất một lần; `worldEffect=quiet_grave` |
+| **6 — Phần thưởng** | Sau cảnh kết, người chơi có một hơi thở trống để ngắm mộ | Một màn **tổng kết ba mốc**: **Bi → Không tham → Tùy hỷ**. Giải thích bằng 1 câu/thẻ, không 3 popup; từng thẻ đã được ghi nhận đúng thời điểm | `rewardBundleId=peta_grandmother_first_release` **chỉ tổng kết những thẻ đã ghi đúng mốc, không cấp thêm ba thẻ lần nữa**; `worldEffect=quiet_grave` |
 | **7 — Trở lại** | Mộ cũ giờ yên, còn ngọn gió/chiếc lá, không còn bà đứng chờ | `Đứng lặng` / `Ngắm` / `Đi tiếp` | Có dấu Sổ: “Một lần giúp được người đang khổ”; không spawn lại bà để farm |
 
 **Giọng kể mẫu:** tối đa 1–2 câu/lượt, không bắt PC đọc giải thích “bố thí là pháp gì” trong lúc đang hành động. Toàn bộ nguồn giáo lý có thể mở trong **Nguồn và ghi chú** của Sổ.
@@ -91,7 +91,7 @@ const episode = {
 };
 ```
 
-**Idempotency:** ghi `completionId` và việc cấp bundle trong cùng transaction server, với khóa duy nhất `(characterId, questId, rewardBundleId)`. Nếu cả hai thiết bị cùng chạm nhận, chỉ một bên phát thẻ; phía còn lại trả về kết quả đã nhận. UI render lại vẫn cho xem cảnh kết (nếu người chơi chủ động mở Sổ) nhưng không phát lại vật/thẻ. Chưa thiết kế API cụ thể và chưa code.
+**Idempotency:** mỗi mốc **Bi / Không tham / Tùy hỷ** phải lưu đúng một lần theo khóa `(characterId, questId, cardId)` cùng điều kiện mở mốc đã được xác nhận phía server; hoàn thành quest dùng khóa duy nhất `(characterId, questId, rewardBundleId)` và ghi kết quả thế giới trong transaction phù hợp. Hai thiết bị cùng bấm không được sinh hai thẻ/hai phần thưởng. **Màn tổng kết không cấp lại thẻ** mà chỉ hiển thị những mốc đã nhận. Nếu PC dừng sau khi quyết giúp hoặc sau khi bố thí, thẻ của mốc đã hoàn thành vẫn được giữ; sau đó tiếp tục mới có thẻ của mốc sau. UI xem lại cảnh kết không phát lại vật/thẻ. Chưa thiết kế API cụ thể và chưa code.
 
 ### 3.5. Giữ cảm giác “siêu thoát” của cảnh, tách khỏi khẳng định giáo lý
 
