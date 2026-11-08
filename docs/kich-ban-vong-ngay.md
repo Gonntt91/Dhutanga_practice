@@ -333,6 +333,8 @@ awayJob = {
 
 **Tests cần có:** quay lại sớm thấy progress; đủ thời gian có kết quả; reload không nhân thưởng; giao cùng một bài đã học không sinh bản sao; kiến thức mở một nhánh phụ nhưng không chặn nhánh thường; offline không cấp thẻ tâm trải nghiệm; giao việc dệt vải có vật liệu thật; lời nhờ của bà được xử lý nhất quán; vai sư không có thao tác hái cây sống khi chưa duyệt.
 
+> **Review mới của Nhân gian:** [đối chiếu truyện và vai](human-world-narrative-review.md) và [6 kịch bản chi tiết](human-world-episode-pack-01.md). **`villager` = Ông Tư**, do đó chuỗi cũ trong `mind.js` cho người dân đưa rau "sang nhà ông Tư" là tự gặp chính mình. Trước khi sửa luật thẻ hoặc thêm quest, cần viết lại nhánh này cùng với việc trả đúng lời nhờ của bà cụ. Trạng thái: thiết kế, **chưa sửa code**.
+
 ## 10. Thứ tự triển khai và tiêu chí nghiệm thu
 
 **Đợt A — sửa sai nhập vai và đa dạng hóa ngay**: giới hạn nhiệm vụ bé Na cho sư/dân; thêm cung ký ức nhỏ cho ma; ma không hái hoa/dâng hoa bằng tay; thêm thẻ Định và Phóng dật theo điều kiện quan sát. Tạo test cho `role` và điều kiện nhận thẻ.
