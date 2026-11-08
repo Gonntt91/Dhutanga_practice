@@ -2,6 +2,8 @@
 
 > **Story-first design · chỉ là tài liệu, chưa vẽ map hoặc triển khai gameplay.** Luôn theo [Game Design Principles](game-design-principles.md), [World Exploration Bible](world-exploration-bible.md), [Exploration UX & Gating](exploration-ux-and-gating.md). Concept art dọc mà nhóm đang xem dùng để tham khảo cảm giác, **không áp dụng như bản đồ có bốn checkpoint bắt buộc**.
 
+> **Cập nhật identity (08-11-2026):** [Player-centric Narrative Model](player-character-narrative-model.md). Map mở theo kiến thức/việc làm của **PC tự đặt tên**, không mở bằng cách chơi xong quá khứ Sư Tịnh/Ông Tư/Bà Sáu như bản ngã của PC. Các nhân vật có tên là NPC có thể dẫn chuyện, cho lời khuyên, hoặc xuất hiện qua manh mối; lời thoại ngắn, trải nghiệm nhìn/nghe ưu tiên hơn popup.
+
 ## 1. Map được phép tồn tại khi có gì?
 
 Mỗi map tối thiểu có **một hub**, **ba hướng/nhánh nhìn thấy**, **một đường vòng về**, **hai điểm thưởng ngoạn không nhiệm vụ**, **một dấu tích cho Sổ khám phá**, **một biến thể khi quay lại** và **ít nhất một cửa đi sâu có tiền cảnh quan sát trước**. Phải có chỗ giữ cho các câu chuyện/nhánh mở rộng sau này. Không biến map thành màn truyện bấm nút tuyến tính.
@@ -38,7 +40,7 @@ Sơ đồ là **liên kết scene trong game**, không phải bản đồ địa
 
 ## 3. Kịch bản khám phá mẫu
 
-**Hang:** người chơi tò mò thấy gió chui ra từ tảng đá → tự chọn xem → vào cảnh hồ/cầu đá rồi có thể ngắm mà không bị popup → thấy cửa sâu khiến nhân vật sợ → chủ động hỏi sư để kinh hành/ngồi thiền, hoặc giao học một đoạn về sợ hãi khi vắng → quay lại đối diện cửa với một cách ứng phó mới → mở Bến Không Tiếng. Khi chưa đủ điều kiện vẫn được xem tiền cảnh, có lối vòng quay về.
+**Hang:** người chơi tò mò thấy gió chui ra từ tảng đá → tự chọn xem → vào cảnh hồ/cầu đá rồi có thể ngắm mà không bị popup → thấy cửa sâu khiến nhân vật sợ → chủ động hỏi Sư Tịnh hoặc sư già (NPC) để học kinh hành/ngồi thiền, hoặc giao học một đoạn về sợ hãi khi vắng → quay lại đối diện cửa với một cách ứng phó mới → mở Bến Không Tiếng. Khi chưa đủ điều kiện vẫn được xem tiền cảnh, có lối vòng quay về.
 
 **Cõi dưới:** người chơi nhìn thấy thuyền cũ và nhà không khói bếp → tự khám phá hũ gạo không đáy → chủ động nghe chuyện một peta về lòng bỏn xẻn (lấy cảm hứng từ `Petavatthu`, cần biên tập và dẫn nguồn) → Sổ loài và Sổ kiến thức có thông tin riêng → có thể về làng làm điều thiện/hồi hướng phù hợp truyện. Không phải bắt người chơi làm ác để nhận thẻ Bỏn xẻn.
 
