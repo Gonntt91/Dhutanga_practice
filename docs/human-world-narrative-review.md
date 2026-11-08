@@ -30,6 +30,12 @@
 
 **Vấn đề hiển thị thẻ:** album, Sổ kiến thức và Sổ khám phá phải tách ý nghĩa; môi trường có thể thưởng một dấu khám phá mà không cấp tâm sở. Các lời kể như "ngồi xong được định", "tâm nào cõi nấy" cần rà lại vì game chỉ đang dùng mô phỏng, không được quảng bá là quan hệ nghiệp báo chính xác.
 
+### P0 — Vai người dân là Ông Tư, không phải avatar vô danh
+
+`public/story.js` định nghĩa `ROLE_INFO.villager.who = "Ông Tư đầu xóm"`, con Vàng là chó **nhà ông Tư**. Trong khi `public/mind.js` dùng cùng chuỗi chó cắn/rau má cho vai người chơi, rồi cho lựa chọn **"Mang rau sang nhà ông Tư"**. Nếu `role=villager`, nhân vật vừa là ông Tư vừa đi gặp ông Tư — **lỗi nhập vai có thật**, cần sửa trước khi thêm bất kỳ quest phụ cùng tuyến. Không chỉ đổi lời thoại: cần viết riêng phản ứng khi chủ chó chính là người chơi, chủ động xử lý chuyện con Vàng, và giữ lời hứa với bà cụ. [HG23](human-world-episode-pack-01.md#hg23--con-vàng-và-khoảng-sân-trước-nhà) là phương án biên kịch.
+
+**Phân tuyến rõ:** Sư Tịnh (`monk`) có thể bị chó làm sợ trong một chuyện nếu hợp lý nhưng không được ép bị cắn mỗi lần đi ngang; Ông Tư (`villager`) chịu trách nhiệm với chó nhà; Bà Sáu (`ghost`) chỉ quan sát. Hiện trạng code **chưa sửa** trong PR tài liệu này.
+
 ## 3. Quy tắc biên tập mới: một cảnh đáng chơi gồm 9 thông tin
 
 Mỗi scene nộp để dựng phải có:
