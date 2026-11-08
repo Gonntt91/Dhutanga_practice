@@ -40,6 +40,8 @@ Ba vòng lặp **đồng thời, không ép buộc**:
 
 **Thuật ngữ trong game:** `physicalZone` là khu có thể đi, `narrativeRealm` là cách phân loại cõi trong lore, `threshold` là ngưỡng chuyển cảnh; không đồng nhất ba thứ.
 
+> **Thiết kế chi tiết Nhân gian:** [Human World Story Bible](human-world-story-bible.md). Hệ thời tiết trong game gồm trời quang, mây, mưa nhẹ, mưa lớn, cảnh báo bão, bão và sau bão. Mỗi trạng thái đổi phong cảnh, NPC, hoạt động khi vắng và storylet; bão là chuỗi sự kiện hiếm có trước/sau, không phải hình phạt nghiệp hoặc màn ép làm nhiệm vụ. Tài liệu chỉ mới là kịch bản, chưa có Weather Engine.
+
 ## 3. Từng thế giới phải có lý do tồn tại và người chơi thực sự được làm gì
 
 | Cõi / khu | Trục cảm xúc | Chủ đề hiểu thêm | Khám phá không cần quest | Câu chuyện có chiều sâu | Lối phát triển |
