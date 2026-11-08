@@ -6,6 +6,16 @@
 >
 > **Ghi chú đối chiếu `develop`:** `public/world.js` đã có 11 địa danh, chu kỳ sáng tối và sương mù; `public/story-nights.js` đã có các cảnh **trăng** và **mưa phùn** cho một số vai; `public/reflect.js` có lời hẹn và việc khi vắng. **Chưa có một hệ thời tiết cấp thế giới** đồng bộ hình ảnh, NPC, nhiệm vụ, storylet, hành động offline và hậu quả sau bão. Không được ghi các thiết kế bên dưới là đã code.
 
+## 0. Quyết định thiết kế: thời tiết đẹp là mặc định (08-11-2026)
+
+**Nhân gian là thế giới chữa lành.** Ưu tiên giữ nguyên khí trời quang, nắng dịu, trăng, sương và gió của game hiện tại. Thời tiết là **gia vị kể chuyện** chứ không phải biến số liên tục phá tâm trạng. **Viết kịch bản Nhân gian trước**, không bắt tay dựng Weather Engine hoặc map mới khi câu chuyện chưa duyệt.
+
+- **Mục tiêu cân bằng thử nghiệm:** ít nhất **85–90% thời gian dạo chơi** có thời tiết đẹp/dễ chịu (quang, mây sáng, trăng, sương); mưa nhẹ chỉ đôi khi xuất hiện để thưởng ngoạn; mưa lớn cực hiếm. Không dùng xác suất này như lời hứa sản phẩm hay áp dụng cứng cho từng phiên.
+- **Bão KHÔNG xuất hiện ngẫu nhiên** trong map sinh hoạt. Chỉ là **chương truyện tùy chọn**, người chơi chủ động tham gia từ Sổ hoặc NPC, có thể xem tóm tắt/bỏ qua cảnh bão, lập tức trở về bầu trời yên bình. Không có phần thưởng độc quyền bắt buộc từ bão.
+- **Mỗi lần vào chơi mặc định dễ chịu**, kể cả sau khi vắng lâu. Không ép người chơi login để gặp đổ nát/cơn bão kéo dài. Thời tiết không làm mất vật phẩm hoặc giảm chỉ số tâm.
+- **Cảnh đẹp cũng là nội dung:** nên ưu tiên viết kịch bản nắng sớm, chiều vàng, trăng sáng, đom đóm, sen nở, hiên tịnh thất, bóng tre. Mưa thêm cảm giác mới chứ không thay thế những cảnh này.
+- **Ưu tiên triển khai:** đọc [Human World Playable Scenarios](human-world-playable-scenarios.md) để viết/nối các tình huống thực sự chơi được; thời tiết động để sau, chỉ giữ script mưa phùn đã có và viết thêm lời thoại khi phù hợp.
+
 ## 1. Vai trò của Nhân gian
 
 Nhân gian là nơi người chơi **muốn trở về**, dù họ đã đi tới hang, cõi dưới hoặc biên cảnh cõi trời. Không chỉ là nơi nhận nhiệm vụ và học thẻ.
@@ -49,9 +59,9 @@ Nhân gian là nơi người chơi **muốn trở về**, dù họ đã đi tớ
 | `storm` — bão | gió rít **dịu có kiểm soát**, chớp xa, mái rung, giảm âm lượng nền | **chuyển sang không gian trú an toàn**; khám phá ngoài trời hạn chế tạm thời | tương tác trong nhà/tịnh thất, lắng nghe, tìm cách giúp sau bão |
 | `after_storm` — sau bão | mây tản, nắng ló, lá rụng, vũng nước | lối mới được nhìn thấy, vật cần sửa, người trở lại ngoài trời | thăm hỏi, sửa đồ, những việc tốt nhỏ và hậu quả có thể nhìn thấy |
 
-**Bão cần hiếm, có dự báo, có trước/sau**, không được xuất hiện bất thình lình như một hiệu ứng ngẫu nhiên một phút rồi biến mất. Không gắn bão với nghiệp xấu hoặc hình phạt đạo đức. Không dùng thiên tai thật đang diễn ra để quảng bá một sự kiện game.
+**Bão chỉ là episode tự chọn**, không chạy trong lịch thời tiết mặc định; khi chọn sẽ có trước/sau, có thể bỏ qua cảnh bão và không lưu map chính ở trạng thái u ám. Không gắn bão với nghiệp xấu hoặc hình phạt đạo đức. Không dùng thiên tai thật đang diễn ra để quảng bá một sự kiện game.
 
-**Lịch cân bằng thử nghiệm, không phải quy tắc chốt:** mỗi `gameDay` có thời tiết chung; đa số ngày quang/mây, thỉnh thoảng mưa nhẹ, ít đợt mưa lớn và rất hiếm chuỗi bão; tần suất bão cấu hình theo **mùa hư cấu / chương truyện**, không bắt theo thời tiết thật ở địa phương người chơi. Bão có chuỗi trạng thái `cloudy → storm_warning → storm → after_storm` hợp lý, không nhảy ngẫu nhiên từ nắng sang bão. Có thể tắt/giảm bão và chớp.
+**Lịch thử nghiệm (không phải luật cố định):** trạng thái đẹp và ấm chiếm **85–90% trở lên**; phần còn lại chủ yếu mưa nhẹ, ít mưa vừa. **Xác suất bão ngẫu nhiên = 0**. Chỉ khi người chơi tự mở chapter bão mới mô phỏng `storm_warning → storm → after_storm`, và có nút bỏ qua. Không dùng thời tiết địa phương thật; chọn weather nhất quán theo một lượt/chương, không bốc lại mỗi lần mở game.
 
 ### 3.2. Thế giới nhớ ảnh hưởng của thời tiết
 
@@ -83,15 +93,17 @@ Nhân gian là nơi người chơi **muốn trở về**, dù họ đã đi tớ
 
 **Phần thưởng:** một khung cảnh đáng nhớ, kiến thức có nguồn được duyệt, nhánh nói chuyện mới; không bắt làm tất cả.
 
-### W02 — "Bão qua làng" (chuỗi 3–4 ngày trong game, **rare event**)
+### W02 — "Bão qua làng" (**chương truyện tự chọn**, không phải event ngẫu nhiên)
 
-**Ngày 1 — Trước bão:** trời đổi màu, gió mạnh. Ông Tư buộc lại hàng rào, bà cụ cất giỏ, sư già đóng cửa kệ kinh. Người chơi có thể đi dạo xem chuẩn bị hoặc **tự chọn** giúp một việc an toàn theo vai.
+**Mở chương:** NPC/Sổ gợi ý rất nhẹ "Nghe chuyện năm làng có bão". Người chơi chọn **Nghe chuyện** / **Để sau** / **Chỉ xem cảnh sau bão**. Đây là chuyện được kể lại hoặc episode riêng, **không ép map đang dạo đổi sang bão**. Không khóa tuyến chính hoặc vật phẩm cần thiết sau chương này.
 
-**Ngày 2 — Bão:** phần ngoài trời không khuyến khích đi lại. Nhân vật người sống ở nơi trú an toàn, có thể nghe tiếng mưa, học kinh, nghe truyện cũ về mùa nước lớn hoặc giúp việc trong nhà. Không yêu cầu người chơi ra ngoài làm việc nguy hiểm để nhận vật phẩm. Vai bà Sáu nghe lại ký ức năm lũ, **không** nhặt đồ hay cứu người sống bằng sức ma.
+**Cảnh 1 — Trước bão:** trời đổi màu, gió mạnh. Ông Tư buộc lại hàng rào, bà cụ cất giỏ, sư già đóng cửa kệ kinh. Người chơi có thể đi dạo xem chuẩn bị hoặc **tự chọn** giúp một việc an toàn theo vai.
 
-**Ngày 3 — Sau bão:** một cành cây chắn một lối **phụ**, mái bếp ông Tư dột. Khi người chơi tự chọn xem, có chuỗi **hỏi thăm → nhờ người phù hợp sửa → thấy thay đổi**. Cùng lúc lối men bờ ao xuất hiện vệt đá cũ, mở một manh mối Sổ khám phá.
+**Cảnh 2 — Bão (có thể bỏ qua):** phần ngoài trời không khuyến khích đi lại. Nhân vật người sống ở nơi trú an toàn, có thể nghe tiếng mưa, học kinh, nghe truyện cũ về mùa nước lớn hoặc giúp việc trong nhà. Không yêu cầu người chơi ra ngoài làm việc nguy hiểm để nhận vật phẩm. Vai bà Sáu nghe lại ký ức năm lũ, **không** nhặt đồ hay cứu người sống bằng sức ma.
 
-**Ngày 4 — Hồi phục:** người làng sửa xong, nước rút, sân sạch. Nếu người chơi đã giúp, NPC nhớ và cảnh vật thay đổi; nếu không, người làng vẫn chủ động sửa chữa theo tiến trình bình thường (không trừng phạt nghỉ game). Nhiệm vụ chính và các lối đi thiết yếu không kẹt.
+**Cảnh 3 — Sau bão:** một cành cây chắn một lối **phụ**, mái bếp ông Tư dột. Khi người chơi tự chọn xem, có chuỗi **hỏi thăm → nhờ người phù hợp sửa → thấy thay đổi**. Cùng lúc lối men bờ ao xuất hiện vệt đá cũ, mở một manh mối Sổ khám phá.
+
+**Cảnh 4 — Hồi phục:** người làng sửa xong, nước rút, sân sạch. Nếu người chơi đã giúp, NPC nhớ và cảnh vật thay đổi; nếu không, người làng vẫn chủ động sửa chữa theo tiến trình bình thường (không trừng phạt nghỉ game). Nhiệm vụ chính và các lối đi thiết yếu không kẹt.
 
 **Phần thưởng hợp lý:** `discovery:old_stone_path`, một lời cảm ơn, vật liệu sửa đã hoàn thành, kiến thức về hỗ trợ người khác; không "bão đến do nghiệp xấu" và không thưởng công đức theo điểm.
 
@@ -166,7 +178,7 @@ storylet = {
 
 ## 9. Thứ tự viết → thử → dựng
 
-1. **Chốt narrative first:** W01, W02, W03 và 12 storylet. Duyệt tính nhất quán vai, lời hứa, nguồn giáo lý trước khi viết UI.
+1. **Ưu tiên mở rộng playable scenarios Nhân gian trong [tài liệu kịch bản](human-world-playable-scenarios.md)**; sau đó chốt W01 (mưa nhẹ) và W03 (sau mưa) nếu chúng phục vụ một câu chuyện đã duyệt. W02 (bão) để backlog tùy chọn. Duyệt tính nhất quán vai, lời hứa, nguồn giáo lý trước khi viết UI.
 2. **Thử không cần asset:** dựng state `clear/drizzle/after_storm` với 2–3 sprite/hạt mưa tối giản, 1 địa điểm ao và 1 địa điểm tịnh thất; kiểm tra cùng thời tiết khi chuyển cảnh.
 3. **Tạo một mini-episode có hậu quả:** trước bão → trú bão → sau bão; lần vào khác nhau cho thấy NPC và vật thể đổi trạng thái.
 4. **Kết nối offline:** học kinh khi mưa, cất vải khi trời chuyển, lúc trở lại nhận kết quả ở Sổ/túi và thấy hiện trạng trong map.
