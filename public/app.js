@@ -238,6 +238,7 @@ import "./world.js";
     $("sheet").hidden = true;
     $("walk-bar").hidden = true;
     $("role-chip").hidden = true;
+    $("leave-role").hidden = true;
     $("monk-actions").hidden = true;
     $("camera-hint").hidden = true;
     delete $("app").dataset.role;
@@ -272,6 +273,7 @@ import "./world.js";
     $("picker").hidden = true;
     $("app").dataset.role = role;
     $("role-chip").hidden = false;
+    $("leave-role").hidden = false;
     $("role-chip").textContent = ROLE_INFO[role].name;
     $("meter-name").textContent = ROLE_INFO[role].meter;
     $("gesture").textContent = ROLE_INFO[role].gesture.label;
@@ -292,6 +294,7 @@ import "./world.js";
     World.stop();
     sendPresence(true);
     renderPicker();
+    $("role-list").querySelector(".role-card").focus();
   }
 
   // ---------- place-driven flow ----------
@@ -464,6 +467,7 @@ import "./world.js";
   $("gesture").addEventListener("click", roleGesture);
   $("gesture-walk").addEventListener("click", roleGesture);
   $("leave").addEventListener("click", leaveRole);
+  $("leave-role").addEventListener("click", leaveRole);
   $("resume-story").addEventListener("click", resumeStory);
   $("camera-left").addEventListener("click", () => World.rotateCamera(-1));
   $("camera-right").addEventListener("click", () => World.rotateCamera(1));

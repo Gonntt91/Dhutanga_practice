@@ -58,15 +58,17 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--lantern); o
 }
 .hud > * { pointer-events: auto; }
 .hud-left { display: grid; gap: 4px; min-width: 0; }
-.hud-right { display: flex; gap: 6px; flex-shrink: 0; }
+.hud-right { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0; }
+.role-exit { min-height: 44px; border-color: #e6c56f88; color: var(--lantern); }
+.role-exit:hover { background: #28372c; border-color: var(--lantern); }
 .role-chip { font: 600 19px/1.1 var(--font-display); }
 .game-title { color: #e6dfce; font: 600 23px/1.1 var(--font-display); margin-bottom: 3px; }
 .game-title span { vertical-align: middle; margin-left: 4px; border: 1px solid #7f8a704d; border-radius: 4px; padding: 2px 4px; font: 10px/1 var(--font-ui); color: #bdc3ad; }
 .hud .label { font-size: 9px; letter-spacing: 0.035em; }
-.camera-controls { position: absolute; z-index: 3; right: 12px; top: 112px; display: grid; gap: 5px; }
+.camera-controls { position: absolute; z-index: 3; right: 12px; top: calc(env(safe-area-inset-top, 0px) + 112px); display: grid; gap: 5px; }
 .camera-controls button { width: 38px; height: 38px; padding: 0; border: 1px solid #9aa68e38; border-radius: 50%; background: #102019b8; backdrop-filter: blur(8px); color: #dedbc9; font: 23px/1 system-ui, sans-serif; }
 .camera-controls button:hover { border-color: #ddc78b; background: #28372c; }
-.camera-hint { position: absolute; z-index: 2; top: 106px; left: 14px; max-width: calc(100% - 80px); color: #ccd0bc; font: 10px/1.6 var(--font-ui); text-shadow: 0 1px 4px #000; pointer-events: none; }
+.camera-hint { position: absolute; z-index: 2; top: calc(env(safe-area-inset-top, 0px) + 106px); left: 14px; max-width: calc(100% - 80px); color: #ccd0bc; font: 10px/1.6 var(--font-ui); text-shadow: 0 1px 4px #000; pointer-events: none; }
 .camera-hint span { padding: 0 5px; color: #d4b17a; }
 
 .toast {
@@ -207,9 +209,9 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--lantern); o
   .action-image { height: 55px; }
   .action-description { margin-top: 6px; font-size: 10px; }
   .app[data-role="monk"] .sheet { max-height: calc(100% - var(--practice-height) - 155px); }
-  .camera-controls { top: 98px; gap: 3px; }
+  .camera-controls { top: calc(env(safe-area-inset-top, 0px) + 98px); gap: 3px; }
   .camera-controls button { width: 33px; height: 33px; }
-  .camera-hint { top: 99px; font-size: 9px; }
+  .camera-hint { top: calc(env(safe-area-inset-top, 0px) + 99px); font-size: 9px; }
 }
 @media (min-width: 960px) {
   .app { max-width: 1180px; }
