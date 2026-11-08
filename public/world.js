@@ -1,629 +1,354 @@
-// 2D portrait world: a cemetery seen from a high 3/4 angle, scrolling vertically.
-// World units: 400 wide x 2000 tall. Everything is drawn procedurally on canvas.
-window.World = (() => {
-  const W = 400;
-  const H = 2000;
+import * as THREE from "three";
+import { OrbitControls } from "./vendor/OrbitControls.js";
+import { createMonk, createGhost } from "./character.js";
+import { mergeGeometries } from "./vendor/BufferGeometryUtils.js";
 
+// Story coordinates stay compatible; 25 units in the story = 1 metre in 3D.
+window.World = (() => {
+  const W = 400, H = 2000;
   const PLACES = {
     gate: { x: 200, y: 1850, name: "Cổng nghĩa địa" },
     bamboo: { x: 95, y: 1490, name: "Bụi tre" },
     graves: { x: 222, y: 1065, name: "Giữa các ngôi mộ" },
     gao: { x: 150, y: 625, name: "Gốc cây gạo" },
   };
-  const UNNAMED = { x: 262, y: 1032 };
-  const SPAWN = {
-    monk: { x: 205, y: 1950 },
-    ghost: { x: 160, y: 650 },
-    villager: { x: 172, y: 1965 },
-  };
-  const PATH = [[198, 2400],[200, 2000], [208, 1840], [168, 1660], [150, 1500], [195, 1320], [240, 1150], [226, 980], [175, 800], [152, 640], [186, 440], [200, 270]];
+  const SPAWN = { monk: { x: 205, y: 1950 }, ghost: { x: 160, y: 650 }, villager: { x: 172, y: 1965 } };
+  const PATH = [[198, 2300], [200, 2000], [208, 1840], [168, 1660], [150, 1500], [195, 1320], [240, 1150], [226, 980], [175, 800], [152, 640], [186, 440], [200, 270]];
+  const player = { ...SPAWN.monk, tx: null, ty: null, moving: false, facing: Math.PI, phase: 0 };
+  const view = { role: null, pose: "walk", darkness: 0.75, flags: new Set(), marker: null, anchor: 0.4 };
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const others = new Map(), ripples = [], bamboo = [], previews = new Map();
+  let renderer, scene, camera, controls, canvas, ground, actor, marker, moon, ambient, warmth;
+  let offering, incense, fireflies, labels, destinationLabel, onTap;
+  let width = 1, height = 1, time = 0, last = 0, patrol = null, seed = 87612, contextLost = false;
+  const raycaster = new THREE.Raycaster(), pointer = new THREE.Vector2();
+  const target = new THREE.Vector3(), delta = new THREE.Vector3();
+  const to3D = (x, y, lift = 0) => new THREE.Vector3((x - W / 2) / 25, lift, (y - H / 2) / 25);
+  const random = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
+  const stone = new THREE.MeshStandardMaterial({ color: 0x858a7b, roughness: 1 });
+  const oldStone = new THREE.MeshStandardMaterial({ color: 0x626d60, roughness: 1 });
+  const earth = new THREE.MeshStandardMaterial({ color: 0x363c2b, roughness: 1 });
+  const bark = new THREE.MeshStandardMaterial({ color: 0x3c362b, roughness: 1 });
+  const leaves = new THREE.MeshStandardMaterial({ color: 0x263c2b, roughness: 1 });
+  const stemMat = new THREE.MeshStandardMaterial({ color: 0x465c35, roughness: 0.87 });
+  const roofMat = new THREE.MeshStandardMaterial({ color: 0x554940, roughness: 1 });
+  const unitBox = new THREE.BoxGeometry(1, 1, 1);
+  const unitSphere = new THREE.SphereGeometry(1, 12, 8);
+  const unitCylinder = new THREE.CylinderGeometry(1, 1, 1, 9);
 
-  const COLORS = {
-    ground: "#15201b",
-    groundEdge: "#0d1311",
-    path: "#202924",
-    pathInner: "#29332d",
-    grave: "#343c37",
-    graveFace: "#454e48",
-    mound: "#232d28",
-    moundTop: "#2c3832",
-    bamboo: "#1f2b24",
-    leaf: "#25332b",
-    trunk: "#1b211d",
-    canopy: "#151d19",
-    flower: "#7d2b23",
-    ember: "#e09050",
-    lantern: "#e6c56f",
-    jade: "#9fd2c1",
-    robe: "#6e4f33",
-    robeDark: "#5a3f28",
-    skin: "#b48a62",
-    villagerBody: "#3a4447",
-    hat: "#c8b989",
-    ash: "#dcd5c5",
-    ashDim: "#8d9189",
-  };
-
-  // ---------- seeded decor ----------
-  function rng(seed) {
-    return () => {
-      seed = (seed + 0x6d2b79f5) | 0;
-      let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
-      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-    };
+  function add(geometry, material, parent, x, y, z, sx = 1, sy = 1, sz = 1) {
+    const object = new THREE.Mesh(geometry, material);
+    object.position.set(x, y, z); object.scale.set(sx, sy, sz);
+    object.castShadow = true; object.receiveShadow = true; parent.add(object); return object;
   }
-  function distToPath(x, y) {
-    let best = Infinity;
+  function pole(parent, from, to, radius, material) {
+    const a = new THREE.Vector3(...from), b = new THREE.Vector3(...to);
+    const object = add(unitCylinder, material, parent, 0, 0, 0, radius, a.distanceTo(b), radius);
+    object.position.copy(a).add(b).multiplyScalar(0.5);
+    object.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), b.sub(a).normalize()); return object;
+  }
+  function noiseTexture(base, size = 128) {
+    const bytes = new Uint8Array(size * size * 4), color = new THREE.Color(base);
+    for (let i = 0; i < size * size; i++) {
+      const x = i % size, y = Math.floor(i / size);
+      const n = 0.73 + random() * 0.35 + Math.sin(x * 0.22) * Math.cos(y * 0.17) * 0.07;
+      for (let c = 0; c < 3; c++) bytes[i * 4 + c] = Math.min(255, [color.r, color.g, color.b][c] * n * 255);
+      bytes[i * 4 + 3] = 255;
+    }
+    const texture = new THREE.DataTexture(bytes, size, size);
+    texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+    texture.magFilter = THREE.LinearFilter; texture.minFilter = THREE.LinearMipmapLinearFilter;
+    texture.generateMipmaps = true; texture.needsUpdate = true; return texture;
+  }
+  function distanceToPath(x, y) {
+    let d = Infinity;
     for (let i = 0; i < PATH.length - 1; i++) {
-      const [ax, ay] = PATH[i];
-      const [bx, by] = PATH[i + 1];
-      const dx = bx - ax;
-      const dy = by - ay;
-      const t = Math.max(0, Math.min(1, ((x - ax) * dx + (y - ay) * dy) / (dx * dx + dy * dy)));
-      best = Math.min(best, Math.hypot(x - (ax + t * dx), y - (ay + t * dy)));
+      const [ax, ay] = PATH[i], [bx, by] = PATH[i + 1], dx = bx - ax, dy = by - ay;
+      const t = THREE.MathUtils.clamp(((x - ax) * dx + (y - ay) * dy) / (dx * dx + dy * dy), 0, 1);
+      d = Math.min(d, Math.hypot(x - ax - dx * t, y - ay - dy * t));
     }
-    return best;
+    return d;
   }
-
-  const decor = [];
-  const tufts = [];
-  (function buildDecor() {
-    const r = rng(11);
-    let tries = 0;
-    let count = 0;
-    while (count < 72 && tries < 4000) {
-      tries++;
-      const x = 18 + r() * 364;
-      const y = 720 + r() * 700;
-      if (distToPath(x, y) < 26) continue;
-      if (Math.hypot(x - UNNAMED.x, y - UNNAMED.y) < 30) continue;
-      if (Math.hypot(x - PLACES.graves.x, y - PLACES.graves.y) < 30) continue;
-      if (decor.some((d) => d.kind === "grave" && Math.hypot(d.x - x, d.y - y) < 25)) continue;
-      decor.push({ kind: "grave", type: Math.floor(r() * 4), x, y, s: 0.8 + r() * 0.5, incense: r() < 0.07 });
-      count++;
+  function makeTerrain() {
+    const soil = noiseTexture(0xa8a690); soil.repeat.set(24, 65);
+    ground = add(new THREE.PlaneGeometry(38, 110), new THREE.MeshStandardMaterial({ color: 0x4b5040, map: soil, bumpMap: soil, bumpScale: 0.07, roughness: 1 }), scene, 0, -0.025, 0);
+    ground.rotation.x = -Math.PI / 2; ground.castShadow = false;
+    const texture = noiseTexture(0xc4b698); texture.repeat.set(1, 6);
+    const trailMat = new THREE.MeshStandardMaterial({ color: 0x797261, map: texture, bumpMap: texture, bumpScale: 0.035, roughness: 1 });
+    for (let i = 0; i < PATH.length - 1; i++) {
+      const a = to3D(...PATH[i]), b = to3D(...PATH[i + 1]);
+      const path = add(new THREE.PlaneGeometry(1.3, a.distanceTo(b) + 0.08), trailMat, scene, (a.x + b.x) / 2, 0.002, (a.z + b.z) / 2);
+      path.rotation.set(-Math.PI / 2, 0, -Math.atan2(b.x - a.x, b.z - a.z)); path.castShadow = false;
     }
-    decor.push({ kind: "unnamed", x: UNNAMED.x, y: UNNAMED.y });
-    const clusters = [[55, 1470, 9], [112, 1535, 7], [38, 1590, 8], [330, 1610, 7], [362, 1430, 6], [28, 1380, 6], [352, 1730, 6], [300, 1500, 4]];
-    for (const [cx, cy, n] of clusters) {
-      for (let i = 0; i < n; i++) {
-        decor.push({ kind: "bamboo", x: cx + (r() - 0.5) * 42, y: cy + (r() - 0.5) * 30, h: 62 + r() * 55, lean: (r() - 0.5) * 0.35, seed: r() * 10 });
+    const weather = noiseTexture(0xb9b9a7, 64);
+    for (const mat of [stone, oldStone]) { mat.map = mat.bumpMap = weather; mat.bumpScale = 0.025; }
+    const blade = new THREE.BufferGeometry();
+    blade.setAttribute("position", new THREE.Float32BufferAttribute([-0.045, 0, 0, 0.015, 0.32, 0.015, 0.04, 0, 0], 3)); blade.computeVertexNormals();
+    const grass = new THREE.InstancedMesh(blade, new THREE.MeshStandardMaterial({ color: 0x3b5034, roughness: 1, side: THREE.DoubleSide }), 1600);
+    const dummy = new THREE.Object3D(); let index = 0;
+    while (index < 1600) {
+      const x = (random() - 0.5) * 29, z = (random() - 0.5) * 96;
+      if (distanceToPath(x * 25 + 200, z * 25 + 1000) < 24) continue;
+      dummy.position.set(x, 0, z); dummy.rotation.y = random() * 6.28; dummy.scale.setScalar(0.5 + random() * 1.1); dummy.updateMatrix(); grass.setMatrixAt(index++, dummy.matrix);
+    }
+    scene.add(grass);
+  }
+  function makeGrave(x, z, type, turn = 0) {
+    const group = new THREE.Group(); group.userData.static = true; group.position.set(x, 0, z); group.rotation.y = turn; scene.add(group);
+    add(unitSphere, earth, group, 0, 0.015, 0.3, 0.49, 0.15, 0.87);
+    if (!type) return;
+    add(unitBox, oldStone, group, 0, 0.06, 0.26, 0.86, 0.12, 1.52);
+    const shape = new THREE.Shape(); shape.moveTo(-0.3, 0); shape.lineTo(-0.3, 0.65);
+    shape.quadraticCurveTo(-0.3, 0.98, 0, 0.98); shape.quadraticCurveTo(0.3, 0.98, 0.3, 0.65); shape.lineTo(0.3, 0);
+    const geometry = new THREE.ExtrudeGeometry(shape, { depth: 0.12, bevelEnabled: true, bevelSize: 0.025, bevelThickness: 0.02, bevelSegments: 2, steps: 1 });
+    add(geometry, type === 1 ? stone : oldStone, group, 0, 0.13, -0.35);
+    add(unitBox, stone, group, 0, 0.13, -0.3, 0.8, 0.16, 0.34);
+    add(unitBox, oldStone, group, 0, 0.65, -0.193, 0.36, 0.43, 0.012);
+    for (let i = 0; i < 4; i++) add(unitBox, stone, group, 0, 0.77 - i * 0.07, -0.181, 0.16 - i * 0.015, 0.009, 0.006);
+    if (type === 2) for (const s of [-1, 1]) add(unitBox, oldStone, group, s * 0.41, 0.15, 0.35, 0.06, 0.12, 1.4);
+  }
+  function makeTree(x, z, size = 1) {
+    const group = new THREE.Group(); group.userData.static = true; group.position.set(x, 0, z); group.scale.setScalar(size); scene.add(group);
+    add(new THREE.CylinderGeometry(0.12, 0.24, 4.6, 10), bark, group, 0, 2.3, 0);
+    for (let i = 0; i < 5; i++) {
+      const angle = i * 2.4, ex = Math.cos(angle) * (1 + random()), ez = Math.sin(angle) * (1 + random());
+      pole(group, [0, 2.6 + i * 0.25, 0], [ex, 4.1 + random(), ez], 0.065, bark);
+      add(unitSphere, leaves, group, ex, 4.6 + random(), ez, 1.5, 0.8, 1.4);
+      pole(group, [0, 0.08, 0], [Math.cos(angle) * 0.7, 0.02, Math.sin(angle) * 0.7], 0.07, bark);
+    }
+  }
+  function makeBamboo(x, z) {
+    const group = new THREE.Group(); group.position.set(x, 0, z); scene.add(group); bamboo.push(group);
+    for (let i = 0; i < 8; i++) {
+      const bx = (random() - 0.5) * 1.4, bz = (random() - 0.5) * 1.4, h = 3.4 + random() * 1.9;
+      const stem = new THREE.Group(); stem.position.set(bx, 0, bz); stem.rotation.z = (random() - 0.5) * 0.18; group.add(stem);
+      add(unitCylinder, stemMat, stem, 0, h / 2, 0, 0.035, h, 0.035);
+      for (let j = 1; j < h / 0.4; j++) add(unitCylinder, leaves, stem, 0, j * 0.4, 0, 0.043, 0.028, 0.043);
+      for (let j = 0; j < 5; j++) {
+        const a = random() * 6.28, ey = h - random() * 1.5;
+        const leaf = add(unitSphere, leaves, stem, Math.cos(a) * 0.3, ey, Math.sin(a) * 0.3, 0.48, 0.026, 0.12); leaf.rotation.y = -a; leaf.rotation.z = -0.2;
       }
     }
-    decor.push({ kind: "gao", x: 118, y: 600 });
-    for (const [x, y] of [[332, 520], [58, 860], [352, 890], [300, 330], [70, 300], [360, 1250], [30, 1180]]) {
-      decor.push({ kind: "tree", x, y, s: 0.7 + r() * 0.5 });
+  }
+  function makeGate() {
+    const gate = new THREE.Group(); gate.userData.static = true; gate.position.copy(to3D(200, 1850)); scene.add(gate);
+    for (const s of [-1, 1]) {
+      add(unitBox, oldStone, gate, s * 1.4, 1.3, 0, 0.38, 2.6, 0.42);
+      add(unitBox, stone, gate, s * 1.4, 0.12, 0, 0.64, 0.24, 0.7);
+      add(unitBox, stone, gate, s * 1.4, 2.58, 0, 0.54, 0.18, 0.58);
+      const lamp = add(new THREE.SphereGeometry(0.08, 10, 8), new THREE.MeshStandardMaterial({ color: 0xffd28a, emissive: 0xffb75a, emissiveIntensity: 2 }), gate, s * 1.4, 1.8, 0.28);
+      const light = new THREE.PointLight(0xffb362, 7, 5); light.position.copy(lamp.position); gate.add(light);
     }
-    decor.push({ kind: "gate", x: 200, y: 1795 });
-    decor.push({ kind: "shrine", x: 205, y: 235 });
-    for (const [x, y] of [[78, 1975], [325, 1962], [52, 2110], [318, 2135], [92, 2290], [340, 2310]]) decor.push({ kind: "house", x, y });
-    for (const [x, y] of [[20, 2050], [372, 2060], [140, 2200], [258, 2240], [30, 2380], [380, 2420]]) decor.push({ kind: "tree", x, y, s: 0.8 + r() * 0.4 });
-    for (const [cx, cy, n] of [[255, 2060, 5], [120, 2380, 6]]) for (let i = 0; i < n; i++) decor.push({ kind: "bamboo", x: cx + (r() - 0.5) * 36, y: cy + (r() - 0.5) * 24, h: 60 + r() * 45, lean: (r() - 0.5) * 0.3, seed: r() * 10 });
-    for (let i = 0; i < 320; i++) tufts.push({ x: r() * W, y: r() * H, s: 0.6 + r() * 0.9 });
-  })();
-
-  const fog = Array.from({ length: 7 }, (_, i) => ({ x: Math.random() * W, y: i / 7, rx: 120 + Math.random() * 120, ry: 26 + Math.random() * 20, v: 3 + Math.random() * 5 }));
-  const fireflies = Array.from({ length: 14 }, () => ({ x: 30 + Math.random() * 340, y: 700 + Math.random() * 900, p: Math.random() * 6.28, v: 0.4 + Math.random() * 0.6 }));
-
-  // ---------- runtime state ----------
-  let canvas, ctx, shade, sctx;
-  let dpr = 1;
-  let scale = 1;
-  let viewH = 800;
-  let camY = H - 800;
-  let last = 0;
-  let time = 0;
-  const player = { x: SPAWN.monk.x, y: SPAWN.monk.y, tx: null, ty: null, facing: 1, phase: 0, moving: false };
-  const others = new Map();
-  const ripples = [];
-  const view = { role: null, pose: null, darkness: 0.75, flags: new Set(), marker: null, nick: "", anchor: 0.55 };
-  let tapHandler = null;
-
-  function init(canvasEl, onTap) {
-    canvas = canvasEl;
-    ctx = canvas.getContext("2d");
-    shade = document.createElement("canvas");
-    sctx = shade.getContext("2d");
-    tapHandler = onTap;
-    resize();
-    window.addEventListener("resize", resize);
-    canvas.addEventListener("pointerdown", (e) => {
-      const rect = canvas.getBoundingClientRect();
-      const wx = (e.clientX - rect.left) / scale;
-      const wy = (e.clientY - rect.top) / scale + camY;
-      if (tapHandler) tapHandler(wx, wy);
+    add(unitBox, oldStone, gate, 0, 2.67, 0, 3.3, 0.3, 0.4);
+    for (const s of [-1, 1]) {
+      const roof = add(unitBox, roofMat, gate, 0, 2.95, s * 0.29, 3.8, 0.12, 0.85); roof.rotation.x = s * 0.35;
+      for (let i = -10; i <= 10; i++) { const tile = add(unitCylinder, roofMat, gate, i * 0.17, 3.01, s * 0.31, 0.045, 0.84, 0.045); tile.rotation.x = Math.PI / 2 + s * 0.35; }
+      add(unitBox, oldStone, gate, s * 4.5, 0.37, 0, 5.8, 0.74, 0.3);
+    }
+  }
+  function makeEnvironment() {
+    makeTerrain(); makeGate();
+    for (let i = 0; i < 68; i++) {
+      const x = 26 + random() * 348, y = 330 + random() * 1430;
+      if (distanceToPath(x, y) < 32 || Math.hypot(x - 222, y - 1065) < 34) continue;
+      const p = to3D(x, y); makeGrave(p.x, p.z, Math.floor(random() * 3), (random() - 0.5) * 0.35);
+    }
+    const unnamed = to3D(262, 1032); makeGrave(unnamed.x, unnamed.z, 0);
+    offering = new THREE.Group(); offering.position.copy(unnamed); scene.add(offering);
+    add(new THREE.CylinderGeometry(0.13, 0.1, 0.025, 16), stone, offering, 0, 0.19, 0.25);
+    add(unitSphere, new THREE.MeshStandardMaterial({ color: 0xe8dfbb, roughness: 1 }), offering, 0, 0.22, 0.25, 0.09, 0.035, 0.07);
+    incense = new THREE.Group(); incense.position.copy(unnamed); scene.add(incense);
+    pole(incense, [0.25, 0.12, -0.1], [0.27, 0.5, -0.1], 0.008, bark);
+    add(unitSphere, new THREE.MeshBasicMaterial({ color: 0xee9255 }), incense, 0.27, 0.5, -0.1, 0.015, 0.015, 0.015);
+    offering.visible = incense.visible = false;
+    for (let i = 0; i < 28; i++) makeTree((i % 2 ? -1 : 1) * (7.5 + random() * 6), -38 + random() * 82, 0.8 + random() * 0.6);
+    const gao = to3D(150, 625); makeTree(gao.x - 1.7, gao.z - 1, 1.65);
+    for (const [x, y] of [[55, 1490], [65, 1440], [345, 1660], [350, 840], [38, 1160]]) { const p = to3D(x, y); makeBamboo(p.x, p.z); }
+    const stars = new Float32Array(180 * 3);
+    for (let i = 0; i < 180; i++) { stars[i * 3] = (random() - 0.5) * 110; stars[i * 3 + 1] = 22 + random() * 20; stars[i * 3 + 2] = (random() - 0.5) * 140; }
+    const geometry = new THREE.BufferGeometry(); geometry.setAttribute("position", new THREE.BufferAttribute(stars, 3));
+    scene.add(new THREE.Points(geometry, new THREE.PointsMaterial({ color: 0xc4d3db, size: 0.055, transparent: true, opacity: 0.7, depthWrite: false })));
+    const points = new Float32Array(32 * 3);
+    for (let i = 0; i < 32; i++) { points[i * 3] = (random() - 0.5) * 12; points[i * 3 + 1] = 0.4 + random() * 1.8; points[i * 3 + 2] = (random() - 0.5) * 65; }
+    const flies = new THREE.BufferGeometry(); flies.setAttribute("position", new THREE.BufferAttribute(points, 3));
+    fireflies = new THREE.Points(flies, new THREE.PointsMaterial({ color: 0xd9e6a6, size: 0.045, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending, depthWrite: false })); scene.add(fireflies);
+    marker = new THREE.Group();
+    const ring = add(new THREE.TorusGeometry(0.43, 0.012, 6, 48), new THREE.MeshBasicMaterial({ color: 0xdfc887, transparent: true, opacity: 0.75 }), marker, 0, 0.025, 0); ring.rotation.x = -Math.PI / 2;
+    scene.add(marker); marker.visible = false;
+  }
+  // Bake scenery into a few material batches; bamboo keeps its own swaying pivot.
+  function batchGroup(group) {
+    scene.updateMatrixWorld(true);
+    const inverse = group.matrixWorld.clone().invert(), batches = new Map(), objects = [];
+    group.traverse((object) => {
+      if (!object.isMesh || object.isInstancedMesh) return;
+      const key = object.material.uuid;
+      if (!batches.has(key)) batches.set(key, { material: object.material, geometries: [] });
+      let geometry = object.geometry.clone();
+      if (geometry.index) { const flat = geometry.toNonIndexed(); geometry.dispose(); geometry = flat; }
+      geometry.applyMatrix4(inverse.clone().multiply(object.matrixWorld));
+      batches.get(key).geometries.push(geometry); objects.push(object);
     });
-    requestAnimationFrame(frame);
+    for (const object of objects) object.removeFromParent();
+    for (const { material, geometries } of batches.values()) {
+      const geometry = mergeGeometries(geometries);
+      geometries.forEach((g) => g.dispose());
+      if (geometry) add(geometry, material, group, 0, 0, 0);
+    }
   }
-
+  function optimizeScenery() {
+    const scenery = new THREE.Group();
+    for (const object of [...scene.children]) if (object.userData.static) scenery.add(object);
+    scene.add(scenery); batchGroup(scenery);
+    for (const group of bamboo) batchGroup(group);
+  }
+  function makeLabel(text) { const node = document.createElement("div"); node.className = "world-label"; node.textContent = text; labels.appendChild(node); return node; }
+  function newActor(role) { return role === "ghost" ? createGhost() : createMonk({ villager: role === "villager" }); }
+  function removeActor(object) { scene.remove(object.root); object.label?.remove(); object.dispose(); }
+  function init(canvasEl, tapHandler) {
+    canvas = canvasEl; onTap = tapHandler;
+    renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: "high-performance" });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.6)); renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.35;
+    scene = new THREE.Scene(); scene.background = new THREE.Color(0x273834); scene.fog = new THREE.FogExp2(0x273834, 0.029);
+    camera = new THREE.PerspectiveCamera(43, 1, 0.08, 140);
+    controls = new OrbitControls(camera, canvas); controls.enableDamping = true; controls.dampingFactor = 0.08;
+    controls.enablePan = false; controls.minDistance = 2.7; controls.maxDistance = 13; controls.minPolarAngle = 0.35; controls.maxPolarAngle = 1.43;
+    controls.rotateSpeed = 0.65; controls.zoomSpeed = 0.7;
+    ambient = new THREE.HemisphereLight(0xc5d6d7, 0x4e4933, 1.65); scene.add(ambient);
+    moon = new THREE.DirectionalLight(0xd6ddcb, 2); moon.position.set(-4, 12, 5); moon.castShadow = true;
+    moon.shadow.mapSize.set(1024, 1024); moon.shadow.camera.left = moon.shadow.camera.bottom = -12; moon.shadow.camera.right = moon.shadow.camera.top = 12; moon.shadow.normalBias = 0.035; moon.shadow.bias = -0.0003;
+    scene.add(moon, moon.target); warmth = new THREE.PointLight(0xf3b66c, 2.6, 5); scene.add(warmth);
+    labels = document.getElementById("world-labels"); destinationLabel = document.getElementById("destination-label");
+    makeEnvironment(); optimizeScenery(); resize(); setPlayer(player.x, player.y); makePreviews(); resize();
+    let down = null;
+    canvas.addEventListener("pointerdown", (event) => { down = { x: event.clientX, y: event.clientY, time: performance.now(), id: event.pointerId }; });
+    canvas.addEventListener("pointerup", (event) => {
+      if (!down || down.id !== event.pointerId || Math.hypot(event.clientX - down.x, event.clientY - down.y) > 6 || performance.now() - down.time > 500) { down = null; return; }
+      down = null; const rect = canvas.getBoundingClientRect();
+      pointer.set(((event.clientX - rect.left) / rect.width) * 2 - 1, -((event.clientY - rect.top) / rect.height) * 2 + 1); raycaster.setFromCamera(pointer, camera);
+      const hit = raycaster.intersectObject(ground)[0]; if (hit && onTap) onTap(hit.point.x * 25 + 200, hit.point.z * 25 + 1000);
+    });
+    canvas.addEventListener("pointercancel", () => { down = null; });
+    canvas.addEventListener("webglcontextlost", (event) => { event.preventDefault(); contextLost = true; document.getElementById("world-error").hidden = false; });
+    canvas.addEventListener("webglcontextrestored", () => { contextLost = false; document.getElementById("world-error").hidden = true; });
+    window.addEventListener("resize", resize); new ResizeObserver(resize).observe(canvas);
+    document.addEventListener("visibilitychange", () => { last = performance.now(); }); requestAnimationFrame(frame);
+  }
   function resize() {
-    const rect = canvas.getBoundingClientRect();
-    dpr = Math.min(window.devicePixelRatio || 1, 2);
-    canvas.width = Math.round(rect.width * dpr);
-    canvas.height = Math.round(rect.height * dpr);
-    shade.width = canvas.width;
-    shade.height = canvas.height;
-    scale = rect.width / W;
-    viewH = rect.height / scale;
+    if (!renderer) return; const rect = canvas.getBoundingClientRect(); width = rect.width; height = rect.height; if (!width || !height) return;
+    renderer.setSize(width, height, false); camera.aspect = width / height;
+    camera.setViewOffset(width, height, 0, height * (0.5 - view.anchor), width, height); camera.updateProjectionMatrix();
   }
-
-  // ---------- public controls ----------
-  function setView(patch) { Object.assign(view, patch); }
-  function setPlayer(x, y) { player.x = x; player.y = y; player.tx = null; player.moving = false; camY = clampCam(y - viewH * view.anchor); }
-  function walkTo(x, y) {
-    player.tx = Math.max(12, Math.min(W - 12, x));
-    player.ty = Math.max(60, Math.min(H - 20, y));
+  function resetCamera() {
+    target.copy(to3D(player.x, player.y, 0.7)); controls.target.copy(target);
+    camera.position.copy(target).add(new THREE.Vector3(3.3, 3.2, 5.3)); controls.update();
   }
-  function stop() { player.tx = null; player.moving = false; }
+  function faceCamera() {
+    const position = to3D(player.x, player.y);
+    player.facing = Math.atan2(camera.position.x - position.x, camera.position.z - position.z) - 0.2;
+  }
+  function rotateCamera(direction) {
+    const offset = camera.position.clone().sub(controls.target); offset.applyAxisAngle(new THREE.Vector3(0, 1, 0), direction * Math.PI / 4);
+    camera.position.copy(controls.target).add(offset); controls.update();
+  }
+  function zoomCamera(factor) {
+    const offset = camera.position.clone().sub(controls.target); offset.setLength(THREE.MathUtils.clamp(offset.length() * factor, controls.minDistance, controls.maxDistance));
+    camera.position.copy(controls.target).add(offset); controls.update();
+  }
+  function setView(patch) {
+    const oldRole = view.role, oldAnchor = view.anchor; Object.assign(view, patch); if (!scene) return;
+    if (oldRole !== view.role) {
+      if (actor) removeActor(actor); actor = view.role ? newActor(view.role) : null;
+      if (actor) { scene.add(actor.root); actor.label = makeLabel("Bạn"); }
+    }
+    offering.visible = view.flags.has("offering"); incense.visible = view.flags.has("incense"); marker.visible = !!PLACES[view.marker];
+    if (marker.visible) marker.position.copy(to3D(PLACES[view.marker].x, PLACES[view.marker].y));
+    const daylight = 1 - view.darkness;
+    scene.background.set(0x15262c).lerp(new THREE.Color(0x6d7160), daylight * 0.7); scene.fog.color.copy(scene.background);
+    ambient.intensity = 1.1 + daylight * 1.4; moon.intensity = 1.1 + daylight * 2; if (oldAnchor !== view.anchor) resize();
+  }
+  function setPlayer(x, y) { player.x = x; player.y = y; stop(); if (controls) resetCamera(); }
+  function setTarget(x, y) { player.tx = THREE.MathUtils.clamp(x, 12, W - 12); player.ty = THREE.MathUtils.clamp(y, 60, H - 20); player.moving = true; }
+  function walkTo(x, y) { patrol = null; setTarget(x, y); }
+  function startWalking() {
+    const center = THREE.MathUtils.clamp(player.y, 115, H - 75); patrol = { x: player.x, min: center - 48, max: center + 48, forward: true }; setTarget(patrol.x, patrol.min);
+  }
+  function stop() { patrol = null; player.tx = null; player.moving = false; }
   function getPlayer() { return { x: player.x, y: player.y, moving: player.moving, nx: player.x / W, ny: player.y / H }; }
-
   function setOthers(list) {
-    const seen = new Set();
+    if (!scene) return; const seen = new Set();
     for (const p of list) {
-      seen.add(p.pid);
-      const x = p.x * W;
-      const y = p.y * H;
-      const o = others.get(p.pid);
-      if (o) Object.assign(o, { x, y, role: p.role, nick: p.nick, pose: p.pose });
-      else others.set(p.pid, { x, y, rx: x, ry: y, role: p.role, nick: p.nick, pose: p.pose, phase: Math.random() * 6 });
+      seen.add(p.pid); let o = others.get(p.pid);
+      if (o && o.role !== p.role) { removeActor(o.actor); others.delete(p.pid); o = null; }
+      if (!o) {
+        const person = newActor(p.role); scene.add(person.root); person.label = makeLabel(p.nick || window.ROLE_INFO[p.role].name);
+        o = { actor: person, role: p.role, x: p.x * W, y: p.y * H, rx: p.x * W, ry: p.y * H, angle: Math.PI, phase: random() * 6 }; others.set(p.pid, o);
+      }
+      Object.assign(o, { x: p.x * W, y: p.y * H, pose: p.pose }); o.actor.label.textContent = p.nick || window.ROLE_INFO[p.role].name;
     }
-    for (const id of [...others.keys()]) if (!seen.has(id)) others.delete(id);
+    for (const [id, o] of others) if (!seen.has(id)) { removeActor(o.actor); others.delete(id); }
   }
-
-  function ripple(nx, ny, kind) { ripples.push({ x: nx * W, y: ny * H, kind, t: 0 }); }
-
-  function clampCam(y) { return Math.max(-viewH * 0.1, Math.min(H + 450 - viewH, y)); }
-
-  // ---------- update ----------
-  function update(dt) {
-    time += dt;
+  function ripple(nx, ny, kind) {
+    if (!scene) return;
+    const object = add(new THREE.RingGeometry(0.3, 0.32, 48), new THREE.MeshBasicMaterial({ color: kind === "sigh" ? 0xa6dac3 : 0xe6c56f, side: THREE.DoubleSide, transparent: true, opacity: 0.6, depthWrite: false }), scene, 0, 0.04, 0);
+    object.position.copy(to3D(nx * W, ny * H, 0.04)); object.rotation.x = -Math.PI / 2; ripples.push({ object, age: 0 });
+  }
+  function makePreviews() {
+    const studio = new THREE.Scene(); studio.background = new THREE.Color(0x1b2723);
+    studio.add(new THREE.HemisphereLight(0xf0e8da, 0x6d7966, 2.6));
+    const key = new THREE.DirectionalLight(0xffddae, 3.4); key.position.set(-2, 4, 4); studio.add(key);
+    const rim = new THREE.DirectionalLight(0xabc8da, 2); rim.position.set(3, 2, -2); studio.add(rim);
+    const person = createMonk(); studio.add(person.root);
+    const floor = add(new THREE.CircleGeometry(0.8, 48), new THREE.MeshStandardMaterial({ color: 0x394338, roughness: 1 }), studio, 0, -0.015, 0); floor.rotation.x = -Math.PI / 2;
+    const portraitCamera = new THREE.PerspectiveCamera(32, 1, 0.1, 10); renderer.setSize(240, 240, false);
+    for (const pose of ["sit", "walk", "sleep", "eat"]) {
+      person.animate(pose, pose === "eat" ? 0.45 : 0.25, pose === "walk", 1);
+      portraitCamera.position.set(1.65, pose === "walk" ? 1.6 : 1.3, pose === "walk" ? 3.45 : 2.9); portraitCamera.lookAt(0, pose === "walk" ? 0.88 : 0.62, 0);
+      renderer.render(studio, portraitCamera); previews.set(pose, canvas.toDataURL("image/png"));
+    }
+    person.dispose(); floor.geometry.dispose(); floor.material.dispose();
+  }
+  function projectLabel(label, position) {
+    const p = position.clone().project(camera);
+    label.style.transform = `translate(-50%, -100%) translate(${(p.x + 1) / 2 * width}px, ${(-p.y + 1) / 2 * height}px)`;
+    label.style.visibility = p.z < 1 && p.z > -1 && Math.abs(p.x) < 1.1 && Math.abs(p.y) < 1.1 ? "visible" : "hidden";
+  }
+  function updatePerson(person, x, y, pose, phase, moving, angle, dt) {
+    person.root.position.x = (x - 200) / 25; person.root.position.z = (y - 1000) / 25;
+    person.root.rotation.y += Math.atan2(Math.sin(angle - person.root.rotation.y), Math.cos(angle - person.root.rotation.y)) * Math.min(1, dt * 7);
+    person.animate(pose || "walk", moving ? phase : reducedMotion.matches ? 0 : time, moving, dt);
+    person.label.hidden = !!(person !== actor && person.root.userData.ghost && view.role !== "ghost");
+    const point = person.root.position.clone(); point.y += pose && pose !== "walk" ? 1.42 : 2.05; projectLabel(person.label, point);
+  }
+  function frame(timestamp) {
+    requestAnimationFrame(frame); if (document.hidden || contextLost) { last = timestamp; return; }
+    const dt = Math.min(0.05, (timestamp - last) / 1000 || 0.016); last = timestamp; time += dt;
     if (player.tx != null) {
-      const dx = player.tx - player.x;
-      const dy = player.ty - player.y;
-      const d = Math.hypot(dx, dy);
-      const speed = view.role === "ghost" ? 70 : 88;
-      if (d < 2) { player.tx = null; player.moving = false; }
-      else {
-        const step = Math.min(d, speed * dt);
-        player.x += (dx / d) * step;
-        player.y += (dy / d) * step;
-        if (Math.abs(dx) > 1) player.facing = dx > 0 ? 1 : -1;
-        player.moving = true;
-        player.phase += dt * 9;
-      }
+      const dx = player.tx - player.x, dy = player.ty - player.y, d = Math.hypot(dx, dy);
+      if (d < 1) { player.tx = null; player.moving = false; if (patrol) { patrol.forward = !patrol.forward; setTarget(patrol.x, patrol.forward ? patrol.min : patrol.max); } }
+      else { const step = Math.min(d, dt * (view.role === "ghost" ? 55 : 34)); player.x += dx / d * step; player.y += dy / d * step; player.facing = Math.atan2(dx, dy); player.moving = true; player.phase += dt; }
     }
-    camY += (clampCam(player.y - viewH * view.anchor) - camY) * Math.min(1, dt * 3);
+    target.copy(to3D(player.x, player.y, 0.7)); delta.subVectors(target, controls.target).multiplyScalar(Math.min(1, dt * 4)); controls.target.add(delta); camera.position.add(delta); controls.update();
+    moon.position.copy(target).add(new THREE.Vector3(-5, 12, 5)); moon.target.position.copy(target); warmth.position.copy(target).add(new THREE.Vector3(0, 1.1, 1));
+    if (actor) updatePerson(actor, player.x, player.y, view.pose, player.phase, player.moving, player.facing, dt);
     for (const o of others.values()) {
-      const dx = o.x - o.rx;
-      const dy = o.y - o.ry;
-      o.moving = Math.hypot(dx, dy) > 1.5;
-      o.rx += dx * Math.min(1, dt * 3.5);
-      o.ry += dy * Math.min(1, dt * 3.5);
-      if (o.moving) o.phase += dt * 9;
+      const dx = o.x - o.rx, dy = o.y - o.ry, moving = Math.hypot(dx, dy) > 1; o.rx += dx * Math.min(1, dt * 8); o.ry += dy * Math.min(1, dt * 8);
+      if (moving) { o.angle = Math.atan2(dx, dy); o.phase += dt; } o.actor.root.userData.ghost = o.role === "ghost";
+      updatePerson(o.actor, o.rx, o.ry, o.pose, o.phase, moving, o.angle, dt);
     }
-    for (const r of ripples) r.t += dt;
-    while (ripples.length && ripples[0].t > 3) ripples.shift();
-    for (const f of fog) { f.x += f.v * dt; if (f.x - f.rx > W) f.x = -f.rx; }
-    for (const f of fireflies) f.p += dt * f.v;
+    bamboo.forEach((group, i) => { group.rotation.z = reducedMotion.matches ? 0 : Math.sin(time * 0.7 + i) * 0.012; }); fireflies.material.opacity = 0.35 + Math.sin(time * 1.8) * 0.2; fireflies.position.y = Math.sin(time * 0.5) * 0.1;
+    marker.scale.setScalar(1 + Math.sin(time * 2) * 0.08); destinationLabel.hidden = !marker.visible;
+    if (marker.visible) {
+      const p = PLACES[view.marker], metres = Math.round(Math.hypot(p.x - player.x, p.y - player.y) / 25); destinationLabel.textContent = `${p.name} · ${metres} m`;
+      const projected = marker.position.clone().add(new THREE.Vector3(0, 0.4, 0)).project(camera);
+      destinationLabel.style.left = `${THREE.MathUtils.clamp((projected.x + 1) * width / 2, 100, width - 100)}px`; destinationLabel.style.top = `${THREE.MathUtils.clamp((-projected.y + 1) * height / 2, 100, height * 0.57)}px`;
+    }
+    for (let i = ripples.length - 1; i >= 0; i--) {
+      const r = ripples[i]; r.age += dt; r.object.scale.setScalar(1 + r.age * 3); r.object.material.opacity = Math.max(0, 0.6 - r.age * 0.25);
+      if (r.age > 2.4) { scene.remove(r.object); r.object.geometry.dispose(); r.object.material.dispose(); ripples.splice(i, 1); }
+    }
+    renderer.render(scene, camera);
   }
-
-  // ---------- drawing helpers ----------
-  function ellipse(x, y, rx, ry, color) { ctx.fillStyle = color; ctx.beginPath(); ctx.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2); ctx.fill(); }
-  function shadow(x, y, rx) { ellipse(x, y + 1, rx, rx * 0.35, "rgba(0,0,0,0.35)"); }
-
-  function drawGround(top, bottom) {
-    ctx.fillStyle = COLORS.ground;
-    ctx.fillRect(0, top, W, bottom - top);
-    // edges darker
-    const g = ctx.createLinearGradient(0, 0, W, 0);
-    g.addColorStop(0, "rgba(0,0,0,0.35)");
-    g.addColorStop(0.18, "rgba(0,0,0,0)");
-    g.addColorStop(0.82, "rgba(0,0,0,0)");
-    g.addColorStop(1, "rgba(0,0,0,0.35)");
-    ctx.fillStyle = g;
-    ctx.fillRect(0, top, W, bottom - top);
-    // path
-    ctx.lineJoin = "round";
-    ctx.lineCap = "round";
-    ctx.beginPath();
-    PATH.forEach(([x, y], i) => (i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)));
-    ctx.strokeStyle = COLORS.path;
-    ctx.lineWidth = 34;
-    ctx.stroke();
-    ctx.strokeStyle = COLORS.pathInner;
-    ctx.lineWidth = 20;
-    ctx.stroke();
-    // grass tufts
-    ctx.strokeStyle = "#1c2720";
-    ctx.lineWidth = 1;
-    for (const t of tufts) {
-      if (t.y < top - 10 || t.y > bottom + 10) continue;
-      if (distToPath(t.x, t.y) < 14) continue;
-      ctx.beginPath();
-      ctx.moveTo(t.x - 3 * t.s, t.y); ctx.lineTo(t.x - 1 * t.s, t.y - 5 * t.s);
-      ctx.moveTo(t.x, t.y); ctx.lineTo(t.x, t.y - 7 * t.s);
-      ctx.moveTo(t.x + 3 * t.s, t.y); ctx.lineTo(t.x + 1.5 * t.s, t.y - 5 * t.s);
-      ctx.stroke();
-    }
-  }
-
-  function drawGrave(d, lights) {
-    const s = d.s;
-    const { x, y } = d;
-    shadow(x, y, 11 * s);
-    ctx.fillStyle = COLORS.grave;
-    if (d.type === 0) {
-      ellipse(x, y - 3 * s, 12 * s, 7 * s, COLORS.mound);
-      ellipse(x, y - 5 * s, 9 * s, 4.5 * s, COLORS.moundTop);
-    } else if (d.type === 1) {
-      ctx.beginPath();
-      ctx.moveTo(x - 6 * s, y); ctx.lineTo(x - 6 * s, y - 14 * s);
-      ctx.quadraticCurveTo(x, y - 22 * s, x + 6 * s, y - 14 * s);
-      ctx.lineTo(x + 6 * s, y); ctx.closePath(); ctx.fill();
-      ctx.fillStyle = COLORS.graveFace;
-      ctx.fillRect(x - 3 * s, y - 13 * s, 6 * s, 9 * s);
-    } else if (d.type === 2) {
-      ctx.fillRect(x - 11 * s, y - 6 * s, 22 * s, 6 * s);
-      ctx.fillStyle = COLORS.graveFace;
-      ctx.fillRect(x - 5 * s, y - 20 * s, 10 * s, 14 * s);
-      ctx.fillStyle = COLORS.grave;
-      ctx.fillRect(x - 7 * s, y - 22 * s, 14 * s, 3 * s);
-    } else {
-      ctx.fillRect(x - 7 * s, y - 5 * s, 14 * s, 5 * s);
-      ctx.fillStyle = COLORS.graveFace;
-      ctx.fillRect(x - 5 * s, y - 16 * s, 10 * s, 11 * s);
-      ctx.beginPath(); ctx.moveTo(x - 6 * s, y - 16 * s); ctx.lineTo(x, y - 24 * s); ctx.lineTo(x + 6 * s, y - 16 * s); ctx.closePath();
-      ctx.fillStyle = COLORS.grave; ctx.fill();
-    }
-    if (d.incense) drawIncense(x + 8 * s, y - 2, lights, 0.5);
-  }
-
-  function drawIncense(x, y, lights, strength) {
-    ctx.strokeStyle = "#5a4a3a";
-    ctx.lineWidth = 0.8;
-    for (let i = -1; i <= 1; i++) {
-      ctx.beginPath(); ctx.moveTo(x + i * 1.5, y); ctx.lineTo(x + i * 2, y - 9); ctx.stroke();
-      const flick = 0.6 + 0.4 * Math.sin(time * 5 + i * 2 + x);
-      ellipse(x + i * 2, y - 9, 0.9, 0.9, `rgba(240,150,80,${0.6 + 0.4 * flick})`);
-    }
-    lights.push({ x, y: y - 9, r: 18, a: 0.45 * strength });
-    // thin smoke
-    ctx.strokeStyle = "rgba(210,210,200,0.10)";
-    ctx.beginPath();
-    for (let k = 0; k < 10; k++) {
-      const yy = y - 9 - k * 3;
-      const xx = x + Math.sin(time * 1.2 + k * 0.7) * (k * 0.5);
-      k ? ctx.lineTo(xx, yy) : ctx.moveTo(xx, yy);
-    }
-    ctx.stroke();
-  }
-
-  function drawUnnamed(d, lights) {
-    const { x, y } = d;
-    shadow(x, y, 14);
-    ellipse(x, y - 3, 14, 7, "#212b26");
-    ctx.strokeStyle = "#2b3a31";
-    ctx.lineWidth = 1;
-    for (let i = -10; i <= 10; i += 4) {
-      ctx.beginPath(); ctx.moveTo(x + i, y - 5); ctx.lineTo(x + i + 1, y - 11 - Math.abs(Math.sin(i)) * 3); ctx.stroke();
-    }
-    if (view.flags.has("offering")) {
-      ellipse(x - 2, y - 7, 5, 2.5, "#3b3a35");
-      ellipse(x - 2, y - 8.5, 3.8, 2.4, "#e8e4d6");
-      lights.push({ x: x - 2, y: y - 8, r: 14, a: 0.25 });
-    }
-    if (view.flags.has("incense")) drawIncense(x + 8, y - 4, lights, 1);
-  }
-
-  function drawBamboo(d) {
-    const sway = Math.sin(time * 0.8 + d.seed) * 3;
-    const topX = d.x + d.lean * d.h + sway;
-    const topY = d.y - d.h;
-    ctx.strokeStyle = COLORS.bamboo;
-    ctx.lineWidth = 2.6;
-    ctx.beginPath(); ctx.moveTo(d.x, d.y); ctx.quadraticCurveTo(d.x + d.lean * d.h * 0.4, d.y - d.h * 0.5, topX, topY); ctx.stroke();
-    ctx.strokeStyle = "#16201b";
-    ctx.lineWidth = 1;
-    for (let k = 1; k < 5; k++) {
-      const t = k / 5;
-      const nx = d.x + (topX - d.x) * t;
-      const ny = d.y + (topY - d.y) * t;
-      ctx.beginPath(); ctx.moveTo(nx - 1.6, ny); ctx.lineTo(nx + 1.6, ny); ctx.stroke();
-    }
-    ctx.strokeStyle = COLORS.leaf;
-    ctx.lineWidth = 2;
-    for (let k = 0; k < 5; k++) {
-      const a = -Math.PI / 2 + (k - 2) * 0.55 + sway * 0.05;
-      ctx.beginPath(); ctx.moveTo(topX, topY); ctx.lineTo(topX + Math.cos(a) * 14, topY + Math.sin(a) * 9 + 6); ctx.stroke();
-    }
-  }
-
-  function drawGao(d) {
-    const { x, y } = d;
-    shadow(x, y, 26);
-    ctx.fillStyle = COLORS.trunk;
-    ctx.beginPath();
-    ctx.moveTo(x - 9, y); ctx.lineTo(x - 5, y - 95); ctx.lineTo(x + 5, y - 95); ctx.lineTo(x + 9, y); ctx.closePath(); ctx.fill();
-    ctx.strokeStyle = COLORS.trunk;
-    ctx.lineWidth = 4;
-    for (const [bx, by, ex, ey] of [[0, -70, -40, -110], [0, -80, 38, -118], [0, -92, -10, -130]]) {
-      ctx.beginPath(); ctx.moveTo(x + bx, y + by); ctx.lineTo(x + ex, y + ey); ctx.stroke();
-    }
-    for (const [cx, cy, rx, ry] of [[-38, -118, 30, 16], [34, -124, 32, 16], [-4, -140, 36, 18]]) ellipse(x + cx, y + cy, rx, ry, COLORS.canopy);
-    const r = rng(5);
-    for (let i = 0; i < 26; i++) {
-      const fx = x - 60 + r() * 120;
-      const fy = y - 150 + r() * 45;
-      ellipse(fx, fy, 2, 2, COLORS.flower);
-    }
-  }
-
-  function drawTree(d) {
-    const { x, y, s } = d;
-    shadow(x, y, 16 * s);
-    ctx.fillStyle = COLORS.trunk;
-    ctx.fillRect(x - 3 * s, y - 40 * s, 6 * s, 40 * s);
-    ellipse(x - 10 * s, y - 48 * s, 18 * s, 13 * s, COLORS.canopy);
-    ellipse(x + 10 * s, y - 52 * s, 18 * s, 13 * s, COLORS.canopy);
-    ellipse(x, y - 62 * s, 16 * s, 12 * s, "#17201b");
-  }
-
-  function drawGate(d) {
-    const { x, y } = d;
-    for (const side of [-1, 1]) {
-      shadow(x + side * 42, y, 9);
-      ctx.fillStyle = "#3a3f3a";
-      ctx.fillRect(x + side * 42 - 5, y - 48, 10, 48);
-      ctx.fillStyle = "#474d47";
-      ctx.fillRect(x + side * 42 - 6, y - 52, 12, 5);
-    }
-    ctx.fillStyle = "#353a35";
-    ctx.fillRect(x - 50, y - 60, 100, 9);
-    ctx.beginPath();
-    ctx.moveTo(x - 58, y - 60); ctx.quadraticCurveTo(x, y - 70, x + 58, y - 60); ctx.lineTo(x + 50, y - 66); ctx.quadraticCurveTo(x, y - 74, x - 50, y - 66); ctx.closePath();
-    ctx.fillStyle = "#2a2e2a"; ctx.fill();
-  }
-
-  function drawShrine(d) {
-    const { x, y } = d;
-    shadow(x, y, 30);
-    ctx.fillStyle = "#2a2f2b";
-    ctx.fillRect(x - 26, y - 34, 52, 34);
-    ctx.fillStyle = "#101513";
-    ctx.fillRect(x - 8, y - 22, 16, 22);
-    ctx.beginPath();
-    ctx.moveTo(x - 38, y - 30); ctx.quadraticCurveTo(x - 20, y - 36, x, y - 56); ctx.quadraticCurveTo(x + 20, y - 36, x + 38, y - 30);
-    ctx.lineTo(x + 30, y - 36); ctx.lineTo(x, y - 50); ctx.lineTo(x - 30, y - 36); ctx.closePath();
-    ctx.fillStyle = "#1e2320"; ctx.fill();
-  }
-
-  function drawHouse(d, lights) {
-    const { x, y } = d;
-    shadow(x, y, 32);
-    ctx.fillStyle = "#262b28";
-    ctx.fillRect(x - 28, y - 28, 56, 28);
-    ctx.beginPath(); ctx.moveTo(x - 34, y - 26); ctx.lineTo(x, y - 48); ctx.lineTo(x + 34, y - 26); ctx.closePath();
-    ctx.fillStyle = "#1a1f1c"; ctx.fill();
-    ctx.fillStyle = COLORS.lantern;
-    ctx.globalAlpha = 0.75;
-    ctx.fillRect(x - 6, y - 19, 12, 9);
-    ctx.globalAlpha = 1;
-    lights.push({ x, y: y - 15, r: 60, a: 0.55 });
-  }
-
-  // ---------- characters ----------
-  function drawMonk(x, y, pose, phase, moving, facing, lights) {
-    lights.push({ x, y: y - 14, r: 58, a: 0.7 });
-    if (pose === "sit") {
-      shadow(x, y, 13);
-      ctx.fillStyle = COLORS.robeDark;
-      ellipse(x, y - 3, 13, 5, COLORS.robeDark);
-      ctx.beginPath(); ctx.moveTo(x - 11, y - 3); ctx.quadraticCurveTo(x, y - 26, x + 11, y - 3); ctx.closePath();
-      ctx.fillStyle = COLORS.robe; ctx.fill();
-      ellipse(x, y - 25, 5, 5, COLORS.skin);
-      ellipse(x, y - 9, 3.2, 1.8, "#2a1e14");
-      return;
-    }
-    const bob = moving ? Math.abs(Math.sin(phase)) * 1.6 : 0;
-    shadow(x, y, 8);
-    ctx.fillStyle = COLORS.robeDark;
-    const step = moving ? Math.sin(phase) * 2.5 : 0;
-    ctx.fillRect(x - 3 + step, y - 6, 2.5, 6);
-    ctx.fillRect(x + 1 - step, y - 6, 2.5, 6);
-    ctx.beginPath(); ctx.moveTo(x - 8, y - 5 - bob); ctx.lineTo(x - 5, y - 24 - bob); ctx.lineTo(x + 5, y - 24 - bob); ctx.lineTo(x + 8, y - 5 - bob); ctx.closePath();
-    ctx.fillStyle = COLORS.robe; ctx.fill();
-    ellipse(x, y - 29 - bob, 4.8, 4.8, COLORS.skin);
-    ellipse(x + facing * 5, y - 15 - bob, 3.4, 2.4, "#2a1e14");
-  }
-
-  function drawGhost(x, y, phase, alpha, lights) {
-    const float = Math.sin(time * 1.6 + phase) * 3;
-    const yy = y - 18 + float;
-    const flick = 0.85 + 0.15 * Math.sin(time * 7 + phase);
-    const a = alpha * flick;
-    const g = ctx.createRadialGradient(x, yy - 4, 1, x, yy, 18);
-    g.addColorStop(0, `rgba(190,235,220,${0.85 * a})`);
-    g.addColorStop(0.5, `rgba(159,210,193,${0.35 * a})`);
-    g.addColorStop(1, "rgba(159,210,193,0)");
-    ctx.fillStyle = g;
-    ctx.beginPath();
-    ctx.moveTo(x - 9, yy - 4);
-    ctx.quadraticCurveTo(x - 10, yy - 18, x, yy - 18);
-    ctx.quadraticCurveTo(x + 10, yy - 18, x + 9, yy - 4);
-    const tail = Math.sin(time * 2 + phase) * 4;
-    ctx.quadraticCurveTo(x + 6, yy + 10, x + tail, yy + 20);
-    ctx.quadraticCurveTo(x - 6, yy + 8, x - 9, yy - 4);
-    ctx.fill();
-    lights.push({ x, y: yy, r: 26, a: 0.25 * alpha });
-  }
-
-  function drawVillager(x, y, phase, moving, facing, lights) {
-    const bob = moving ? Math.abs(Math.sin(phase)) * 1.4 : 0;
-    shadow(x, y, 7);
-    const step = moving ? Math.sin(phase) * 2.5 : 0;
-    ctx.fillStyle = "#2a3235";
-    ctx.fillRect(x - 3 + step, y - 7, 2.5, 7);
-    ctx.fillRect(x + 1 - step, y - 7, 2.5, 7);
-    ctx.fillStyle = COLORS.villagerBody;
-    ctx.fillRect(x - 5, y - 22 - bob, 10, 16);
-    ellipse(x, y - 25 - bob, 3.6, 3.6, "#8f7056");
-    ctx.beginPath(); ctx.moveTo(x - 11, y - 25 - bob); ctx.lineTo(x, y - 36 - bob); ctx.lineTo(x + 11, y - 25 - bob); ctx.closePath();
-    ctx.fillStyle = COLORS.hat; ctx.fill();
-    // lantern on a short pole
-    const lx = x + facing * 11;
-    const ly = y - 14 - bob + Math.sin(time * 3 + phase) * 0.8;
-    ctx.strokeStyle = "#4a3c2c";
-    ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(x + facing * 4, y - 16 - bob); ctx.lineTo(lx, ly - 5); ctx.stroke();
-    ctx.fillStyle = COLORS.lantern;
-    ctx.fillRect(lx - 2.5, ly - 4, 5, 7);
-    lights.push({ x: lx, y: ly, r: 105, a: 0.9 });
-  }
-
-  function drawCharacter(c, lights, viewerIsGhost) {
-    if (c.role === "monk") drawMonk(c.x, c.y, c.pose, c.phase, c.moving, c.facing || 1, lights);
-    else if (c.role === "ghost") drawGhost(c.x, c.y, c.phase, viewerIsGhost || c.isMe ? 0.9 : 0.38, lights);
-    else if (c.role === "villager") drawVillager(c.x, c.y, c.phase, c.moving, c.facing || 1, lights);
-    else ellipse(c.x, c.y - 4, 3, 3, "rgba(220,213,197,0.35)");
-  }
-
-  // ---------- frame ----------
-  function frame(ts) {
-    const dt = Math.min(0.05, (ts - last) / 1000 || 0.016);
-    last = ts;
-    update(dt);
-    draw();
-    requestAnimationFrame(frame);
-  }
-
-  function draw() {
-    const k = scale * dpr;
-    const top = camY - 40;
-    const bottom = camY + viewH + 80;
-    const lights = [];
-    ctx.setTransform(k, 0, 0, k, 0, -camY * k);
-    drawGround(top - 40, bottom);
-
-    // collect drawables in view, sort by y (base line)
-    const items = [];
-    for (const d of decor) if (d.y > top - 20 && d.y < bottom + 160) items.push(d);
-    for (const [pid, o] of others) items.push({ kind: "char", role: o.role, x: o.rx, y: o.ry, pose: o.pose, phase: o.phase, moving: o.moving, facing: o.x >= o.rx ? 1 : -1, label: o.nick || roleName(o.role), pid });
-    if (view.role) items.push({ kind: "char", role: view.role, x: player.x, y: player.y, pose: view.pose, phase: player.phase, moving: player.moving, facing: player.facing, label: "bạn", isMe: true });
-    items.sort((a, b) => a.y - b.y);
-
-    const viewerIsGhost = view.role === "ghost";
-    for (const it of items) {
-      switch (it.kind) {
-        case "grave": drawGrave(it, lights); break;
-        case "unnamed": drawUnnamed(it, lights); break;
-        case "bamboo": drawBamboo(it); break;
-        case "gao": drawGao(it); break;
-        case "tree": drawTree(it); break;
-        case "gate": drawGate(it); break;
-        case "shrine": drawShrine(it); break;
-        case "house": drawHouse(it, lights); break;
-        case "char": drawCharacter(it, lights, viewerIsGhost); break;
-      }
-    }
-
-    // drifting fog
-    for (const f of fog) {
-      const fy = camY + f.y * viewH;
-      ellipse(f.x, fy, f.rx, f.ry, "rgba(200,210,205,0.035)");
-    }
-
-    // darkness with light holes
-    sctx.setTransform(1, 0, 0, 1, 0, 0);
-    sctx.globalCompositeOperation = "source-over";
-    sctx.clearRect(0, 0, shade.width, shade.height);
-    const dark = viewerIsGhost ? view.darkness * 0.72 : view.darkness;
-    sctx.fillStyle = `rgba(3,6,8,${dark})`;
-    sctx.fillRect(0, 0, shade.width, shade.height);
-    sctx.globalCompositeOperation = "destination-out";
-    for (const l of lights) {
-      const sx = l.x * k;
-      const sy = (l.y - camY) * k;
-      const sr = l.r * k;
-      if (sy < -sr || sy > shade.height + sr) continue;
-      const g = sctx.createRadialGradient(sx, sy, 0, sx, sy, sr);
-      g.addColorStop(0, `rgba(0,0,0,${l.a})`);
-      g.addColorStop(1, "rgba(0,0,0,0)");
-      sctx.fillStyle = g;
-      sctx.beginPath(); sctx.arc(sx, sy, sr, 0, Math.PI * 2); sctx.fill();
-    }
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
-    ctx.drawImage(shade, 0, 0);
-    if (viewerIsGhost) {
-      ctx.fillStyle = "rgba(70,120,115,0.10)";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-    }
-
-    // above darkness: warm glows, fireflies, ripples, labels, marker
-    ctx.setTransform(k, 0, 0, k, 0, -camY * k);
-    ctx.globalCompositeOperation = "lighter";
-    for (const l of lights) {
-      if (l.r < 50) continue;
-      const g = ctx.createRadialGradient(l.x, l.y, 0, l.x, l.y, l.r * 0.5);
-      g.addColorStop(0, `rgba(230,170,90,${0.10 * l.a})`);
-      g.addColorStop(1, "rgba(230,170,90,0)");
-      ctx.fillStyle = g;
-      ctx.beginPath(); ctx.arc(l.x, l.y, l.r * 0.5, 0, Math.PI * 2); ctx.fill();
-    }
-    for (const f of fireflies) {
-      const fx = f.x + Math.sin(f.p) * 14;
-      const fy = f.y + Math.cos(f.p * 0.7) * 10;
-      if (fy < top || fy > bottom) continue;
-      const a = Math.max(0, Math.sin(f.p * 2.3)) * 0.8;
-      ellipse(fx, fy, 1.3, 1.3, `rgba(200,240,160,${a})`);
-    }
-    ctx.globalCompositeOperation = "source-over";
-
-    for (const r of ripples) {
-      const color = r.kind === "sigh" ? "159,210,193" : r.kind === "lantern" ? "230,197,111" : "233,226,204";
-      const rad = 8 + r.t * 70;
-      ctx.strokeStyle = `rgba(${color},${Math.max(0, 0.8 - r.t / 3)})`;
-      ctx.lineWidth = 1.2;
-      ctx.beginPath(); ctx.ellipse(r.x, r.y - 10, rad, rad * 0.55, 0, 0, Math.PI * 2); ctx.stroke();
-    }
-
-    ctx.font = '500 9px "Be Vietnam Pro", system-ui, sans-serif';
-    ctx.textAlign = "center";
-    for (const it of items) {
-      if (it.kind !== "char" || !it.label) continue;
-      if (it.role === "ghost" && !viewerIsGhost && !it.isMe) continue; // the living don't see a ghost's name
-      ctx.fillStyle = it.isMe ? "rgba(220,213,197,0.95)" : "rgba(220,213,197,0.6)";
-      const lift = it.role === "ghost" ? 46 : it.pose === "sit" ? 36 : 44;
-      ctx.fillText(it.label, it.x, it.y - lift);
-    }
-
-    if (view.marker && PLACES[view.marker]) drawMarker(PLACES[view.marker]);
-  }
-
-  function drawMarker(p) {
-    const pulse = 0.5 + 0.5 * Math.sin(time * 3);
-    const onTop = p.y < camY + 80;
-    const onBottom = p.y > camY + viewH - 140;
-    if (!onTop && !onBottom) {
-      ctx.strokeStyle = `rgba(230,197,111,${0.5 + 0.4 * pulse})`;
-      ctx.lineWidth = 1.4;
-      ctx.beginPath(); ctx.ellipse(p.x, p.y, 20 + pulse * 4, 9 + pulse * 2, 0, 0, Math.PI * 2); ctx.stroke();
-      ctx.fillStyle = "rgba(230,197,111,0.9)";
-      ctx.font = '500 10px "Be Vietnam Pro", system-ui, sans-serif';
-      ctx.fillText(p.name, p.x, p.y + 24);
-      return;
-    }
-    const ay = onTop ? camY + 96 : camY + viewH - 140;
-    const ax = Math.max(30, Math.min(W - 30, p.x));
-    const dir = onTop ? -1 : 1;
-    ctx.fillStyle = `rgba(230,197,111,${0.6 + 0.35 * pulse})`;
-    ctx.beginPath(); ctx.moveTo(ax, ay + dir * 8); ctx.lineTo(ax - 7, ay - dir * 2); ctx.lineTo(ax + 7, ay - dir * 2); ctx.closePath(); ctx.fill();
-    ctx.font = '500 10px "Be Vietnam Pro", system-ui, sans-serif';
-    ctx.fillText(p.name, ax, ay - dir * 12);
-  }
-
-  function roleName(role) {
-    return role && window.ROLE_INFO ? ROLE_INFO[role].name : "";
-  }
-
-  return { W, H, PLACES, SPAWN, init, setView, setPlayer, walkTo, stop, getPlayer, setOthers, ripple };
+  return { W, H, PLACES, SPAWN, init, setView, setPlayer, walkTo, startWalking, stop, getPlayer, setOthers, ripple, resetCamera, faceCamera, rotateCamera, zoomCamera, getPoseImage: (pose) => previews.get(pose) };
 })();

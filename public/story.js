@@ -1,33 +1,8 @@
 // Story data for one night at the cemetery.
 // Each role has a meter (0–10). Text lines and choices may depend on "flags":
-// kinds of traces left by other players tonight, or live moments heard this session.
+// live actions and moments shared during this session.
 //   line: string | { if: flag, text } | { unless: flag, text }
-//   choice: { label, delta, next, trace?: {kind, variant}, emit?: topic, if?, unless? }
-
-window.TRACE_TEXT = {
-  offering: [
-    "đặt nửa vắt cơm lên một ngôi mộ không tên",
-  ],
-  chant: [
-    "tụng Bát Nhã, hồi hướng cho những người nằm đây",
-    "hồi hướng cho người đã xua đuổi mình sáng qua",
-  ],
-  sigh: [
-    "thở dài giữa các ngôi mộ",
-  ],
-  incense: [
-    "thắp một nén nhang ở ngôi mộ không tên",
-  ],
-  alms: [
-    "mang cơm ra cổng nghĩa địa lúc gà gáy",
-  ],
-  release: [
-    "nhẹ đi khi sương tan, và không còn ở lại",
-  ],
-  vigil: [
-    "ngồi trọn đêm, không nằm xuống",
-  ],
-};
+//   choice: { label, delta, next, effect?: kind, emit?: topic, if?, unless? }
 
 window.ROLE_INFO = {
   monk: {
@@ -92,7 +67,7 @@ window.STORY = {
           "Bên cạnh có một ngôi mộ thấp, không bia, cỏ mọc kín.",
         ],
         choices: [
-          { label: "Đặt cơm lên ngôi mộ không tên, khấn thí thực", delta: 1, next: "m4", trace: { kind: "offering", variant: 0 } },
+          { label: "Đặt cơm lên ngôi mộ không tên, khấn thí thực", delta: 1, next: "m4", effect: "offering" },
           { label: "Giữ lại cho sáng mai", delta: 0, next: "m4" },
         ],
       },
@@ -119,7 +94,7 @@ window.STORY = {
           "Hạnh ngồi không nằm. Đất ẩm và mát. Nằm xuống một chút thôi cũng chẳng ai biết.",
         ],
         choices: [
-          { label: "Nằm xuống một chút", delta: -2, next: "m6" },
+          { label: "Khép mắt, nghỉ ngơi trong tư thế ngồi", delta: 0, next: "m6" },
           { label: "Đứng dậy đi kinh hành quanh các ngôi mộ", delta: 1, next: "m6" },
           { label: "Ngồi thẳng lưng, đếm hơi thở từ một đến mười", delta: 1, next: "m6" },
         ],
@@ -133,8 +108,8 @@ window.STORY = {
           "Thầy chắp tay. Còn lại một việc trước khi trời sáng.",
         ],
         choices: [
-          { label: "Tụng Bát Nhã, hồi hướng cho những người nằm đây", delta: 1, next: "end", trace: { kind: "chant", variant: 0 } },
-          { label: "Hồi hướng cho người đàn ông đã xua đuổi mình", delta: 2, next: "end", trace: { kind: "chant", variant: 1 } },
+          { label: "Tụng Bát Nhã, hồi hướng cho những người nằm đây", delta: 1, next: "end", effect: "chant" },
+          { label: "Hồi hướng cho người đàn ông đã xua đuổi mình", delta: 2, next: "end", effect: "chant" },
         ],
       },
       end: {
@@ -144,7 +119,7 @@ window.STORY = {
         endings: [
           { max: 3, text: "Trời sáng. Thầy đứng dậy, chân tê, lòng còn nặng. Đêm nay tâm đã chạy theo tiếng lá, theo cơn buồn ngủ, theo câu nói sáng qua. Không sao cả. Hạnh đầu đà là để thấy mình, không phải để thắng. Đêm mai lại ngồi." },
           { max: 7, text: "Gà gáy ở xóm dưới. Có lúc thầy sợ, có lúc thầy mệt, nhưng lần nào cũng quay về được với hơi thở. Thầy đắp lại y, cầm bát, đi về phía làng. Hôm nay sẽ đi lại con đường cũ, qua cả nhà thứ bảy." },
-          { max: 10, text: "Ánh sáng đầu tiên chạm vào những tấm bia vôi. Đêm qua có sợ, có buồn ngủ, có giận, và thầy thấy rõ từng thứ khi nó đến và khi nó đi. Nghĩa địa không còn là nơi đáng sợ, chỉ là một chỗ đất có nhiều người đã nằm xuống. Thầy cúi đầu chào họ rồi đi.", trace: { kind: "vigil", variant: 0 } },
+          { max: 10, text: "Ánh sáng đầu tiên chạm vào những tấm bia vôi. Đêm qua có sợ, có buồn ngủ, có giận, và thầy thấy rõ từng thứ khi nó đến và khi nó đi. Nghĩa địa không còn là nơi đáng sợ, chỉ là một chỗ đất có nhiều người đã nằm xuống. Thầy cúi đầu chào họ rồi đi.", effect: "vigil" },
         ],
       },
     },
@@ -176,7 +151,7 @@ window.STORY = {
           "Bà thấy khó chịu. Đây là chỗ của bà.",
         ],
         choices: [
-          { label: "Làm lá khô xào xạc sau lưng ông ta", delta: 1, next: "g3", emit: "sigh", trace: { kind: "sigh", variant: 0 } },
+          { label: "Làm lá khô xào xạc sau lưng ông ta", delta: 1, next: "g3", emit: "sigh" },
           { label: "Đứng xa mà nhìn", delta: 0, next: "g3" },
         ],
       },
@@ -226,7 +201,7 @@ window.STORY = {
         place: "graves",
         end: true,
         endings: [
-          { max: 3, text: "Sương tan. Bà thấy mình nhẹ đi, như mẹt xôi đã bán hết. Căn nhà, con bé, cơn nước lớn vẫn còn đó nhưng không còn kéo bà lại. Lần đầu tiên sau rất lâu, bà không đứng chờ nữa.", trace: { kind: "release", variant: 0 } },
+          { max: 3, text: "Sương tan. Bà thấy mình nhẹ đi, như mẹt xôi đã bán hết. Căn nhà, con bé, cơn nước lớn vẫn còn đó nhưng không còn kéo bà lại. Lần đầu tiên sau rất lâu, bà không đứng chờ nữa.", effect: "release" },
           { max: 7, text: "Trời sáng. Bà vẫn còn ở đây, nhưng đêm qua có một lúc bà đã quên đứng chờ. Có lẽ đêm mai sẽ dễ hơn." },
           { max: 10, text: "Mặt trời lên. Bà lùi vào bóng cây gạo, vẫn nhìn về phía con đường. Một đêm nữa đã qua, và bà còn ở lại." },
         ],
@@ -298,8 +273,8 @@ window.STORY = {
           "Gà gáy ở xóm. Ông sư đứng dậy.",
         ],
         choices: [
-          { label: "Về nhà nấu cơm, mang ra cổng đặt vào bát ông sư", delta: 2, next: "end", trace: { kind: "alms", variant: 0 } },
-          { label: "Thắp một nén nhang ở ngôi mộ không tên", delta: 1, next: "end", trace: { kind: "incense", variant: 0 } },
+          { label: "Về nhà nấu cơm, mang ra cổng đặt vào bát ông sư", delta: 2, next: "end", effect: "alms" },
+          { label: "Thắp một nén nhang ở ngôi mộ không tên", delta: 1, next: "end", effect: "incense" },
           { label: "Về ngủ, không kể với ai", delta: -1, next: "end" },
         ],
       },

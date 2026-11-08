@@ -1,8 +1,15 @@
-// Client: role picker, place-driven story engine, live presence (SSE) and shared traces.
+import "./world.js";
+
+// Role picker, place-driven story, monk actions and live multiplayer presence.
 (() => {
-  const RECENT_MS = 12 * 60 * 60 * 1000; // "đêm nay" = last 12 hours
   const ARRIVE_DIST = 46;
   const STORE_KEY = "dhutanga.completed";
+  const ACTIONS = {
+    sit: { label: "Ngồi thiền", status: "Đang ngồi thiền", description: "Ngồi vững, thả lỏng vai. Nhẹ nhàng trở về với hơi thở." },
+    walk: { label: "Đi kinh hành", status: "Đang đi kinh hành", description: "Bước đi thong thả, biết rõ từng bước chân chạm đất." },
+    sleep: { label: "Ngủ ngồi", status: "Đang ngủ ngồi", description: "Khép mắt, nghỉ trong tư thế ngồi, giữ thân không nằm xuống." },
+    eat: { label: "Thọ thực", status: "Đang thọ thực", description: "Nâng bát, dùng từng miếng chậm rãi trong sự biết ơn." },
+  };
   const DARKNESS = {
     "Chiều tàn": 0.42, "Chạng vạng": 0.6, "Đầu hôm": 0.72, "Canh hai": 0.84,
     "Canh ba": 0.9, "Canh tư": 0.82, "Gà gáy": 0.68, "Rạng sáng": 0.45,
@@ -22,10 +29,11 @@
     role: null,
     sceneId: null,
     sceneOpen: false,
+    action: "walk",
+    practicing: false,
     meter: 0,
     nick: "",
     peers: [],
-    traces: [],
     liveFlags: new Set(),
     soundOn: false,
     lastGesture: 0,
@@ -45,6 +53,7 @@
 
   const currentScene = () => (state.role ? STORY[state.role].scenes[state.sceneId] : null);
   const currentPose = () => {
+    if (state.role === "monk") return state.action;
     const sc = currentScene();
     return sc && state.sceneOpen && sc.pose === "sit" ? "sit" : null;
   };
@@ -78,20 +87,18 @@
       const data = JSON.parse(e.data);
       state.connected = true;
       state.peers = data.peers;
-      state.traces = data.traces;
       sendPresence(true);
       onPeers();
-      renderTraces();
     });
     es.addEventListener("peers", (e) => {
       state.peers = JSON.parse(e.data);
       onPeers();
     });
-    es.addEventListener("trace", (e) => {
-      state.traces.push(JSON.parse(e.data));
-      state.traces = state.traces.slice(-60);
-      renderTraces();
+    es.addEventListener("effect", (e) => {
+      const effect = JSON.parse(e.data);
+      state.liveFlags.add(effect.kind);
       pushView();
+      if (state.sceneOpen && !currentScene().end) renderScene();
     });
     es.addEventListener("moment", (e) => onMoment(JSON.parse(e.data)));
     es.onerror = () => {
@@ -101,12 +108,7 @@
   }
 
   // ---------- flags: what other players did tonight ----------
-  function flags() {
-    const now = Date.now();
-    const set = new Set(state.liveFlags);
-    for (const t of state.traces) if (now - t.at < RECENT_MS) set.add(t.kind);
-    return set;
-  }
+  const flags = () => new Set(state.liveFlags);
   const passes = (item, f) => (!item.if || f.has(item.if)) && (!item.unless || !f.has(item.unless));
 
   function pushView() {
@@ -116,8 +118,8 @@
       pose: currentPose(),
       darkness: sc ? DARKNESS[sc.time] ?? 0.8 : 0.78,
       flags: flags(),
-      marker: sc && !state.sceneOpen ? sc.place : null,
-      anchor: state.sceneOpen && !$("sheet").classList.contains("collapsed") ? 0.3 : 0.5,
+      marker: sc && !state.sceneOpen && !state.practicing ? sc.place : null,
+      anchor: state.practicing ? 0.38 : state.sceneOpen && !$("sheet").classList.contains("collapsed") ? 0.24 : 0.38,
     });
   }
 
@@ -158,9 +160,9 @@
       if (m.topic === "chime") NightAudio.bell(m.from === state.pid ? 1 : 0.7);
       if (m.topic === "sigh") NightAudio.sigh();
     }
-    if (m.from === state.pid) return;
     state.liveFlags.add(m.topic);
     pushView();
+    if (m.from === state.pid) return;
     toast(MOMENT_TEXT[m.topic]);
     if (state.sceneOpen) {
       $("whispers").appendChild(el("p", null, MOMENT_TEXT[m.topic]));
@@ -168,46 +170,66 @@
     }
   }
 
-  // ---------- traces ----------
-  function traceSentence(t) {
-    const info = ROLE_INFO[t.role];
-    const who = t.nick ? `${t.nick} (${info ? info.name.toLowerCase() : "ai đó"})` : info ? "Một " + info.name.toLowerCase() : "Ai đó";
-    const list = TRACE_TEXT[t.kind] || [""];
-    return `${who} ${list[t.variant] || list[0]}.`;
+  function shareEffect(kind) {
+    state.liveFlags.add(kind);
+    pushView();
+    post("/api/effect", { kind });
   }
-  function timeAgo(at) {
-    const mins = Math.round((Date.now() - at) / 60000);
-    if (mins < 1) return "vừa xong";
-    if (mins < 60) return `${mins} phút trước`;
-    const hours = Math.round(mins / 60);
-    if (hours < 24) return `${hours} giờ trước`;
-    return `${Math.round(hours / 24)} ngày trước`;
-  }
-  function renderTraces() {
-    const list = $("trace-list");
-    list.replaceChildren();
-    const recent = [...state.traces].reverse().slice(0, 30);
-    for (const t of recent) {
-      const li = el("li");
-      li.dataset.role = t.role || "";
-      li.appendChild(el("span", "dot"));
-      const body = el("div");
-      body.appendChild(document.createTextNode(traceSentence(t)));
-      body.appendChild(el("span", "when", timeAgo(t.at)));
-      li.appendChild(body);
-      list.appendChild(li);
+
+  // ---------- monk action menu ----------
+  function buildActions() {
+    for (const [pose, info] of Object.entries(ACTIONS)) {
+      const button = el("button", "action-card");
+      button.type = "button";
+      button.dataset.action = pose;
+      button.setAttribute("aria-pressed", "false");
+      const image = el("img", "action-image");
+      image.src = World.getPoseImage(pose);
+      image.alt = { sit: "Nhà sư ngồi xếp bằng, tay đặt trong lòng", walk: "Nhà sư đi bộ chân trần", sleep: "Nhà sư nhắm mắt, đầu hơi cúi trong tư thế ngồi", eat: "Nhà sư ngồi nâng bát và dùng thìa thọ thực" }[pose];
+      image.width = 120; image.height = 120;
+      const title = el("span", "action-title", info.label);
+      button.append(image, title, el("span", "action-dot"));
+      button.addEventListener("click", () => selectAction(pose));
+      $("action-list").appendChild(button);
     }
-    $("trace-empty").hidden = recent.length > 0;
-    const tonight = state.traces.filter((t) => Date.now() - t.at < RECENT_MS).length;
-    $("traces-count").textContent = String(tonight);
   }
-  async function leaveTrace(trace) {
-    const res = await post("/api/trace", { ...trace, role: state.role, nick: state.nick });
-    if (res.error && !state.connected) {
-      state.traces.push({ ...trace, role: state.role, nick: state.nick, at: Date.now(), id: makeId() });
-      renderTraces();
-      pushView();
+
+  function renderActions() {
+    const visible = state.role === "monk";
+    $("monk-actions").hidden = !visible;
+    $("camera-hint").hidden = !state.role;
+    if (!visible) return;
+    $("app").dataset.action = state.action;
+    for (const button of $("action-list").children) button.setAttribute("aria-pressed", String(button.dataset.action === state.action));
+    const info = ACTIONS[state.action];
+    const status = state.action === "walk" && !World.getPlayer().moving ? "Sẵn sàng kinh hành" : info.status;
+    if ($("action-status").textContent !== status) $("action-status").textContent = status;
+    $("action-description").textContent = info.description;
+    $("resume-story").hidden = !state.practicing;
+  }
+
+  function selectAction(pose, destination) {
+    if (state.role !== "monk" || !ACTIONS[pose]) return;
+    state.practicing = true;
+    state.action = pose;
+    World.stop();
+    if (pose !== "walk") World.faceCamera();
+    if (pose === "walk") {
+      if (destination) World.walkTo(destination.x, destination.y);
+      else World.startWalking();
     }
+    $("sheet").hidden = true;
+    $("walk-bar").hidden = true;
+    pushView();
+    renderActions();
+    sendPresence(true);
+  }
+
+  function resumeStory() {
+    state.practicing = false;
+    World.stop();
+    showWalkOrScene();
+    sendPresence(true);
   }
 
   // ---------- picker ----------
@@ -216,6 +238,8 @@
     $("sheet").hidden = true;
     $("walk-bar").hidden = true;
     $("role-chip").hidden = true;
+    $("monk-actions").hidden = true;
+    $("camera-hint").hidden = true;
     delete $("app").dataset.role;
     const list = $("role-list");
     list.replaceChildren();
@@ -239,6 +263,8 @@
     state.role = role;
     state.sceneId = STORY[role].start;
     state.sceneOpen = false;
+    state.practicing = false;
+    state.action = "walk";
     state.meter = STORY[role].meterStart;
     state.liveFlags.clear();
     $("whispers").replaceChildren();
@@ -255,12 +281,14 @@
     pushView();
     sendPresence(true);
     showWalkOrScene();
+    renderActions();
   }
 
   function leaveRole() {
     state.role = null;
     state.sceneId = null;
     state.sceneOpen = false;
+    state.practicing = false;
     World.stop();
     sendPresence(true);
     renderPicker();
@@ -278,23 +306,27 @@
   function showWalkOrScene() {
     if (distanceToPlace() <= ARRIVE_DIST) return openScene();
     state.sceneOpen = false;
+    state.action = "walk";
     const sc = currentScene();
     $("sheet").hidden = true;
     $("walk-bar").hidden = false;
     $("walk-time").textContent = sc.time;
     $("walk-text").textContent = `Đi tới ${World.PLACES[sc.place].name}`;
     pushView();
+    renderActions();
   }
 
   function openScene() {
     state.sceneOpen = true;
     World.stop();
+    state.action = currentScene().pose === "sit" ? "sit" : "walk";
     $("walk-bar").hidden = true;
     $("sheet").hidden = false;
     setCollapsed(false);
     renderScene();
     pushView();
     sendPresence(true);
+    renderActions();
   }
 
   function setCollapsed(collapsed) {
@@ -334,7 +366,7 @@
       if (!passes(c, f)) continue;
       const b = el("button", "choice", c.label);
       b.type = "button";
-      if (c.trace) b.appendChild(el("span", "tag", "Để lại dấu vết cho người khác"));
+      if (c.effect) b.appendChild(el("span", "tag", "Tác động đến người đang chơi"));
       else if (c.emit) b.appendChild(el("span", "tag", "Người khác sẽ nghe thấy"));
       b.addEventListener("click", () => choose(c));
       choices.appendChild(b);
@@ -343,7 +375,7 @@
 
   function choose(c) {
     state.meter = Math.max(0, Math.min(10, state.meter + (c.delta || 0)));
-    if (c.trace) leaveTrace(c.trace);
+    if (c.effect) shareEffect(c.effect);
     if (c.emit) gesture(c.emit, true);
     state.sceneId = c.next;
     $("whispers").replaceChildren();
@@ -355,7 +387,7 @@
     const ending = scene.endings.find((e) => state.meter <= e.max) || scene.endings[scene.endings.length - 1];
     const lines = $("lines");
     lines.appendChild(el("p", "ending", ending.text));
-    if (ending.trace) leaveTrace(ending.trace);
+    if (ending.effect) shareEffect(ending.effect);
     state.completed[state.role] = true;
     saveCompleted();
     const roles = ["monk", "ghost", "villager"];
@@ -399,21 +431,32 @@
   }
 
   // ---------- boot ----------
-  World.init($("world"), (x, y) => {
+  try { World.init($("world"), (x, y) => {
     if (!state.role) return;
-    if (state.sceneOpen) {
+    if (state.sceneOpen && !state.practicing && !$("sheet").classList.contains("collapsed")) {
       // tapping the world while reading folds the sheet so the scene is visible
       setCollapsed(true);
       return;
     }
-    World.walkTo(x, y);
-  });
+    if (state.role === "monk") selectAction("walk", { x, y });
+    else World.walkTo(x, y);
+  }); } catch (error) {
+    console.error("Không thể khởi tạo cảnh 3D:", error);
+    $("world-error").hidden = false;
+    return;
+  }
+  buildActions();
 
   $("walk-btn").addEventListener("click", () => {
     const sc = currentScene();
     if (!sc) return;
     const place = World.PLACES[sc.place];
+    state.practicing = false;
+    state.action = "walk";
     World.walkTo(place.x, place.y + 6);
+    pushView();
+    renderActions();
+    sendPresence(true);
   });
   $("sheet-handle").addEventListener("click", () => setCollapsed(!$("sheet").classList.contains("collapsed")));
   $("sound-toggle").addEventListener("click", () => toggleSound());
@@ -421,15 +464,19 @@
   $("gesture").addEventListener("click", roleGesture);
   $("gesture-walk").addEventListener("click", roleGesture);
   $("leave").addEventListener("click", leaveRole);
-  $("traces-btn").addEventListener("click", () => ($("traces-panel").hidden = false));
-  $("traces-close").addEventListener("click", () => ($("traces-panel").hidden = true));
+  $("resume-story").addEventListener("click", resumeStory);
+  $("camera-left").addEventListener("click", () => World.rotateCamera(-1));
+  $("camera-right").addEventListener("click", () => World.rotateCamera(1));
+  $("camera-closer").addEventListener("click", () => World.zoomCamera(0.8));
+  $("camera-farther").addEventListener("click", () => World.zoomCamera(1.25));
+  $("camera-reset").addEventListener("click", () => World.resetCamera());
 
   // arrival + presence loop
   setInterval(() => {
-    if (state.role && !state.sceneOpen && distanceToPlace() <= ARRIVE_DIST) openScene();
+    if (state.role && !state.practicing && !state.sceneOpen && distanceToPlace() <= ARRIVE_DIST) openScene();
+    if (state.role === "monk") renderActions();
     sendPresence(false);
   }, 200);
-  setInterval(renderTraces, 60000);
 
   renderPicker();
   connect();

@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0c1211">
 <title>Một Đêm Đầu Đà</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -12,19 +12,30 @@
 </head>
 <body>
 <div id="app" class="app">
-  <canvas id="world" class="world" aria-label="Nghĩa địa. Chạm vào một chỗ để đi tới đó."></canvas>
+  <canvas id="world" class="world" tabindex="0" aria-label="Nghĩa địa 3D. Kéo để xoay, cuộn hoặc chụm hai ngón để thu phóng, chạm đất để đi. Có thể dùng các nút góc nhìn và Đi tới."></canvas>
+  <div class="world-vignette" aria-hidden="true"></div>
+  <div id="world-labels" class="world-labels" aria-hidden="true"></div>
+  <div id="destination-label" class="destination-label" hidden aria-hidden="true"></div>
 
   <header class="hud">
     <div class="hud-left">
+      <div class="game-title">Một Đêm Đầu Đà <span>3D</span></div>
       <div id="presence-count" class="label">Đang kết nối…</div>
       <div id="role-chip" class="role-chip" hidden></div>
     </div>
     <div class="hud-right">
-      <button id="traces-btn" class="pill" type="button">Dấu vết <span id="traces-count" class="count">0</span></button>
       <button id="sound-toggle" class="pill" type="button" aria-pressed="false" aria-label="Bật âm thanh">Âm thanh</button>
     </div>
   </header>
 
+  <div id="camera-controls" class="camera-controls" role="group" aria-label="Điều khiển góc nhìn">
+    <button id="camera-left" type="button" aria-label="Xoay góc nhìn sang trái" title="Xoay trái">↶</button>
+    <button id="camera-right" type="button" aria-label="Xoay góc nhìn sang phải" title="Xoay phải">↷</button>
+    <button id="camera-closer" type="button" aria-label="Phóng to" title="Phóng to">+</button>
+    <button id="camera-farther" type="button" aria-label="Thu nhỏ" title="Thu nhỏ">−</button>
+    <button id="camera-reset" type="button" aria-label="Về góc nhìn ban đầu" title="Góc nhìn ban đầu">⌖</button>
+  </div>
+  <div id="camera-hint" class="camera-hint" hidden>Kéo để xoay <span>·</span> Chụm để thu phóng</div>
   <div id="toast" class="toast" aria-live="polite"></div>
 
   <!-- walking prompt -->
@@ -62,10 +73,23 @@
     </div>
   </section>
 
+  <section id="monk-actions" class="monk-actions" hidden aria-label="Hành động của nhà sư">
+    <div class="practice-head">
+      <div>
+        <span class="label">Hành trì</span>
+        <span id="action-status" class="action-status" role="status" aria-live="polite">Đi kinh hành</span>
+      </div>
+      <button id="resume-story" class="text-btn" type="button" hidden>Về câu chuyện <span aria-hidden="true">↗</span></button>
+    </div>
+    <div id="action-list" class="action-list" role="group" aria-label="Chọn tư thế"></div>
+    <p id="action-description" class="action-description"></p>
+  </section>
+
   <!-- role picker -->
   <section id="picker" class="picker">
     <div class="picker-inner">
       <h1 class="display">Đêm nay, bạn là ai?</h1>
+      <p class="picker-eyebrow">Một đêm. Ba góc nhìn.</p>
       <p class="lede">Một đêm ở nghĩa địa đầu làng, nhìn qua ba đôi mắt. Người khác đang chơi cùng lúc sẽ hiện lên trong cảnh, và việc họ làm có thể đổi điều bạn thấy.</p>
       <label class="label" for="nick">Tên hiển thị (không bắt buộc)</label>
       <input id="nick" maxlength="24" autocomplete="off" placeholder="Một người lạ">
@@ -74,21 +98,19 @@
     </div>
   </section>
 
-  <!-- traces panel -->
-  <section id="traces-panel" class="panel" hidden aria-label="Dấu vết đêm nay">
-    <div class="panel-head">
-      <h2 class="label">Dấu vết đêm nay</h2>
-      <button id="traces-close" class="text-btn" type="button">Đóng</button>
-    </div>
-    <p class="hint">Việc người khác làm trong đêm được ghi lại ở đây, và có thể hiện ra trong câu chuyện của bạn.</p>
-    <ol id="trace-list" class="trace-list"></ol>
-    <p id="trace-empty" class="hint">Chưa ai để lại gì. Hãy là người đầu tiên đi qua đêm này.</p>
-  </section>
 </div>
 
+<div id="world-error" class="world-error" role="alert" hidden>
+  <h1 class="display">Chưa thể mở khung cảnh 3D</h1>
+  <p>Hãy thử tải lại trang. Nếu vẫn chưa mở được, hãy bật tăng tốc đồ họa trong trình duyệt hoặc dùng thiết bị hỗ trợ WebGL 2.</p>
+  <button class="primary" type="button" onclick="location.reload()">Tải lại</button>
+</div>
+
+<script type="importmap">
+{"imports":{"three":"./vendor/three.module.min.js"}}
+</script>
 <script src="story.js"></script>
 <script src="audio.js"></script>
-<script src="world.js"></script>
-<script src="app.js"></script>
+<script type="module" src="app.js"></script>
 </body>
 </html>
