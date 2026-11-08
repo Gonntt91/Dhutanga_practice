@@ -14,6 +14,8 @@ Một ngày không cần làm nhiều; chỉ cần **một việc có ý nghĩa,
 - Không bảng xếp hạng công đức, năng lượng, phạt vắng, ép online, hay thẻ tu chứng. Thẻ chỉ là **dấu đã học/nhận diện trong mô phỏng**, không phải chứng nhận tâm thật.
 - **Mỗi vai có logic hành động riêng:** nhà sư tu học và giữ hạnh; dân làng làm việc, bố thí, giữ giới; bà Sáu (ngạ quỷ) nhìn lại ký ức, nỗi chờ đợi, gặp duyên nghe pháp. Hồn ma **không bế trẻ, nhặt vải, nấu cơm, dắt người sống**.
 
+> **Thời tiết cũng là ngữ cảnh kể chuyện:** xem [Human World Story Bible](human-world-story-bible.md) để biết W01 *Mưa trên mái tịnh thất*, W02 *Bão qua làng*, W03 *Sau cơn mưa, ao sen* cùng 12 storylet theo vai × địa điểm × ngày/đêm × thời tiết. Không chỉ thêm animation mưa: khi mưa phải đổi hoạt động và cảnh; trước/sau bão có NPC, hậu quả và cách hồi phục. Không tự popup bắt làm nhiệm vụ, không khuyến khích ra ngoài khi bão, không thưởng bất thiện hay chứng đắc do thời tiết. Đây là **đề xuất chưa code**.
+
 ## 2. Vòng ngày chung, nhưng không bắt buộc chơi đủ một lượt
 
 | Buổi trong game | Cảm giác | Sư Tịnh | Ông Tư / dân làng | Bà Sáu |
