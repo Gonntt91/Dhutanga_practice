@@ -41,7 +41,6 @@ Ba nhịp đan xen:
 | HG18 | Bà Sáu nghe tiếng xôi | ma | gốc gạo/giếng/nghĩa địa | cung 3 đêm | ký ức–hiểu lầm–nghe kinh | đề xuất, tiếp nối `ghost_memory` |
 | HG19 | Người khách không xin gì | dân, sư | cổng làng | cung 3 ngày | nhân vật hành hương, lời hẹn nhỏ | đề xuất |
 | HG20 | Buổi sáng vẫn đến | mọi vai | nhân gian | micro story hậu cung | cảnh hồi phục, ghi nhận đã quay lại | đề xuất |
-
 | HG21 | Ngọn đèn dành cho người về muộn | ông Tư chính; sư/ma quan sát theo vai | ngõ làng/bụi tre | 2 lượt | đèn ấm đổi cảnh, dấu khám phá, người qua đường an toàn | chi tiết trong Episode Pack 01 |
 | HG22 | Tiếng chổi và chiếc lá trở lại | sư chính; dân/ma góc nhìn riêng | tịnh thất | 2 lượt | sân đổi hình, lời sư già, dẫn sang kinh hành | chi tiết trong Episode Pack 01 |
 | HG23 | Con Vàng và khoảng sân trước nhà | ông Tư; sư quan sát | ngõ làng | 2 ngày | chó được trông nom, ngõ an toàn, lời xin lỗi phù hợp | **sửa nhập vai** trong Episode Pack 01 |
