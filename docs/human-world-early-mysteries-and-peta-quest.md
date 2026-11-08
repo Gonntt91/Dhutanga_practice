@@ -2,7 +2,7 @@
 
 > **Quyết định biên kịch 08-11-2026 — design-only, CHƯA sửa code/gameplay.** Đọc [Player-centric Narrative Model](player-character-narrative-model.md), [Human World Playable Scenarios](human-world-playable-scenarios.md), [Game Design Principles](game-design-principles.md). Người chơi là nhân vật tự đặt tên/chọn vai; Sư Tịnh, ông Tư, bà Sáu là **NPC riêng**. Giữ vibe chữa lành; trời đẹp làm chủ đạo. 
 >
-> **Ưu tiên rất cao:** **giữ nhiệm vụ bà ngoại ngạ quỷ đã có** trong `public/encounters.js` như *signature quest* kỳ ảo đầu game. Giữ **cảnh bố thí/hồi hướng → bà sáng lên và tan vào ánh trăng** mà người chơi đã thích. Mở rộng phần thưởng thành **Không tham + Bi + Tùy hỷ** trong **một màn nhận thẻ gọn**, tránh biến nó thành 3 popup liên tiếp. Không nhân nhầm bà ngoại này với **NPC bà Sáu**.
+> **Ưu tiên rất cao:** **giữ nhiệm vụ bà ngoại ngạ quỷ đã có** trong `public/encounters.js` như *signature quest* kỳ ảo đầu game. Giữ **cảnh bố thí/hồi hướng → bà sáng lên và tan vào ánh trăng** mà người chơi đã thích. Mở rộng phần thưởng theo **thứ tự cảm xúc/hành động: Bi → Không tham → Tùy hỷ**, với **một màn tổng kết thẻ gọn**, tránh biến nó thành 3 popup liên tiếp. Không nhân nhầm bà ngoại này với **NPC bà Sáu**.
 
 ## 1. Người chơi đến để khám phá, không đến để được giao học kinh
 
@@ -33,7 +33,7 @@
 
 ### 3.1. Lời hứa trải nghiệm
 
-Người chơi **gặp một chúng sinh khổ rất sớm**, tự tìm cách giúp, làm một việc tốt thật sự trong thế giới game, chứng kiến bà ngoại có được sự an ổn và tan vào ánh sáng. **Thế giới thay đổi vĩnh viễn**; có ba thẻ để ghi nhớ trải nghiệm. Tất cả vẫn vui, dịu, bí ẩn, không mang cảm giác giáo huấn.
+Người chơi **gặp một chúng sinh khổ rất sớm**, tự tìm cách giúp, làm một việc tốt thật sự trong thế giới game, chứng kiến bà ngoại có được sự an ổn và tan vào ánh sáng. **Thế giới thay đổi vĩnh viễn**; ba thẻ ghi ba mốc riêng: **Bi khi nghe chuyện và chọn giúp, Không tham trong lúc thực sự bố thí để hồi hướng, Tùy hỷ sau hồi hướng khi vui vì bà được thoát cảnh khổ**. Tất cả vẫn vui, dịu, bí ẩn, không mang cảm giác giáo huấn.
 
 **Phân biệt nhân vật:** `npc.peta_grandmother` là **bà ngoại ngạ quỷ** trong nhiệm vụ này; `npc.ba_sau` là bà Sáu bán xôi có mạch Hạnh riêng. Bà cụ `npc.granny` ở giếng là người sống hỗ trợ chuẩn bị cơm, không phải bà ngoại ma.
 
@@ -43,11 +43,11 @@ Người chơi **gặp một chúng sinh khổ rất sớm**, tự tìm cách gi
 |---|---|---|---|
 | **0 — Lời đồn (tự chọn)** | Người làng bảo có tiếng “đói quá” ở mộ thấp | PC hỏi tại giếng hoặc chỉ đi ngắm nghĩa địa | `rumour:peta_grandmother` nếu nghe; **không bắt phải có** |
 | **1 — Gặp sớm** | Trời chạng vạng, dưới gốc mộ có một bóng gầy; chỉ có tiếng gọi rất khẽ | Bấm `Đến gần`. Bà: “Có ai còn nhớ đến bà không?” → `Bà có cần giúp gì không?` / `Đứng nghe` / `Đi tiếp` | `peta=met`; lần đầu hiện vừa đủ bất ngờ, không tự popup |
-| **2 — Thấy cái khổ** | Bà kể mình đói, đã lâu không được ai nhớ; chuyện tiếc của đời trước có thể khai mở sau | PC: “Con không có gì đưa cho bà. Con nên làm sao?” → gợi ý hỏi người ở giếng/tịnh thất | `peta=needs_help`; minh họa lòng **Bi**, không tuyên bố chẩn đoán tâm PC |
-| **3 — Làm việc tốt** | Bếp bà cụ có cơm nóng; có người cần bát cơm | PC người dân có thể giúp chuẩn bị và trao cơm; PC sư chỉ tiếp nhận/vận hành đúng vai, không tự hái cây/cầm tiền; nghe sư già hướng dẫn nếu cần | `peta=offering_prepared`, hành vi tự nguyện **Không tham**; không biến việc cho đi thành bài kiểm tra đạo đức |
-| **4 — Hồi hướng** | Sư già nhận vật cúng phù hợp; âm thanh nhẹ dần | PC chọn `Cùng hồi hướng` (không bấm hàng chục lần) | `peta=dedication_done`, ghi một `questCompletionId` |
-| **5 — Kết thúc kỳ ảo** | Bà ngẩng đầu, lần đầu có nét yên trên mặt; sáng dần rồi **tan vào ánh trăng** | Một câu ngắn, chẳng hạn: “Bà nhận được rồi… Cảm ơn con.” | **Giữ cinematic cũ** (sáng, biến mất), không hiện hộp thưởng phủ che khoảnh khắc |
-| **6 — Phần thưởng** | Sau cảnh kết, người chơi có một hơi thở trống để ngắm mộ | Một màn **3 dấu nhận diện**: **Bi · Không tham · Tùy hỷ**. Giải thích bằng 1 câu/thẻ, không 3 popup | `rewardBundleId=peta_grandmother_first_release` cấp duy nhất một lần; `worldEffect=quiet_grave` |
+| **2 — Thấy cái khổ** | Bà kể mình đói, đã lâu không được ai nhớ; chuyện tiếc của đời trước có thể khai mở sau | PC: “Con không có gì đưa cho bà. Con nên làm sao?” → gợi ý hỏi người ở giếng/tịnh thất | `peta=needs_help`; **chỉ khi nghe chuyện và chủ động chọn giúp**, ghi mốc nhận diện **Bi**; chỉ nghe rồi bỏ đi không nhận |
+| **3 — Làm việc tốt** | Bếp bà cụ có cơm nóng; có người cần bát cơm | PC người dân có thể giúp chuẩn bị và trao cơm; PC sư chỉ tiếp nhận/vận hành đúng vai, không tự hái cây/cầm tiền; nghe sư già hướng dẫn nếu cần | `peta=offering_prepared`; **mới chuẩn bị cơm, chưa nhận Không tham**; mốc này xảy ra lúc thực sự bố thí để hồi hướng ở chặng 4 |
+| **4 — Hồi hướng** | Sư già nhận vật cúng phù hợp; âm thanh nhẹ dần | PC chọn `Cùng hồi hướng` (không bấm hàng chục lần) | `peta=dedication_done`; ghi mốc **Không tham** khi thực sự bố thí/cúng dường để hồi hướng; chỉ chốt hoàn thành quest sau cảnh kết |
+| **5 — Kết thúc kỳ ảo** | Bà ngẩng đầu, lần đầu có nét yên trên mặt; sáng dần rồi **tan vào ánh trăng** | Một câu ngắn, chẳng hạn: “Bà nhận được rồi… Cảm ơn con.” | **Giữ cinematic cũ** (sáng, biến mất), không hiện hộp thưởng phủ che khoảnh khắc; khi PC vui vì bà được an, rời cảnh khổ, ghi mốc **Tùy hỷ** |
+| **6 — Phần thưởng** | Sau cảnh kết, người chơi có một hơi thở trống để ngắm mộ | Một màn **tổng kết ba mốc**: **Bi → Không tham → Tùy hỷ**. Giải thích bằng 1 câu/thẻ, không 3 popup; từng thẻ đã được ghi nhận đúng thời điểm | `rewardBundleId=peta_grandmother_first_release` cấp duy nhất một lần; `worldEffect=quiet_grave` |
 | **7 — Trở lại** | Mộ cũ giờ yên, còn ngọn gió/chiếc lá, không còn bà đứng chờ | `Đứng lặng` / `Ngắm` / `Đi tiếp` | Có dấu Sổ: “Một lần giúp được người đang khổ”; không spawn lại bà để farm |
 
 **Giọng kể mẫu:** tối đa 1–2 câu/lượt, không bắt PC đọc giải thích “bố thí là pháp gì” trong lúc đang hành động. Toàn bộ nguồn giáo lý có thể mở trong **Nguồn và ghi chú** của Sổ.
@@ -56,13 +56,13 @@ Người chơi **gặp một chúng sinh khổ rất sớm**, tự tìm cách gi
 
 | Thẻ ghi trong album | Khoảnh khắc trong **mô phỏng** | Ý nghĩa nên hiển thị |
 |---|---|---|
-| **Bi — `bi`** | thấy chúng sinh đang khổ và chủ động muốn giúp | “Bạn đã chọn không quay lưng trước nỗi khổ ấy.” |
-| **Không tham — `khong_tham`** | PC chủ động tham gia việc bố thí, không chỉ nhìn NPC làm | “Một phần được đem chia cho người cần.” |
-| **Tùy hỷ — `tuy_hy`** | khi thấy bà được an, PC vui với điều tốt lành ấy | “Bạn vui khi thấy một chúng sinh bớt khổ.” |
+| **Bi — `bi`** | **Nghe bà kể nỗi khổ và chủ động chọn sẽ giúp** | “Nghe bà kể, bạn muốn giúp bà bớt khổ.” |
+| **Không tham — `khong_tham`** | **Thực sự bố thí/cúng dường để hồi hướng cho bà**, không chỉ chuẩn bị bát cơm | “Bạn tự nguyện chia sẻ để hồi hướng cho bà.” |
+| **Tùy hỷ — `tuy_hy`** | **Sau hồi hướng, chứng kiến bà sáng lên, rời cảnh khổ và vui vì bà được an** | “Bạn thật lòng vui khi thấy bà được an.” |
 
 **Đặt tên:** người chơi có thể gọi thông thường “thẻ Hỷ”, nhưng trong album **nên dùng `Tùy hỷ (muditā)`** cho ý vui với hạnh phúc người khác; **không đánh đồng với hỷ `pīti`** trong bối cảnh thiền. Cần rà `public/cetasika.js` và luật thẻ trước khi code.
 
-**Luật thưởng thiết kế:** ba thẻ thuộc **một quest bundle thành công**, sau các minh chứng trong trải nghiệm; không phải cấp từng thẻ chỉ vì đi ngang hoặc xem hồi tưởng. Nếu đã sở hữu một thẻ từ quest khác, hiển thị “Đã có — gặp lại” và chỉ cấp thẻ còn thiếu. Không ép ba popup nhận liên tiếp hoặc ba phép cộng điểm đạo hạnh. **Bỏ qua quest** không bị phạt; có thể quay lại hoàn thành.
+**Luật thưởng thiết kế:** ba mốc được ghi đúng lúc: `heard_story_and_committed_help → bi`, `actual_dana_for_dedication → khong_tham`, `dedication_complete_and_witnessed_relief_with_joy → tuy_hy`. Thẻ có thể báo nhẹ ngay khi đạt, không cắt câu chuyện; **sau cinematic mới hiện một bảng tổng kết ba thẻ**. Nếu rời nhiệm vụ giữa chừng, giữ thẻ đã thực sự đạt và không cấp trước thẻ chưa đủ điều kiện. Không cấp khi chỉ đi ngang, chỉ nghe mà không chọn giúp, chuẩn bị cơm nhưng chưa bố thí, hoặc chỉ xem hồi tưởng. Nếu đã sở hữu một thẻ từ quest khác, hiển thị “Đã có — gặp lại” và chỉ cấp thẻ còn thiếu. Không ép ba popup nhận liên tiếp hoặc ba phép cộng điểm đạo hạnh. **Bỏ qua quest** không bị phạt; có thể quay lại hoàn thành.
 
 **Đa vai:** bản nhiệm vụ trong `develop` được dành cho `monk/villager`; giai đoạn đầu **giữ luồng bố thí vật chất cho PC sống** và viết lại người nhận/người cho theo giới luật. **PC ghost** có thể quan sát, tìm hiểu một góc chuyện bà ngoại khác; **không cho hồn ma nhặt, nấu hoặc đưa bát cơm**, và không tự cấp bundle ba thẻ chỉ vì xem; muốn cho ghost hoàn tất thì phải có một cách tham gia hợp logic, viết riêng và duyệt trước. Phải thống nhất reward parity về lâu dài, không cho avatar ma bị loại khỏi toàn bộ phép màu đầu game.
 
@@ -78,6 +78,11 @@ const episode = {
           "dedication_done", "completed"],
   rewardBundleId: "peta_grandmother_first_release",
   cards: ["bi", "khong_tham", "tuy_hy"],
+  milestones: {
+    bi: "heard_story_and_committed_help",
+    khong_tham: "actual_dana_for_dedication",
+    tuy_hy: "dedication_complete_and_witnessed_relief_with_joy"
+  },
   oncePerCharacter: true,
   onComplete: ["world:quiet_grave", "journal:peta_helped"],
   loreBasis: "game_interpretation",
@@ -131,7 +136,11 @@ Sau khi HG27 hoàn tất, PC sẽ có ký ức: “Mình từng giúp một bà 
 - [ ] HG27 có tín hiệu **sớm và dễ gặp**, nhưng không tự mở sheet khi tới gần.
 - [ ] Mỗi character hoàn thành HG27 tối đa một lần; bà ngoại biến mất khỏi map và mộ yên, không biến trở lại do chuyển ngày/reload.
 - [ ] Giữ cinematic bà sáng rồi tan, không chặn bởi màn thưởng.
-- [ ] Sau khi hoàn thành, UI hiển thị **một bundle** với **Bi, Không tham, Tùy hỷ** và mô tả ngắn ba khoảnh khắc; thẻ đã có chỉ “gặp lại”.
+- [ ] **Bi:** nghe bà ngoại kể và **chủ động quyết định giúp**; chỉ nghe/xem rồi đi chưa nhận.
+- [ ] **Không tham:** thực sự **bố thí để hồi hướng**; chuẩn bị hay cầm bát cơm chưa nhận.
+- [ ] **Tùy hỷ:** **sau khi hồi hướng, thấy bà được an và rời cảnh khổ, vui với kết quả ấy**; không nhận ngay khi mới bấm nút hồi hướng.
+- [ ] Ba thẻ lưu đúng các mốc, UI chỉ **một màn tổng kết sau cảnh kết**; rời giữa chừng giữ mốc đã đạt nhưng không thưởng trước.
+- [ ] Thẻ đã có chỉ “gặp lại”, không cấp lặp.
 - [ ] Không nhầm `tuy_hy/muditā` với `pīti`, không bảo đảm PC thật có tâm sở ấy ngoài đời.
 - [ ] Bát cơm chỉ được sử dụng một lần và đúng người/đúng điều kiện; xem lại cảnh không cấp thêm vật phẩm.
 - [ ] Hai thiết bị claim đồng thời chỉ ghi một lần tại server.
