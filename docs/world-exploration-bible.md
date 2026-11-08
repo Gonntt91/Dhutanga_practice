@@ -18,6 +18,8 @@ Ba vòng lặp **đồng thời, không ép buộc**:
 
 **Mức tự do:** người chơi mới tiếp cận được phần lớn đường đi và các điểm ngắm an toàn trong thế giới đầu tiên; điều kiện nâng cao áp dụng cho **nhánh sâu, cảnh hiếm, tương tác sâu, không phải tất cả cửa vào**. Không phạt vì sợ, hỏi lại, rời đi hay nghỉ lâu. Không sinh cơ chế cố làm điều bất thiện để farm thẻ.
 
+> **Cập nhật hướng khám phá riêng cho PC ma (draft):** [Ghost Campaign Bible](ghost-playable-campaign-bible.md) · [Role Transition & Spoiler Isolation](role-transition-and-spoiler-isolation.md). Đồ thị dưới đây mô tả **lối người sống**: PC ma có thể vào nhà hoang, Hang Vọng Tâm **không cần đèn/cổng theo điều kiện người**, và tới **Bến Không Tiếng — Bờ Chìm** bằng một lối nước khuất riêng. Người sống đến **Bờ Nổi** qua hang; hai tuyến chỉ giao một vài landmark (ba cột đá), không tự chia sẻ manh mối giữa các PC. Hồn ma có thể nghe lời hồi hướng, giúp người gián tiếp và chọn ending tái sinh; cư sĩ có thể tự phát nguyện thử đời sống xuất gia. **Chưa code; các quy tắc cũ nếu áp cho PC ma thì đọc theo bổ sung này.**
+
 ## 2. Mô hình thế giới: mạng những nơi có quan hệ, không phải một cầu thang thiện/xấu
 
 ```text
