@@ -18,6 +18,8 @@
 
 > **Ưu tiên hiện tại:** mở rộng lời thoại, hậu quả, sinh hoạt và cảnh khám phá ở Nhân gian trước khi dựng map hoặc Weather Engine. Xem [Playable Narrative Scenarios](human-world-playable-scenarios.md): 20 đề mục storylet, 3 cung truyện mẫu chi tiết và 3 cảnh khám phá không cần quest. Bầu trời dễ chịu là mặc định, bão chỉ là một chương tự chọn.
 
+> **Bộ kịch bản v0.2:** [26 storylet và cung truyện Nhân gian](human-world-playable-scenarios.md) · [Review tính nhất quán](human-world-narrative-review.md) · [Episode Pack 01 — sáu kịch bản có thể triển khai](human-world-episode-pack-01.md). Rà soát đã phát hiện lỗi vai **người dân là ông Tư nhưng tuyến chó cắn/rau má cho gặp một "ông Tư" khác**; cần sửa trong code trước khi dựng thêm. Ưu tiên tăng phản ứng NPC, ký ức và cảnh vật khi quay lại, không nhồi thêm popup.
+
 ## 1. Vai trò của Nhân gian
 
 Nhân gian là nơi người chơi **muốn trở về**, dù họ đã đi tới hang, cõi dưới hoặc biên cảnh cõi trời. Không chỉ là nơi nhận nhiệm vụ và học thẻ.
