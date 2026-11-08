@@ -1,10 +1,12 @@
-# Nhân gian — Playable Narrative Scenarios v0.3 · PC tự tạo
+# Nhân gian — Playable Narrative Scenarios v0.4 · PC tự tạo
 
 > **Đang viết kịch bản trước khi dựng:** tài liệu dành cho narrative designer, developer và artist; **CHƯA có các scene này trong gameplay**. Phần đã có trong code `develop` là tuyến mở đầu ba vai, đêm tiếp theo/trăng/mưa phùn, thọ thần, bé Na, bà Sáu, ông Tư, chó cắn, giếng, may y 5 ngày... Đừng diễn đạt storylet đề xuất bên dưới là đã code.
 >
 > Đọc [Human World Story Bible](human-world-story-bible.md), [Game Design Principles](game-design-principles.md), [Kịch bản vòng ngày](kich-ban-vong-ngay.md). Thời tiết **đẹp là chủ đạo** (mục tiêu thử 85–90%+ thời gian chơi); mưa nhẹ đôi khi là một cảnh thưởng ngoạn; **bão chỉ là chương truyện tự chọn**, không phải thời tiết ngẫu nhiên. Mọi sự kiện cần đúng vai nhân vật, không tự popup khi đến gần; giáo lý phân loại `canonical | commentary | game_interpretation | fiction`.
 
 > **QUYẾT ĐỊNH THAY THẾ (08-11-2026):** [Player-centric Narrative Model](player-character-narrative-model.md) là chuẩn mới. **PC là nhân vật do người chơi đặt tên**, chọn `monk | villager | ghost`; **Sư Tịnh, Ông Tư, Bà Sáu đều là NPC độc lập**. Định nghĩa cũ “role = NPC” bên `develop` là nợ chuyển đổi, tuyệt đối không kế thừa khi viết kịch bản mới. Đã viết lại [Episode Pack 01](human-world-episode-pack-01.md) và [Narrative Review](human-world-narrative-review.md) theo quyết định này; **chưa sửa code**.
+
+> **Đặc biệt ưu tiên:** [HG27 — Bà ngoại ngạ quỷ](human-world-early-mysteries-and-peta-quest.md#3-hg27--bà-ngoại-bên-ngôi-mộ-thấp-early-game-signature-quest) là nhiệm vụ kỳ ảo sớm, **giữ cảnh bà được hồi hướng rồi sáng và biến mất**. Ba thẻ theo đúng ba khoảnh khắc: **Bi** khi nghe và quyết giúp → **Không tham** khi thực sự bố thí để hồi hướng → **Tùy hỷ** sau khi hồi hướng và vui vì bà rời cảnh khổ. Không tự popup, chỉ một màn tổng kết thẻ sau cảnh kết; không nhầm với bà Sáu.
 
 ## 0. Kế hoạch nội dung: giàu sinh hoạt trước, bí ẩn sau
 
@@ -47,14 +49,15 @@ Ba nhịp đan xen:
 | HG24 | Bóng gốc gạo qua ba buổi | PC mọi vai; bà Sáu là NPC theo duyên | gốc gạo/nghĩa địa | khám phá 3 thời điểm | dấu khung cảnh, câu chuyện thay theo ký ức | chi tiết trong Episode Pack 01 |
 | HG25 | Hai chiếc gáo bên giếng | PC dân giúp bà; sư/ma theo vai | giếng làng | 2 lượt | sửa gáo, bà cụ nhớ, giếng đổi cảnh | chi tiết trong Episode Pack 01 |
 | HG26 | Nghe chuông, không cần làm gì | PC mọi vai; Sư Tịnh là NPC nếu hiện diện | tịnh thất | ambient-only | dấu cảnh nghe chuông, không cần quest/thẻ | chi tiết trong Episode Pack 01 |
+| HG27 | **Bà ngoại bên ngôi mộ thấp** | PC sư/dân giúp vật chất theo vai; PC ma quan sát theo nhánh riêng chưa chốt | nghĩa địa → giếng → vị sư già → mộ | **signature quest đầu game, một lần** | **Bi** (nghe & quyết giúp) → **Không tham** (bố thí hồi hướng) → **Tùy hỷ** (vui sau khi bà được an, rời cảnh khổ); giữ cinematic tan vào ánh trăng | **đã có quest cơ bản trong code, mở rộng thẻ/chủ động tương tác là đề xuất** |
 
 **Không tăng tải màn hình:** tại một thời điểm chỉ 1 truyện đang theo, 0–2 chuyện sẵn để nhận, 1–2 dấu khám phá. Các khoảnh khắc cảnh vật không tiêu thụ slot quest.
 
 ## 2. Ba cung truyện nhân gian cần làm trước (đủ lời thoại và trạng thái)
 
-### HG03 — Một trang kinh còn mở (học khi vắng có kết quả thật)
+### HG03 — Một trang kinh còn mở (chỉ gợi mở khi PC gặp khó khăn thực tế; học khi vắng có kết quả)
 
-**Vai:** sư hoặc người dân đến tịnh thất. **Khung cảnh:** nắng chiều, bụi nhẹ trước kệ, quyển kinh khép hờ. **Điều kiện:** người chơi tự nhấn `Xem kệ kinh` (không popup khi đi ngang).
+**Vai:** PC sư hoặc PC dân tới tịnh thất. **Khung cảnh:** nắng chiều, bụi nhẹ trước kệ, quyển kinh khép hờ. **Điều kiện học chủ động:** sau một vài lần PC tự thử thiền/kinh hành mà khó chú tâm, buồn ngủ, lười khởi sự hoặc sợ trong hang, **PC chủ động hỏi sư già**; sư gợi ý đi kinh hành hoặc tìm một đoạn kinh cụ thể ở tịnh thất. Kệ sách luôn có thể ngắm/tra cứu, nhưng **không phải một bảng nhiệm vụ ép đọc kinh để lấy thẻ**. Xem quy tắc trong [Early Mysteries and Peta Quest](human-world-early-mysteries-and-peta-quest.md#1-người-chơi-đến-để-khám-phá-không-đến-để-được-giao-học-kinh).
 
 **Cảnh 1 — Nhìn thấy:**
 
@@ -211,14 +214,15 @@ const storylet = {
 
 ## 7. Lộ trình biên kịch trước khi code/asset
 
-**Đợt 1 — cần viết thành playable script đủ chi tiết (ưu tiên):**
+**Đợt 1 — cần viết thành playable script đủ chi tiết (ưu tiên, có mạch kỳ ảo sớm):**
 
 > Bản review mới đã bổ sung sáu kịch bản **HG21–HG26** có trạng thái, lời thoại và chi tiết quay lại. Khi bắt đầu code, chọn một vài kịch bản nhẹ từ [Episode Pack 01](human-world-episode-pack-01.md) thay vì triển khai cả 26 ý tưởng. Ưu tiên sửa lỗi nhập vai con Vàng/ông Tư trong HG05/HG23.
-1. HG03 học kinh khi vắng → nhận một kiến thức → quay lại đối thoại sư.
-2. HG05 lời nhờ rau má của bà → trả đúng người → mở việc giúp ông Tư.
-3. HG11/HG12/HG14: ba cảnh khám phá đẹp, không popup và không quest bắt buộc.
-4. HG18 ký ức bà Sáu theo vai ngạ quỷ, nối xuyên các đêm.
-5. HG01/HG04: sinh hoạt quét sân và tiến trình may y như một phần đời sống.
+1. **HG27 bà ngoại ngạ quỷ:** dễ gặp đầu game, chủ động giúp, hồi hướng, giữ cinematic, ba thẻ theo đúng thời điểm; không popup/thưởng lặp.
+2. HG03: PC tự gặp khó khăn khi thiền/khám phá → hỏi sư → có thể đọc kinh khi vắng → vận dụng; không phát quest học giáo lý sẵn.
+3. HG05 lời nhờ rau má của bà → trả đúng người → mở việc giúp ông Tư.
+4. HG11/HG12/HG14: ba cảnh khám phá đẹp, không popup và không quest bắt buộc.
+5. HG18 ký ức bà Sáu theo vai ngạ quỷ, nối xuyên các đêm.
+6. HG01/HG04: sinh hoạt quét sân và tiến trình may y như một phần đời sống.
 
 **Đợt 2 — bổ sung lời thoại theo nhánh và môi trường:**
 HG02, HG06, HG07, HG08, HG09, HG10, HG13, HG17, HG19 và HG20. Các cung HG02/HG06 phải đối chiếu truyện hiện có để tránh viết trùng hoặc phá tiếp nối. Bổ sung câu chuyện gắn thời tiết đẹp và mưa nhẹ.
