@@ -22,6 +22,8 @@
 
 > **Signature quest mở thế giới kỳ ảo sớm:** [HG27 — Bà ngoại ngạ quỷ](human-world-early-mysteries-and-peta-quest.md) giữ cảnh giúp bà hồi hướng, bà sáng rồi tan vào ánh trăng. Bộ ba thẻ là **Bi** khi nghe bà kể và chọn giúp → **Không tham** lúc thực sự bố thí để hồi hướng → **Tùy hỷ** sau hồi hướng khi vui vì bà được an/rời cảnh khổ. Phân biệt bà ngoại với **NPC Bà Sáu**. Cùng hệ thống, thọ thần và chư thiên có lời đồn/dấu hiệu sớm nhưng không đứng xuất hiện thường xuyên; xem tài liệu HG27.
 
+> **PC hồn ma có campaign độc lập:** [Ghost Campaign Bible](ghost-playable-campaign-bible.md). Có thể hù người một cách vui, nghe lời hồi hướng, theo vệt hương cơm, vào nhà hoang, giúp người qua thì thầm/báo mộng, và tìm Bến Không Tiếng theo lối khác người sống. NPC bà Sáu **không** là tiểu sử của PC ma. Người dân có thể tự nguyện tìm hiểu xuất gia, PC ma có thể **chọn kết thúc sớm** và lưu lại một ending — xem [Role Transition & Spoiler Isolation](role-transition-and-spoiler-isolation.md). Các mạch này **đang đề xuất để duyệt, chưa code**.
+
 ## 1. Vai trò của Nhân gian
 
 Nhân gian là nơi người chơi **muốn trở về**, dù họ đã đi tới hang, cõi dưới hoặc biên cảnh cõi trời. Không chỉ là nơi nhận nhiệm vụ và học thẻ.
