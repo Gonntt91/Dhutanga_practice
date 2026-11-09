@@ -42,7 +42,10 @@ function pgStore(url, injectedPool) {
     pool = new Pool({ connectionString: url, ssl: /localhost|127\.0\.0\.1/.test(url) ? false : { rejectUnauthorized: false }, max: 5 });
   }
   const q = (text, params) => pool.query(text, params);
+  // The script runs as one implicit transaction; the advisory lock makes two instances that start at the same time
+  // (a deploy overlap, or tests) wait for each other instead of racing on `create table if not exists`.
   const ready = q(`
+    select pg_advisory_xact_lock(727001);
     create table if not exists users (
       id text primary key, provider_sub text unique not null, email text, name text, picture text,
       account jsonb not null default '{}'::jsonb, created_at timestamptz not null default now());
