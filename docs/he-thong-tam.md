@@ -27,7 +27,7 @@
 | Vòng ngày, quán xét cuối ngày, việc khi vắng, cột mốc | mục 16 | **Một phần** | Có lưu tiến độ, quán xét cuối đêm, hồi hướng, câu hẹn ngày mai, việc khi vắng, "Trong lúc vắng", cột mốc và trang Dấu mốc; chưa có các buổi trong ngày |
 | Lời hẹn thành thật, làng có trí nhớ | mục 17.1 | **Đã có** | 12 lời hẹn có kết quả đêm sau; 5 việc làng nhớ (rau cho bà cụ, rau cho ông Tư, ngồi với sư già, dắt bé Na về, dâng cơm bà ngoại); cột mốc ẩn "Lời hẹn đã đến", "Muốn chơi thêm". Lời cần duyệt |
 | Triền cái khi ngồi, đêm rằm, bộ đôi thẻ, y phấn tảo, đặt hoa | mục 17.2–17.6 | **Đề xuất** | Thứ tự làm và kiểm chứng ở 17.8 |
-| Kết quả khi vắng, Sổ kiến thức và kiến thức mở nhiệm vụ | mục 18; [kịch bản vòng ngày](kich-ban-vong-ngay.md) | **Đề xuất mới, chưa code** | Phần thưởng học và vật liệu thật thay chuyện kể đơn thuần |
+| Kết quả khi vắng, khu Đã học (Sổ Hành Trình) và kiến thức mở nhiệm vụ | mục 18; [kịch bản vòng ngày](kich-ban-vong-ngay.md) | **Đề xuất mới, chưa code** | Phần thưởng học và vật liệu thật thay chuyện kể đơn thuần |
 | Lời hứa rau má của bà cụ | mục 18.3 | **Cần sửa** | `atMit()/picked2()` cho đổi người nhận bất ngờ |
 
 > **Quyết định thiết kế mới (07-11-2026):** [Game Design Principles](game-design-principles.md) là chuẩn ưu tiên cao hơn các đề xuất cũ về việc bắt buộc khảo sát, thẻ tâm, tăng chỉ số và mở cõi. **Game trước; học thông qua tò mò; tự do đi dạo; phân biệt mô phỏng, kinh điển, chú giải và sáng tác.** Thanh chỉ số tâm là biến nội bộ của game, **không đo tâm sở thực hay nghiệp**. Thẻ là cơ hội tìm hiểu hoặc minh chứng đã tham gia tình huống mô phỏng; không chứng nhận Định/Niệm thực. Không yêu cầu làm bất thiện để lấy thẻ. Cổng cõi không mở bằng cách cộng điểm tâm hay tổng thẻ như công thức giáo lý; dùng sự kiện, vật dẫn, kiến thức và trải nghiệm có bối cảnh. **Không tự popup nhiệm vụ khi đi ngang**, khảo sát đầu game phải có thể bỏ qua. Quy định cụ thể ở tài liệu nguyên tắc.
@@ -118,7 +118,7 @@ Mọi bậc đều mở bằng **thẻ thu được từ nhiệm vụ** (mục 4
 
 ## 4a. Thẻ bài tâm sở: phần thưởng của mỗi nhiệm vụ
 
-> **Lưu ý mới (mục 18):** nhiệm vụ **học kinh khi vắng** có thể cho *thẻ kiến thức đã nghe/đọc*, lưu ở **Sổ kiến thức**, không tự tạo *thẻ tâm sở qua trải nghiệm*. Cùng là hình thẻ nhưng hai trạng thái học và thực hành phải phân biệt.
+> **Lưu ý mới (mục 18):** nhiệm vụ **học kinh khi vắng** có thể cho *thẻ kiến thức đã nghe/đọc*, lưu ở **khu Đã học (Sổ Hành Trình)**, không tự tạo *thẻ tâm sở qua trải nghiệm*. Cùng là hình thẻ nhưng hai trạng thái học và thực hành phải phân biệt.
 
 **Xong mỗi nhiệm vụ thì nhận một thẻ**: tâm sở nổi bật nhất trong cách người chơi vừa làm. Thẻ giải thích tâm sở đó **ngay trong tình huống vừa xảy ra**. Thu thập thẻ là cách chính để học tâm và tâm sở.
 
@@ -1115,7 +1115,7 @@ Game đã có nhiều chỗ **mở chuyện**: thẻ, cột mốc, quán xét cu
 
 | Công việc khi vắng | Kết quả phải nhận được | Cách sử dụng lần sau |
 |---|---|---|
-| Học một đoạn kinh/khái niệm | **Thẻ kiến thức** có tên, giải thích, nguồn và ghi chú trong **Sổ kiến thức** | đối thoại sâu hơn với sư, mở nhiệm vụ phụ, gợi ý thực hành |
+| Học một đoạn kinh/khái niệm | **Thẻ kiến thức** có tên, giải thích, nguồn và ghi chú trong **khu Đã học (Sổ Hành Trình)** | đối thoại sâu hơn với sư, mở nhiệm vụ phụ, gợi ý thực hành |
 | Chuẩn bị khâu y, phơi vải | vật liệu đã sẵn sàng, vải đổi hình và trạng thái | người chơi chủ động khâu/nhuộm lần sau |
 | Nấu cơm / dệt vải (dân) | bữa cơm đã sẵn / tấm vải dài thêm, có vật dụng khi hoàn tất | mang dâng, giúp người, nối tuyến y |
 | Ngồi thiền/kinh hành khi vắng | nhật ký một buổi sinh hoạt và tình huống thực hành chờ sẵn | thực hành **chủ động** để gặp thẻ tâm sở |
@@ -1125,12 +1125,11 @@ Game đã có nhiều chỗ **mở chuyện**: thẻ, cột mốc, quán xét cu
 
 ### 18.2. Kiến thức khác thẻ tâm sở đã trải nghiệm
 
-> **Cập nhật 09-11-2026:** "Sổ kiến thức" ở đây là mục **Đã học** trong **Sổ Hành Trình** duy nhất ([Journey Memory §0](journey-memory-and-return-ux.md)), không phải một sổ riêng. Trạng thái đã nghe/đã ôn/đã vận dụng là thuộc tính của mục.
+> **Thiết kế hợp nhất:** kiến thức được lưu ở khu **Đã học** của [Sổ Hành Trình](journey-memory-and-return-ux.md), không mở một sổ hoặc Album thẻ kiến thức riêng. `đã ôn` và `đã vận dụng` là thuộc tính bổ sung theo mục, không phải thang khám phá độc lập.
 
+Cần mở **khu Đã học (Sổ Hành Trình)** gồm các mục ngắn như *Niệm là gì?*, *Năm triền cái*, *Tâm từ*, *Vô thường*, *Giữ lời hứa*, *Hạnh đầu-đà*. Có tên, nguồn từ kinh hoặc chú giải, câu giải thích đời thường, ví dụ trong làng, nơi dùng về sau. Trạng thái của mỗi mục: **đã nghe/đọc** → **đã ôn** → **đã vận dụng trong câu chuyện**.
 
-Cần mở **Sổ kiến thức** gồm các mục ngắn như *Niệm là gì?*, *Năm triền cái*, *Tâm từ*, *Vô thường*, *Giữ lời hứa*, *Hạnh đầu-đà*. Có tên, nguồn từ kinh hoặc chú giải, câu giải thích đời thường, ví dụ trong làng, nơi dùng về sau. Trạng thái của mỗi mục: **đã nghe/đọc** → **đã ôn** → **đã vận dụng trong câu chuyện**.
-
-Ví dụ người chơi giao nhân vật học về *năm triền cái*, thoát game. Khi quay lại sau khi hoàn tất bài: **"Đã học một đoạn về năm triền cái"**, có nút **Mở Sổ kiến thức**, và gợi ý đến gặp sư già. Lúc gặp sư, nếu có kiến thức này sẽ xuất hiện thêm lựa chọn **"Con muốn học cách kinh hành khi tâm chìm xuống"**. Nếu chưa có, nhiệm vụ chính vẫn chơi được bằng cách thông thường. Kiến thức tạo lợi thế khám phá, **không phải cộng chỉ số tu chứng**.
+Ví dụ người chơi giao nhân vật học về *năm triền cái*, thoát game. Khi quay lại sau khi hoàn tất bài: **"Đã học một đoạn về năm triền cái"**, có nút **Mở khu Đã học (Sổ Hành Trình)**, và gợi ý đến gặp sư già. Lúc gặp sư, nếu có kiến thức này sẽ xuất hiện thêm lựa chọn **"Con muốn học cách kinh hành khi tâm chìm xuống"**. Nếu chưa có, nhiệm vụ chính vẫn chơi được bằng cách thông thường. Kiến thức tạo lợi thế khám phá, **không phải cộng chỉ số tu chứng**.
 
 **Ranh giới:** *đã nghe/đọc về Định* không đồng nghĩa *đã nhận diện Định trong thực hành*; offline không tự cấp thẻ Niệm, Định, giác chi hay "đã chứng". Nhưng **thẻ kiến thức từ học kinh hoàn toàn có thể nhận được khi vắng**, khác với quy tắc cũ.
 
@@ -1150,9 +1149,9 @@ Ví dụ người chơi giao nhân vật học về *năm triền cái*, thoát 
 
 ### 18.4. Trạng thái và kế hoạch
 
-**Tất cả hạng mục Sổ kiến thức, phần thưởng offline có tác dụng gameplay và sửa rau má ở mục 18 đều CHƯA CODE.** Không nhầm với nhánh PR thử đã có tuyến ma và y phấn tảo.
+**Tất cả hạng mục khu Đã học (Sổ Hành Trình), phần thưởng offline có tác dụng gameplay và sửa rau má ở mục 18 đều CHƯA CODE.** Không nhầm với nhánh PR thử đã có tuyến ma và y phấn tảo.
 
-Ưu tiên triển khai: **(1)** Sổ kiến thức 6 mục; **(2)** hoạt động `study` trả một mục kiến thức và lưu chống lặp; **(3)** kiến thức mở 2–3 hội thoại phụ; **(4)** `weave/cook` có sản phẩm thật; **(5)** sửa chuỗi rau má và các chỗ cần kiểm tra giới luật; **(6)** thêm hoạt động offline theo vai.
+Ưu tiên triển khai: **(1)** khu Đã học (Sổ Hành Trình) 6 mục; **(2)** hoạt động `study` trả một mục kiến thức và lưu chống lặp; **(3)** kiến thức mở 2–3 hội thoại phụ; **(4)** `weave/cook` có sản phẩm thật; **(5)** sửa chuỗi rau má và các chỗ cần kiểm tra giới luật; **(6)** thêm hoạt động offline theo vai.
 
 Tiêu chí nghiệm thu quan trọng: quay lại sớm có progress, quay lại muộn có thứ thu hoạch, phần thưởng không nhân bản, không tự nhận thẻ tu chứng, kiến thức mở được nhánh thực sự, và lời hứa với bà cụ không thể bị bỏ quên một cách vô lý.
 
