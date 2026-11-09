@@ -155,7 +155,7 @@ Một mục có thể có nhiều sự kiện khác nhau: PC **đã thấy ngư�
 
 ```js
 const memoryEvent = {
-  id: "char123:G03:item_seen:v1",  // duy nhất/idempotent theo nhân vật + hành động
+  id: "char123:g03:item_seen:v1",  // duy nhất/idempotent theo nhân vật + hành động
   characterId: "char123",
   storyId: "G03",
   type: "discovery",               // action | discovery | report | world_change | milestone
@@ -172,13 +172,13 @@ const discoveryView = {
   subjectId: "item.sewing_pouch",
   level: "seen",                   // unknown | heard | seen | confirmed
   relatedStoryId: "G03",
-  latestEventId: "char123:G03:item_seen:v1"
+  latestEventId: "char123:g03:item_seen:v1"
 };
 const questProjection = {
   characterId: "char123",
   storyId: "G03",
   stage: "owner_known",            // cho phép lưu checkpoint khi cần gameplay
-  updatedByEventId: "char123:G03:owner_known:v1"
+  updatedByEventId: "char123:g03:owner_known:v1"
 };
 ```
 

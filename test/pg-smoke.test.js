@@ -112,6 +112,34 @@ test("postgres store: schema twice, accounts, characters, social, connections, c
     await store.deleteCharacter(u2.id, b.id);
     assert.equal((await store.listEncounters(a.id)).filter((e) => e.handle === hb).length, 0);
     assert.equal((await store.listConnections(a.id)).filter((e) => e.handle === hb).length, 0);
+
+    // 11. memory log: idempotent writes, paging, cascade on delete
+    const d = await store.createCharacter(u2.id, "D", "monk", {}); // fresh: b was deleted above
+    const mk = (id, extra = {}) => ({
+      event_id: id, type: "discovery", subject_id: "disc:cho", level: "seen", source_type: "observation",
+      source_actor_id: null, place_id: null, story_id: null, payload: {}, client_at: null, save_version: null, ...extra,
+    });
+    assert.deepEqual(await store.addEvents(a.id, [mk("smoke.e1"), mk("smoke.e2")], 10000), [
+      { event_id: "smoke.e1", status: "created" }, { event_id: "smoke.e2", status: "created" },
+    ]);
+    assert.deepEqual(await store.addEvents(a.id, [mk("smoke.e1")], 10001), [{ event_id: "smoke.e1", status: "duplicate" }]);
+    const page1 = await store.listEvents(a.id, { limit: 1 });
+    assert.equal(page1.length, 1);
+    assert.equal(page1[0].event_id, "smoke.e1");
+    assert.equal(page1[0].at, 10000, "first write keeps its time");
+    const page2 = await store.listEvents(a.id, { after: page1[0].seq, limit: 5 });
+    assert.deepEqual(page2.map((e) => e.event_id), ["smoke.e2"]);
+    assert.equal(JSON.stringify(page2[0]).includes(a.id), false, "no character id in a row");
+    await store.addEvents(d.id, [mk("smoke.b1")], 10002);
+    await store.addEvents(d.id, [mk("smoke.b2", { type: "action", subject_id: "meta:backfilled" })], 10003);
+    assert.equal((await store.listEvents(d.id)).length, 2);
+    assert.equal((await store.listEvents(a.id, { type: "action" })).length, 0, "type filter");
+    await assert.rejects(store.addEvents(c.id, [mk("smoke.c1")], 1), (e) => e.storeCode === "ARCHIVED", "archived c refuses writes");
+    assert.equal((await store.listEvents(c.id)).length, 0);
+    await store.deleteCharacter(u2.id, d.id);
+    const left = await pools[0].query("select count(*)::int as n from character_events where character_id = $1", [d.id]);
+    assert.equal(left.rows[0].n, 0, "events cascade with the character");
+    assert.equal((await store.listEvents(a.id)).length, 2, "other character's events stay");
   } finally {
     for (const p of pools) await p.end().catch(() => {});
     await admin.query(`drop schema ${schema} cascade`).catch(() => {});
