@@ -14,6 +14,11 @@
   ];
   const pt = (phase) => World.PLACES[phase.place];
   const near = (place) => place && K.near(place, 52);
+  // Step 1 happens at a real scrap of cloth lying by the road near the cemetery gate (drawn by world.js as kind "cloth").
+  const clothSpot = () => { const g = World.PLACES.gate; return g ? { x: g.x + 56, y: g.y + 34 } : null; };
+  const clothOut = () => roleOk() && (Q().step || 0) === 0;
+  // where the current step happens: the cloth itself for step 1, the usual place for the others
+  const spotOf = (step, phase) => (step === 0 ? clothSpot() : pt(phase));
   let cooldown = 0;
   function open() {
     const q = Q(), step = Math.max(0, Math.min(4, q.step || 0)), phase = phases[step];
@@ -28,9 +33,14 @@
           q.readyDay = day + 1;
           K.save(); K.closeSheet();
           cooldown = Date.now() + 5000;
-          if (step === 4) {
+          if (step === 0) {
+            // the scrap goes into the bag: something to carry to the well tomorrow
+            K.giveItem("manh_vai_cu"); K.save();
+            K.setOpen(true);
+            K.gotItem("manh_vai_cu", () => { K.setOpen(false); K.cooldown(2500); K.api().toast(phase.end + " Hôm sau mới đến bước tiếp theo."); });
+          } else if (step === 4) {
             // Finishing the robe is not a certification of spiritual attainment.
-            K.giveItem("y_mau_dat"); K.save();
+            K.dropItem("manh_vai_cu"); K.giveItem("y_mau_dat"); K.save();
             K.setOpen(true);
             K.gotItem("y_mau_dat", () => { K.setOpen(false); K.cooldown(2500); });
           } else K.api().toast(phase.end + " Hôm sau mới đến bước tiếp theo.");
@@ -45,13 +55,14 @@
       const q = Q();
       if (q.step >= phases.length) return [];
       const phase = phases[q.step || 0];
-      const place = pt(phase);
+      const place = spotOf(q.step || 0, phase);
       if (!place) return [];
       const ready = currentDay() >= (q.readyDay || 1);
+      const stand = (q.step || 0) === 0 ? { x: place.x, y: place.y + 14 } : { x: place.x + 20, y: place.y + 20 };
       return [{
         title: phase.title,
         body: ready ? phase.teaser : "Đã làm xong phần hôm nay. Sang ngày mới để tiếp tục tấm y.",
-        x: place.x + 20, y: place.y + 20,
+        x: stand.x, y: stand.y,
         name: phase.title,
       }];
     },
@@ -60,9 +71,15 @@
       const q = Q();
       if (q.step >= phases.length || currentDay() < (q.readyDay || 1)) return false;
       const phase = phases[q.step || 0];
-      if (!near(pt(phase))) return false;
+      const here = spotOf(q.step || 0, phase);
+      if (!(q.step ? near(here) : here && K.near(here, 40))) return false;
       open();
       return true;
+    },
+    // the scrap of cloth is really lying there until it is picked up
+    actors() {
+      const s = clothOut() ? clothSpot() : null;
+      return s ? [{ kind: "cloth", x: s.x, y: s.y, label: "mảnh vải" }] : [];
     },
   });
 })();
