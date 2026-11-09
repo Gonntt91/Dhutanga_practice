@@ -560,7 +560,30 @@
     startRole(Save.character().role);
   }
 
-  function startRole(role) {
+  // An older save (a valid checkpoint from before the player-centric story) is asked once: keep the old chapters
+  // or start the player's own story. Cards, items, diary and explored places are kept either way.
+  function askStoryChoice(stored, role) {
+    const spawn = World.SPAWN[role];
+    $("picker").hidden = true; // the sheet sits at the same layer as the picker and would hide behind it
+    const go = (cp) => { Save.set(PROGRESS_KEY, JSON.stringify(cp)); Mind.kit.closeSheet(); startRole(role, true); };
+    Mind.kit.showSheet({
+      label: "Một lựa chọn cho nhân vật này",
+      lines: [
+        "Từ nay, mỗi người chơi có hành trình riêng, không còn đóng vai một người có sẵn trong truyện.",
+        "Nhân vật này đã đi qua những đêm của chuyện cũ. Thẻ, vật phẩm, nhật ký và các nơi đã khám phá vẫn được giữ nguyên.",
+      ],
+      choices: [
+        { label: "Bắt đầu hành trình riêng", primary: true, fn: () => go(Progress.switchToArrival(stored, role, STORY[role], spawn)) },
+        { label: "Tiếp tục chuyện cũ", fn: () => go(Progress.keepLegacy(stored)) },
+      ],
+    });
+  }
+
+  function startRole(role, choiceDone) {
+    if (!choiceDone) {
+      const stored = loadCheckpoint();
+      if (Progress.valid(stored, role, STORY[role]) && Progress.needsChoice(stored)) { askStoryChoice(stored, role); return; }
+    }
     state.nick = Save.character() ? Save.character().name : $("nick").value.replace(/\s+/g, " ").trim().slice(0, 24);
     state.completed = loadCompleted();
     state.role = role;
@@ -596,6 +619,8 @@
     saveProgress();
     pushView();
     sendPresence(true);
+    // signed-in character only (a guest is a no-op): legacy backfill once per character, then prime the levels
+    try { window.Journey && Journey.onCharacterOpened(); } catch {}
     // first time ever: a short survey of temperament before the night begins
     const begin = () => {
       if (!Mind.onRoleStart(role, () => { if (state.role === role) showWalkOrScene(); })) showWalkOrScene();
@@ -1688,7 +1713,7 @@
       box.appendChild(item);
     }
   }
-  // ---------- discovery book: unknown → heard of → met ----------
+  // ---------- Sổ Hành Trình in the quest panel (book.js): unknown → heard of → met, threads, lessons, timeline ----------
   let questTab = "tasks";
   function setQuestTab(t) {
     questTab = t;
@@ -1698,36 +1723,10 @@
     $("quest-book").hidden = t !== "book";
     if (t === "book") renderBook();
   }
+  // The Sổ Hành Trình (book.js), live view of the character in play.
   function renderBook() {
-    if (!window.Discover) return;
-    const box = $("quest-book"); box.replaceChildren();
-    const { seen, total } = Discover.count();
-    box.appendChild(el("p", "book-progress", `Đã khám phá ${seen}/${total}`));
-    const bar = el("div", "book-bar"); const fill = el("span"); fill.style.width = (seen / total) * 100 + "%"; bar.appendChild(fill); box.appendChild(bar);
-    box.appendChild(el("p", "hint", "Ô có dấu ? là điều còn chưa biết. Bắt chuyện với người qua đường để nghe thêm tin đồn."));
-    const grid = el("div", "book-grid");
-    for (const e of Discover.entries()) {
-      const item = el("div", "book-item " + e.state);
-      const place = World.PLACES[e.place];
-      if (e.state === "unknown") {
-        item.appendChild(el("b", null, "?"));
-        item.appendChild(el("p", null, e.hint));
-      } else {
-        item.appendChild(el("b", null, e.title));
-        item.appendChild(el("p", null, e.state === "seen" ? `Đã gặp · ${place ? place.name : ""}` : e.hint));
-        if (e.state === "heard") {
-          item.appendChild(el("small", "book-tag", "Nghe đồn"));
-          if (e.condText.length) item.appendChild(el("small", "book-conds", e.condText.join(" · ")));
-          if (place) {
-            const go = el("button", "text-btn", `Tới ${place.name}`); go.type = "button";
-            go.addEventListener("click", () => { $("quest-panel").hidden = true; goTo(place.x, place.y + 34); });
-            item.appendChild(go);
-          }
-        }
-      }
-      grid.appendChild(item);
-    }
-    box.appendChild(grid);
+    if (!window.JourneyBook) return;
+    JourneyBook.render($("quest-book"), { mode: "live", onGo: (x, y) => { $("quest-panel").hidden = true; goTo(x, y); } });
   }
   $("qtab-tasks").addEventListener("click", () => setQuestTab("tasks"));
   $("qtab-book").addEventListener("click", () => setQuestTab("book"));
