@@ -335,6 +335,8 @@ window.World = (() => {
   // Speech bubbles above heads (nearby chat). key: "me" or a player's public id.
   const bubbles = new Map();
   function say(key, text, role) { bubbles.set(key, { text, role, t: 0, life: Math.min(10, 4.5 + text.length * 0.07) }); }
+  // True while any remembered line over a villager ("npc:<kind>") is still on screen; the app waits for it to fade before the next one.
+  function npcBubbleActive() { for (const k of bubbles.keys()) if (String(k).startsWith("npc:")) return true; return false; }
   function updateBubbles(dt) { for (const [k, b] of bubbles) { b.t += dt; if (b.t > b.life) bubbles.delete(k); } }
   function wrapText(text, maxW) {
     const words = text.split(" "), lines = []; let cur = "";
@@ -1881,5 +1883,5 @@ window.World = (() => {
   function screenPos(wx, wy) { return { x: (wx - camX) * scale, y: (wy - camY) * scale }; }
   function otherPos(pid) { const o = others.get(pid); return o ? { x: o.rx, y: o.ry - 22 } : null; }
 
-  return { clientToWorld, screenPos, otherPos, walkSpeed, hurryNext, HURRY_MAX, setActors, setFx, snapshot, moodRgb, zoomBy, say, setFinds, lookAt, resetLook, isLooking, getMap, W, H, PLACES, SPAWN, init, setView, setPlayer, walkTo, stop, getPlayer, setOthers, setQuen, quenFor, ripple, pick, pickAt };
+  return { npcBubbleActive, clientToWorld, screenPos, otherPos, walkSpeed, hurryNext, HURRY_MAX, setActors, setFx, snapshot, moodRgb, zoomBy, say, setFinds, lookAt, resetLook, isLooking, getMap, W, H, PLACES, SPAWN, init, setView, setPlayer, walkTo, stop, getPlayer, setOthers, setQuen, quenFor, ripple, pick, pickAt };
 })();
