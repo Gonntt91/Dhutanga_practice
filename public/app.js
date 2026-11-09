@@ -560,7 +560,30 @@
     startRole(Save.character().role);
   }
 
-  function startRole(role) {
+  // An older save (a valid checkpoint from before the player-centric story) is asked once: keep the old chapters
+  // or start the player's own story. Cards, items, diary and explored places are kept either way.
+  function askStoryChoice(stored, role) {
+    const spawn = World.SPAWN[role];
+    $("picker").hidden = true; // the sheet sits at the same layer as the picker and would hide behind it
+    const go = (cp) => { Save.set(PROGRESS_KEY, JSON.stringify(cp)); Mind.kit.closeSheet(); startRole(role, true); };
+    Mind.kit.showSheet({
+      label: "Một lựa chọn cho nhân vật này",
+      lines: [
+        "Từ nay, mỗi người chơi có hành trình riêng, không còn đóng vai một người có sẵn trong truyện.",
+        "Nhân vật này đã đi qua những đêm của chuyện cũ. Thẻ, vật phẩm, nhật ký và các nơi đã khám phá vẫn được giữ nguyên.",
+      ],
+      choices: [
+        { label: "Bắt đầu hành trình riêng", primary: true, fn: () => go(Progress.switchToArrival(stored, role, STORY[role], spawn)) },
+        { label: "Tiếp tục chuyện cũ", fn: () => go(Progress.keepLegacy(stored)) },
+      ],
+    });
+  }
+
+  function startRole(role, choiceDone) {
+    if (!choiceDone) {
+      const stored = loadCheckpoint();
+      if (Progress.valid(stored, role, STORY[role]) && Progress.needsChoice(stored)) { askStoryChoice(stored, role); return; }
+    }
     state.nick = Save.character() ? Save.character().name : $("nick").value.replace(/\s+/g, " ").trim().slice(0, 24);
     state.completed = loadCompleted();
     state.role = role;
