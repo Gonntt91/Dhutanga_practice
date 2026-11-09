@@ -4,6 +4,8 @@
 >
 > **Mục tiêu:** người chơi có thể tạo nhiều PC độc lập; PC dân **có thể phát tâm xuất gia, chuyển hành trình sang nhà sư**; PC ma có thể nhận hồi hướng và **tự chọn khép lại truyện sớm**, với đoạn kết gợi tái sinh làm người/thọ thần/chư thiên nhưng **không trở thành một avatar thiên giới có gameplay**. Không ép người chơi có chỉ số tâm cố định để được "xuất gia" hoặc "siêu thoát".
 
+> **Bổ sung cơ chế nhiều điểm nghỉ tùy chọn, Sổ Hành Trình, hồi tưởng/recap:** [Journey Memory & Return UX](journey-memory-and-return-ux.md). Nhà hoang chỉ là một nơi có thể nghỉ, không mặc định mọi hồn ma về đó. Thẻ tâm/hù dọa và hồi hướng từ PC khác: [Ghost Mischief](ghost-mischief-cards-and-shared-dedication.md).
+
 > **Bản thoại / scene chi tiết cho việc thử nghiệm trước coding:** [Ghost Episode Pack 01 — G01/G03/G04](ghost-episode-pack-01.md) và [Ghost Episode Pack 02 — G02/G05/G06/G07](ghost-episode-pack-02.md). G03 đã chọn **bà cụ giếng + chiếc túi kim chỉ**, G04 dùng **một phần bến giao**, G07 ưu tiên **ending chung** cho MVP; các epilogue tái sinh riêng để duyệt sau. **Chưa đổi schema hoặc code.**
 
 ## 1. Năm quyết định an toàn cần chốt
@@ -124,7 +126,7 @@ Hiện tại `public/save.js` khai báo `dhutanga.memory`, `dhutanga.runs`, `dhu
 
 **Giao ở landmark, không giao ở toàn bộ map/plot:**
 
-- PC ma: từ **nhà hoang/lối nước khuất → Bờ Chìm**, thấy mặt sau của ba cột đá và chuyện người đưa đò; **không tự biết** Hạnh là vợ Ông Tư.
+- PC ma: từ **khe suối rừng tre/khe đá khuất → Bờ Chìm**, thấy mặt sau của ba cột đá và chuyện người đưa đò; **không tự biết** Hạnh là vợ Ông Tư.
 - PC sống: từ **Hang Vọng Tâm → Bờ Nổi**, thấy mặt trước ba cột đá và câu chuyện của người sống; **không tự đọc** lời người đưa đò ma đã nghe.
 - Khoảng giao **cột đá, tiếng mái chèo, vật thể mái cũ** để người chơi thật nhận ra “mình từng đến đây”, còn nội dung mới mỗi bên.
 - Nếu cùng account đã chơi ghost trước, PC sống vẫn phải **thu thập manh mối của chính mình**; có thể có **tùy chọn account Codex** chỉ để đọc ở ngoài gameplay (không mở mặc định khi tạo PC).
