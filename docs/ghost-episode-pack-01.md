@@ -116,7 +116,7 @@ Chỉ hiện **ba lựa chọn ngắn** `Thử gọi bà` / `Để ý chỗ túi
 > Bà phủi bụi, nhét chiếc kim trở lại túi rồi cười một mình.
 
 **Người chơi từ xa chọn:**
-- **`Thấy vui cho bà`** → mở mốc `G03.sharedJoy=true`, có thể xét thẻ **Tùy hỷ** nếu chưa sở hữu và nếu luật thẻ duyệt; không tự xem người chơi thật có tâm Tùy hỷ.
+- **`Thấy vui cho bà`** → ghi một khoảnh khắc ấm áp `G03.sharedJoy=true` vào **Sổ Hành Trình**, **không tự trao Tùy hỷ** chỉ vì chọn câu này. Thẻ thiện của PC ma rất hiếm, chỉ được cân nhắc ở một mạch cảm xúc có đủ chiều sâu và duyệt riêng.
 - **`Đi theo xem bà làm gì`** → thấy bà vá lại quai thúng dưới hiên; `discovery:repaired_basket`.
 - **`Đi chơi tiếp`** → quest `G03` hoàn tất với dấu **giúp người âm thầm**, không đòi xem cảnh thưởng.
 
@@ -149,7 +149,7 @@ Trước khe đá có ba âm thanh: `lá tre cọ nhau`, `tiếng sỏi lăn tro
 - Chọn âm khác → một góc cảnh đẹp của bờ cỏ bên suối/ao sen, nghe lại tiếng nước rõ hơn; **không mất vật phẩm/không quay đầu hoàn toàn**. Gợi ý sau một lần thử sai.
 - Nếu PC đã nói chuyện với một vong đứng ở lối nước, có thể chọn **`Nhờ chỉ hướng`**, cũng vào bến.
 
-**Bản thiết kế này thử người chơi quan sát âm thanh**, không kiểm tra sự thanh tịnh.
+**Bản thiết kế này là puzzle **nghe và nhận diện âm thanh** để mở manh mối/đường mới, **không phải thực hành Niệm (`sati`) hoặc Định** và không trao bất kỳ thẻ Niệm/Định nào cho PC ma.
 
 ### G04-S03 — Ba nơi đáng dừng lại
 
@@ -220,11 +220,11 @@ Trước khe đá có ba âm thanh: `lá tre cọ nhau`, `tiếng sỏi lăn tro
 
 - [ ] Người chơi có thể đi dạo 5–10 phút, ngắm cảnh ma, không bị bất kỳ auto popup.
 - [ ] Khi hù rõ, NPC dân **sợ thật**, sư có thể ít sợ hơn; không cần jumpscare lớn.
-- [ ] Thẻ bất thiện theo **động cơ PC** có kịch bản, không phát Sân do nỗi sợ NPC, không farm qua spam hù.
+- [ ] Thẻ bất thiện theo **động cơ PC** có kịch bản, không phát Sân do nỗi sợ NPC, không farm qua spam hù; thẻ thiện **hiếm**, không tự thưởng Bi/Tùy hỷ mỗi khi giúp người.
 - [ ] G03 rõ **ai mất gì, vì sao làm rơi, PC biết gì và tại sao NPC cuối cùng tìm được**.
 - [ ] Báo mộng có anchor, không phải ngoại năng đọc/tạo giấc mơ cho mọi người.
 - [ ] Không có thao tác nhặt/trao đồ vật trong giao diện vai ma.
-- [ ] G04 từ **khe suối rừng tre**, không phải nhà hoang; không cần đèn hay mini-game của người sống.
+- [ ] G04 từ **khe suối rừng tre**, không phải nhà hoang; không cần đèn hay mini-game của người sống; giải đố không mở thẻ Niệm/Định.
 - [ ] Bến có ít nhất 3 landmark đáng ngắm trước khi bất cứ quest NPC nào xuất hiện.
 - [ ] Kết nối Hạnh chỉ là manh mối, không spoil tên/vai trò hoặc chuyện người sống sót.
 - [ ] Có phản hồi khi quay lại và Sổ Hành Trình/hồi tưởng từ event thật; nghỉ nơi nào cũng được, nhà hoang là tùy chọn.
