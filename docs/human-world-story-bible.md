@@ -22,6 +22,10 @@
 
 > **Signature quest mở thế giới kỳ ảo sớm:** [HG27 — Bà ngoại ngạ quỷ](human-world-early-mysteries-and-peta-quest.md) giữ cảnh giúp bà hồi hướng, bà sáng rồi tan vào ánh trăng. Bộ ba thẻ là **Bi** khi nghe bà kể và chọn giúp → **Không tham** lúc thực sự bố thí để hồi hướng → **Tùy hỷ** sau hồi hướng khi vui vì bà được an/rời cảnh khổ. Phân biệt bà ngoại với **NPC Bà Sáu**. Cùng hệ thống, thọ thần và chư thiên có lời đồn/dấu hiệu sớm nhưng không đứng xuất hiện thường xuyên; xem tài liệu HG27.
 
+> **PC hồn ma có campaign độc lập:** [Ghost Campaign Bible](ghost-playable-campaign-bible.md). Có thể hù người một cách vui, nghe lời hồi hướng, theo vệt hương cơm, vào nhà hoang, giúp người qua thì thầm/báo mộng, và tìm Bến Không Tiếng theo lối khác người sống. NPC bà Sáu **không** là tiểu sử của PC ma. Người dân có thể tự nguyện tìm hiểu xuất gia, PC ma có thể **chọn kết thúc sớm** và lưu lại một ending — xem [Role Transition & Spoiler Isolation](role-transition-and-spoiler-isolation.md). Các mạch này **đang đề xuất để duyệt, chưa code**.
+
+> **Kịch bản hồn ma đã được viết thành các cảnh:** [Episode Pack 01](ghost-episode-pack-01.md) và [Episode Pack 02](ghost-episode-pack-02.md). **G04 lối ma tới bến qua khe suối rừng tre, không còn vết nước ngược trong nhà hoang; nhà hoang chỉ là một điểm nghỉ tùy chọn**, xem [Journey Memory](journey-memory-and-return-ux.md). Nhiệm vụ giúp bà cụ giếng **tìm túi kim chỉ** là truyện riêng, không gượng nối với Hạnh; ở Bến Không Tiếng chỉ nghe mảnh chuyện nước lớn, không tự biết Hạnh sống và là vợ Ông Tư. Vai ma có cốt truyện giúp người, **hù NPC khiến họ sợ thật**, có cơ hội học thẻ bất thiện từ **động cơ riêng**; thỉnh thoảng có thể nghe PC sư/dân khác hồi hướng theo sự kiện hợp lệ, NPC fallback, ending tự chọn. Xem [Ghost Mischief](ghost-mischief-cards-and-shared-dedication.md); **design-only**.
+
 ## 1. Vai trò của Nhân gian
 
 Nhân gian là nơi người chơi **muốn trở về**, dù họ đã đi tới hang, cõi dưới hoặc biên cảnh cõi trời. Không chỉ là nơi nhận nhiệm vụ và học thẻ.

@@ -18,6 +18,8 @@ Ba vòng lặp **đồng thời, không ép buộc**:
 
 **Mức tự do:** người chơi mới tiếp cận được phần lớn đường đi và các điểm ngắm an toàn trong thế giới đầu tiên; điều kiện nâng cao áp dụng cho **nhánh sâu, cảnh hiếm, tương tác sâu, không phải tất cả cửa vào**. Không phạt vì sợ, hỏi lại, rời đi hay nghỉ lâu. Không sinh cơ chế cố làm điều bất thiện để farm thẻ.
 
+> **Cập nhật hướng khám phá riêng cho PC ma (draft):** [Ghost Campaign Bible](ghost-playable-campaign-bible.md) · [Role Transition & Spoiler Isolation](role-transition-and-spoiler-isolation.md). Đồ thị dưới đây mô tả **lối người sống**: PC ma có thể khám phá nhà hoang **như một điểm riêng và điểm nghỉ tùy chọn**, đi tới **Bến Không Tiếng — Bờ Chìm** qua **khe suối rừng tre/khe đá khuất** không cần đèn/cổng của người; Hang Vọng Tâm vẫn có góc khám phá cho ma nhưng không phải lối bắt buộc tới bến. Người sống đến **Bờ Nổi** qua hang; hai tuyến chỉ giao một vài landmark (ba cột đá), không tự chia sẻ manh mối giữa các PC. Hồn ma có thể nghe lời hồi hướng, giúp người gián tiếp và chọn ending tái sinh; cư sĩ có thể tự phát nguyện thử đời sống xuất gia. **Chưa code; các quy tắc cũ nếu áp cho PC ma thì đọc theo bổ sung này.**
+
 ## 2. Mô hình thế giới: mạng những nơi có quan hệ, không phải một cầu thang thiện/xấu
 
 ```text
@@ -43,6 +45,8 @@ Ba vòng lặp **đồng thời, không ép buộc**:
 > **Thiết kế chi tiết Nhân gian:** [Human World Story Bible](human-world-story-bible.md). Hệ thời tiết trong game gồm trời quang, mây, mưa nhẹ, mưa lớn, cảnh báo bão, bão và sau bão. Mỗi trạng thái đổi phong cảnh, NPC, hoạt động khi vắng và storylet; bão là chuỗi sự kiện hiếm có trước/sau, không phải hình phạt nghiệp hoặc màn ép làm nhiệm vụ. Tài liệu chỉ mới là kịch bản, chưa có Weather Engine.
 
 > **Nhân gian trước, cõi giới sau:** viết và kiểm nghiệm [20 kịch bản/móc chuyện nhân gian](human-world-playable-scenarios.md) theo ngữ cảnh và các vai trước khi dựng các bản đồ sâu. Không dùng thời tiết xấu ngẫu nhiên để làm khó người chơi tìm sự bình yên.
+
+> **Cụ thể hóa lối PC hồn ma:** [Ghost Episode Pack 01](ghost-episode-pack-01.md) viết cảnh nhà bỏ trống (một điểm nghỉ tùy chọn), túi kim chỉ, khe suối rừng tre và khe đá dẫn tới Bờ Chìm; [Ghost Episode Pack 02](ghost-episode-pack-02.md) viết chuyện người giữ bến/bà Sáu/nghe hồi hướng/đoạn kết. Hai PC có thể thấy **ba cột đá** từ hai phía nhưng lore/journal mỗi PC lưu riêng. **Nhà hoang, khe suối đi được và Bờ Chìm chưa có map hoàn chỉnh trong code, chỉ là brief cần graybox.** Sổ Hành Trình/hồi tưởng theo từng PC: [Journey Memory](journey-memory-and-return-ux.md). Hù người khiến NPC sợ thật, sư có thể bình tĩnh hơn, thẻ phản ánh động cơ PC: [Ghost Mischief](ghost-mischief-cards-and-shared-dedication.md).
 
 ## 3. Từng thế giới phải có lý do tồn tại và người chơi thực sự được làm gì
 
