@@ -196,7 +196,7 @@ Tránh hai cực đoan: (1) chờ 8 giờ rồi chỉ nhận ba dòng chuyện k
 
 **Phân biệt:** kết quả có thể chắc chắn khi đủ điều kiện (một mẩu kiến thức/chiếc khăn/đoạn vải), còn sự kiện bất ngờ có thể thêm biến thể để tạo cảm giác sống động. Không dùng xác suất gacha để quyết định có được kiến thức cơ bản hay không. Định mức thời gian chỉ là cân bằng gameplay, không phải chỉ số đo tâm.
 
-### 9.2. Hai loại "thẻ" và Đã học (Sổ Hành Trình)
+### 9.2. Phân biệt thẻ kiến thức minh họa và thẻ tâm sở trải nghiệm
 
 > **Một nơi lưu:** kết quả học được ghi trong khu **Đã học** của [Sổ Hành Trình](journey-memory-and-return-ux.md); chỉ dùng màn **Trong lúc vắng** hiện có để thông báo, không tạo sổ hay popup riêng.
 
@@ -232,7 +232,7 @@ Một kiến thức có thể chứa một **thẻ minh họa về tâm sở** n
 **Lần vào thứ nhất (1–2 phút):**
 
 - Tại kệ kinh hoặc màn **Việc khi vắng**, người chơi chọn *Học về năm triền cái* thay vì một mục mơ hồ như "Học kinh".
-- Game hiện mục tiêu rất rõ: "Đọc một đoạn ngắn. Lần sau sẽ ghi vào Đã học (Sổ Hành Trình)."
+- Game hiện mục tiêu rất rõ: "Đọc một đoạn ngắn. Lần sau sẽ ghi vào mục Đã học của Sổ Hành Trình."
 - Nhân vật ngồi mở sách. Lưu `activityId=study`, `lessonId=kn_five_hindrances_01`, `startedAt`, `status=running`, `role`. Người chơi thoát.
 
 **Lần vào thứ hai:**
@@ -240,7 +240,7 @@ Một kiến thức có thể chứa một **thẻ minh họa về tâm sở** n
 > **Trong lúc vắng**  
 > Thầy đã đọc xong một đoạn kinh về những điều cản trở tâm yên. Có lúc mắt mỏi, thầy gấp sách nghỉ, rồi xem lại.  
 > **Mở khóa kiến thức: Năm triền cái**  
-> Đã lưu vào **Đã học (Sổ Hành Trình)**.  
+> Đã lưu vào **Sổ Hành Trình → Đã học**.  
 > Gợi ý: *Sư già có thể chỉ cho bạn cách nhận ra cơn buồn ngủ khi ngồi.*
 
 Nút: **Xem kiến thức mới** · **Đến gặp sư già** · **Giao việc khác**. Người chơi chọn đi dạo thì kiến thức vẫn nằm trong sổ, không mất.
@@ -337,7 +337,7 @@ awayJob = {
 
 1. **Đã học (Sổ Hành Trình) MVP:** định nghĩa khoảng 6 mục kiến thức ngắn có nguồn; ghi sự kiện tiếp xúc với kiến thức trên thang khám phá chung, và lưu `reviewedAt`/`appliedAt` như thuộc tính dẫn xuất **không tạo một thang `heard/reviewed/applied` song song**.
 2. **Nâng hoạt động vắng:** `study` và `weave`/`cook` có tiến trình, báo cáo, kết quả `ready` và nhận duy nhất một lần; việc đọc kinh thưởng *kiến thức*, không phải tâm sở thiện đã tu tập.
-3. **Kết quả mở chuyện thật:** 2–3 hội thoại phụ có điều kiện `kn_*`, thêm nút **Xem Đã học (Sổ Hành Trình)** ngay trong phần thưởng và trang hồ sơ.
+3. **Kết quả mở chuyện thật:** 2–3 hội thoại phụ có điều kiện `kn_*`, thêm nút **Mở Hành trình → Đã học** ngay trong phần thưởng và trang hồ sơ.
 4. **Sửa lời hứa rau má** theo mục 9.7, thêm kiểm tra giới luật/tuyến vai.
 5. Trước khi thêm nhiều quest, phải hoàn thiện identity PC/NPC, giữ tên nhân vật riêng và migration; sau khi kiểm thử vòng giao việc → offline → quay lại → nhận → dùng mới mở rộng cho ba vai.
 
