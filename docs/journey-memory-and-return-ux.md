@@ -83,31 +83,31 @@ Trạng thái **archived / read-only**: Sổ vẫn đọc được; **không pre
 
 | Khu trong Sổ | Dữ liệu hiển thị | Ví dụ |
 |---|---|---|
-| **Nơi chốn và nhân vật** | địa danh, NPC, loài, cõi; \`Chưa biết / Nghe kể / Tận mắt / Xác nhận\` khi có lý do | đã đến ao sen, nghe đồn về khe suối |
+| **Nơi chốn và nhân vật** | địa danh, NPC, loài, cõi; `Chưa biết / Nghe kể / Tận mắt / Xác nhận` khi có lý do | đã đến ao sen, nghe đồn về khe suối |
 | **Đang theo** | mạch truyện đang mở, sự kiện liên quan, bước tiếp theo nếu người chơi muốn theo | G03: thấy túi → biết bà cụ tìm → đã giúp tìm |
-| **Đã học** | kiến thức đã gặp/nghe, nguồn; \`đã ôn\`, \`đã vận dụng\` là thuộc tính | đã nghe một đoạn về năm triền cái |
+| **Đã học** | kiến thức đã gặp/nghe, nguồn; `đã ôn`, `đã vận dụng` là thuộc tính | đã nghe một đoạn về năm triền cái |
 | **Dòng thời gian** | sự kiện đã xảy ra theo thời gian, gồm các Dấu mốc đáng nhớ được ghim | đã hù ông Tư, đã thấy bà tìm túi |
 
 **Cả bốn chỉ là các góc nhìn/truy vấn**, không tạo bốn kho dữ liệu. Dấu mốc không mất: lấy từ event/thẻ cũ đã được migration rồi ghim trong Dòng thời gian. Những chuyện **đã khép** có thể lọc trong **Đang theo** mà không cần tab thứ năm.
 
 **Album thẻ tâm** và **Túi đồ** vẫn là phần riêng của hệ thống nhân vật, không nhập vào Sổ; Album có thể dẫn đến sự kiện liên quan nhưng **không có tab Nhật ký bản sao**.
 
-Một mục có thể có nhiều sự kiện khác nhau: PC **đã thấy người giữ bến** (mức Tận mắt đối với NPC) nhưng **chỉ nghe kể** về tiếng trẻ đêm lũ (mức Nghe kể đối với lời đồn). \`sourceType\` là nguồn của **từng thông tin**, không tự nâng mức tin cậy của một tin đồn vì nhân vật trực tiếp gặp người kể.
+Một mục có thể có nhiều sự kiện khác nhau: PC **đã thấy người giữ bến** (mức Tận mắt đối với NPC) nhưng **chỉ nghe kể** về tiếng trẻ đêm lũ (mức Nghe kể đối với lời đồn). `sourceType` là nguồn của **từng thông tin**, không tự nâng mức tin cậy của một tin đồn vì nhân vật trực tiếp gặp người kể.
 
 **Không dùng suy đoán để tự lộ bí mật**. “Tôi đang nghi” là ghi chú tùy chọn trên mục; không là mức khám phá thứ năm và có thể chưa làm ở MVP.
 
 ## 4. UX — tái sử dụng bảng Nhiệm vụ, Hồ sơ và màn Trong lúc vắng
 
 **Không thêm icon trên HUD, không thêm panel hoặc popup mới:**
-- **Bảng Nhiệm vụ** giữ hai khu **Việc có thể làm** và **Sổ Hành Trình**. Mục Việc có thể làm dùng trạng thái nhiệm vụ riêng; không trộn vào thang \`Nghe kể/Tận mắt\`.
+- **Bảng Nhiệm vụ** giữ hai khu **Việc có thể làm** và **Sổ Hành Trình**. Mục Việc có thể làm dùng trạng thái nhiệm vụ riêng; không trộn vào thang `Nghe kể/Tận mắt`.
 - **Hồ sơ** dùng **Tổng quan · Hành trình · Người quen** (guest: Tổng quan · Hành trình); Hành trình là **cùng thành phần Sổ** đã dùng trong bảng Nhiệm vụ. Hai tab Nhật ký/Dấu mốc cũ chuyển vào **Dòng thời gian**; tab Nhật ký bên trong Album cũng bỏ.
 - **Sổ** có bốn khu theo §3, không mở “Sổ manh mối”, “Sổ kiến thức” hoặc “Nhật ký thời gian” độc lập.
 
-**Mục Đang theo:** mỗi mạch 1–2 câu tóm tắt **chỉ từ việc nhân vật thực biết**, thêm đường đi tiếp nếu có, \`Nhớ lại\`/lọc Đã khép nếu muốn. Không ép nhận nhiệm vụ chỉ vì đi ngang NPC; không biến Sổ thành checklist cày điểm.
+**Mục Đang theo:** mỗi mạch 1–2 câu tóm tắt **chỉ từ việc nhân vật thực biết**, thêm đường đi tiếp nếu có, `Nhớ lại`/lọc Đã khép nếu muốn. Không ép nhận nhiệm vụ chỉ vì đi ngang NPC; không biến Sổ thành checklist cày điểm.
 
-**Mục Nơi chốn và nhân vật:** giữ \`?\` và tính khám phá từ \`Discover\` hiện có; có thể chỉ hướng đến nơi đã nghe đồn. Thông tin do NPC kể phải có nhãn nguồn nhỏ nếu cần, không biến lời đồn thành sự thật.
+**Mục Nơi chốn và nhân vật:** giữ `?` và tính khám phá từ `Discover` hiện có; có thể chỉ hướng đến nơi đã nghe đồn. Thông tin do NPC kể phải có nhãn nguồn nhỏ nếu cần, không biến lời đồn thành sự thật.
 
-**Màn Trong lúc vắng:** **mở rộng chính \`reflect.js\` đã có**, khi có dữ liệu đáng kể và người chơi quay lại sau khoảng vắng phù hợp. Tối đa **1 đoạn hoạt động lúc vắng**, **1 chuyện đang theo**, **1 manh mối đáng nhớ** cùng \`Mở Hành trình\` / \`Tiếp tục khám phá\`; nếu không có gì mới thì vào game bình thường. Có quyền bỏ qua và đọc lại trong Sổ, **không tạo \`recapSnapshots\` store/popup khác**. Những câu kể phải dựa trên sự kiện đã được ghi, không tự dựng việc NPC làm khi offline.
+**Màn Trong lúc vắng:** **mở rộng chính `reflect.js` đã có**, khi có dữ liệu đáng kể và người chơi quay lại sau khoảng vắng phù hợp. Tối đa **1 đoạn hoạt động lúc vắng**, **1 chuyện đang theo**, **1 manh mối đáng nhớ** cùng `Mở Hành trình` / `Tiếp tục khám phá`; nếu không có gì mới thì vào game bình thường. Có quyền bỏ qua và đọc lại trong Sổ, **không tạo `recapSnapshots` store/popup khác**. Những câu kể phải dựa trên sự kiện đã được ghi, không tự dựng việc NPC làm khi offline.
 
 **Không claim lại:** mở Sổ, xem hồi tưởng, đổi nhân vật hoặc tải lại không tạo thẻ/mốc mới.
 
@@ -147,9 +147,9 @@ Một mục có thể có nhiều sự kiện khác nhau: PC **đã thấy ngư�
 
 ## 6. Hợp đồng event và projection — mô tả trước code, không phải API
 
-**Một nguồn sự kiện đã xác thực theo \`characterId\`**; các màn chỉ đọc **projection** của sự kiện. Cờ nhiệm vụ dùng để kiểm tra nhanh **không phải** một sổ mới. Ví dụ minh họa (không tự động suy diễn thành cấu trúc database):
+**Một nguồn sự kiện đã xác thực theo `characterId`**; các màn chỉ đọc **projection** của sự kiện. Cờ nhiệm vụ dùng để kiểm tra nhanh **không phải** một sổ mới. Ví dụ minh họa (không tự động suy diễn thành cấu trúc database):
 
-\`\`\`js
+```js
 const memoryEvent = {
   id: "char123:G03:item_seen:v1",  // duy nhất/idempotent theo nhân vật + hành động
   characterId: "char123",
@@ -176,16 +176,16 @@ const questProjection = {
   stage: "owner_known",            // cho phép lưu checkpoint khi cần gameplay
   updatedByEventId: "char123:G03:owner_known:v1"
 };
-\`\`\`
+```
 
-- **Chỉ event log là lịch sử bền vững của các thay đổi mang ý nghĩa chuyện**. Projection như \`storyState\`, \`discoveryView\`, \`knowledgeProgress\` được phép lưu/cache, nhưng phải **có thể đối chiếu với event** và không tự tạo phần thưởng/spoiler độc lập. Có thể commit cả event và projection trong cùng giao dịch hợp lệ; không buộc mỗi lần mở Sổ replay toàn bộ log.
-- **Hai chiều khác nhau:** \`level\` là tiến độ khám phá **từng subject/claim**; \`sourceType\` cho biết căn cứ của **từng event**. Lời đồn ferryman không thành đã xác nhận chỉ vì người chơi đã tận mắt gặp ông. \`đã ôn/đã vận dụng\` là thuộc tính của mục Đã học, không là một thang khám phá thứ hai.
-- **Nghỉ ở đâu:** chỉ lưu \`chosenPlaceId\` cùng hoạt động lúc vắng trong **checkpoint/away state hiện có**, không tạo kho \`restChoice\` mới; nhà hoang chỉ là một trong nhiều điểm nghỉ của PC ma.
-- **Hồi tưởng:** tạo từ các event mới và checkpoint trạng thái trong \`reflect.js\` bằng template theo tình huống, không cần AI thời gian thực hoặc \`recapSnapshots\` store.
-- **Máy chủ kiểm quyền và chống lặp:** phân quyền nhân vật, tính hợp lệ của NPC/vật/thời điểm, chống nhận lại thẻ, kiểm \`story_completed\` read-only; không tin client để gán \`evidence\` hay mở spoiler.
-- **Legacy migration từng loại:** \`dhutanga.history\` hiện tối đa 200 dòng chỉ phục vụ nhật ký cũ, không thể khôi phục chi tiết trước đó; \`backfillMilestones()\` chỉ lấy dấu mốc từ thẻ, **không** tự suy ra toàn bộ truyện. Giữ save cũ và checkpoint, \`saveVersion\`, ghi lại các nguồn legacy có thể xác minh; không bịa ký ức hay chuyển \`dhutanga.memory\` cấp account thành sự thật của PC mới.
-- **Nhiều nhân vật:** event/subject/quest/spoiler gắn \`characterId\`. Đổi dân sang sư giữ cùng nhân vật; ghost \`story_completed\` vào archive read-only. Không thêm Codex cấp account trong MVP, không sync manh mối giữa nhân vật.
-- **NPC tự làm việc lúc vắng:** chỉ ghi \`npc_finds_item\` nếu một lịch trình/kết quả đã thực sự được giải quyết và persist; chưa có event thì Sổ không nói “bà đã tìm được”.
+- **Chỉ event log là lịch sử bền vững của các thay đổi mang ý nghĩa chuyện**. Projection như `storyState`, `discoveryView`, `knowledgeProgress` được phép lưu/cache, nhưng phải **có thể đối chiếu với event** và không tự tạo phần thưởng/spoiler độc lập. Có thể commit cả event và projection trong cùng giao dịch hợp lệ; không buộc mỗi lần mở Sổ replay toàn bộ log.
+- **Hai chiều khác nhau:** `level` là tiến độ khám phá **từng subject/claim**; `sourceType` cho biết căn cứ của **từng event**. Lời đồn ferryman không thành đã xác nhận chỉ vì người chơi đã tận mắt gặp ông. `đã ôn/đã vận dụng` là thuộc tính của mục Đã học, không là một thang khám phá thứ hai.
+- **Nghỉ ở đâu:** chỉ lưu `chosenPlaceId` cùng hoạt động lúc vắng trong **checkpoint/away state hiện có**, không tạo kho `restChoice` mới; nhà hoang chỉ là một trong nhiều điểm nghỉ của PC ma.
+- **Hồi tưởng:** tạo từ các event mới và checkpoint trạng thái trong `reflect.js` bằng template theo tình huống, không cần AI thời gian thực hoặc `recapSnapshots` store.
+- **Máy chủ kiểm quyền và chống lặp:** phân quyền nhân vật, tính hợp lệ của NPC/vật/thời điểm, chống nhận lại thẻ, kiểm `story_completed` read-only; không tin client để gán `evidence` hay mở spoiler.
+- **Legacy migration từng loại:** `dhutanga.history` hiện tối đa 200 dòng chỉ phục vụ nhật ký cũ, không thể khôi phục chi tiết trước đó; `backfillMilestones()` chỉ lấy dấu mốc từ thẻ, **không** tự suy ra toàn bộ truyện. Giữ save cũ và checkpoint, `saveVersion`, ghi lại các nguồn legacy có thể xác minh; không bịa ký ức hay chuyển `dhutanga.memory` cấp account thành sự thật của PC mới.
+- **Nhiều nhân vật:** event/subject/quest/spoiler gắn `characterId`. Đổi dân sang sư giữ cùng nhân vật; ghost `story_completed` vào archive read-only. Không thêm Codex cấp account trong MVP, không sync manh mối giữa nhân vật.
+- **NPC tự làm việc lúc vắng:** chỉ ghi `npc_finds_item` nếu một lịch trình/kết quả đã thực sự được giải quyết và persist; chưa có event thì Sổ không nói “bà đã tìm được”.
 
 ## 7. Giao tiếp người chơi thật — lưu ký ức sự kiện, không auto đọc suy nghĩ
 
