@@ -65,7 +65,7 @@ Mục tiêu: chạm vào người, địa điểm, đồ vật trên bản đồ
 - [ ] Không thấy chỉ số / nhật ký của người khác trong bất kỳ phản hồi API công khai nào.
 
 ## Điều chỉnh theo thiết kế mới (09-11-2026, chưa code)
-- **Nhân vật đã khép** (ma kết thúc kiếp, archived/read-only; trạng thái và phần ép phía máy chủ nằm ở một PR riêng, chưa có cảnh kết thúc và chưa có giao diện cho chính nhân vật đã khép): không presence, không hiện online, không ghi "Từng gặp" mới, không giữ kết nối mới. Máy chủ từ chối, không chỉ ẩn giao diện. Hồ sơ cũ vẫn đọc lại được.
+- **Nhân vật đã khép** (ma kết thúc kiếp, `story_completed`: truyện read-only nhưng vẫn **đi dạo được ở nơi đã khám phá**, chỉ phía xã hội đóng; trạng thái và phần ép phía máy chủ nằm ở một PR riêng, chưa có cảnh kết thúc và chưa có giao diện cho chính nhân vật đã khép): không presence, không hiện online, không ghi "Từng gặp" mới, không giữ kết nối mới. Máy chủ từ chối, không chỉ ẩn giao diện. Hồ sơ cũ vẫn đọc lại được.
 - **Hồ sơ công khai** giữ như hiện tại (quyết định 09-11-2026, chủ project): tên, vai, ngày tạo, thiên hướng, tối đa 6 vật phẩm, có công tắc ẩn. Thêm trường mới chỉ khi đã rà spoiler.
 - **Hù và nghe hồi hướng giữa người chơi thật** cần cờ đồng ý riêng, mặc định tắt, đặt cạnh các cờ ẩn hồ sơ / ẩn trạng thái; có chặn và báo cáo như hiện nay. NPC luôn là phương án mặc định.
 - Chỉ khi vai ma và sự kiện hồi hướng được code mới đưa vào bảng "Thứ tự MVP" của [Ghost Campaign](ghost-playable-campaign-bible.md).
