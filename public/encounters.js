@@ -22,7 +22,9 @@
   const spot = {
     tree: () => ({ x: P().gao.x + 38, y: P().gao.y + 14 }),
     child: () => ({ x: P().bamboo.x - 14, y: P().bamboo.y + 30 }),
-    mother: () => ({ x: P().village.x - 46, y: P().village.y - 8 }),
+    // Chị Ba (bé Na's mother) waits on the far side of the lane, away from the well where the old woman stands
+    // (they used to be ~20px apart, so their labels and speech bubbles piled on top of each other).
+    mother: () => ({ x: P().village.x + 52, y: P().village.y + 14 }),
     peta: () => ({ x: P().graves.x + 44, y: P().graves.y - 26 }),
     granny: () => ({ x: P().well.x + 22, y: P().well.y + 8 }),
     earth: () => ({ x: P().gate.x + 58, y: P().gate.y + 4 }),
@@ -346,7 +348,8 @@
       else if (villageRole() && night() && tq.step === "done") out.push({ kind: "treegod", ...spot.tree(), alpha: 0.5, label: "" });
       if (villageRole() && tq.step === "child") out.push({ kind: "child", ...spot.child(), crying: true, label: "bé Na" });
       if (villageRole() && tq.step === "follow") { const p = World.getPlayer(); out.push({ kind: "child", x: p.x - 16, y: p.y + 4, moving: p.moving, crying: !!tq.scared, label: "bé Na" }); }
-      if (villageRole() && (tq.step === "follow" || tq.step === "thank" || tq.step === "done")) out.push({ kind: "mother", ...spot.mother(), label: "mẹ bé Na" });
+      // Once the child is home the mother is home too at night; she only waits in the lane while the quest needs her.
+      if (villageRole() && (tq.step === "follow" || tq.step === "thank" || (tq.step === "done" && !night()))) out.push({ kind: "mother", ...spot.mother(), label: "mẹ bé Na" });
       if (villageRole()) {
         const pq = Q("peta");
         if (fx.peta) out.push({ kind: "peta", ...spot.peta(), glow: Math.min(1, fx.peta.t / 3), alpha: Math.max(0, 1 - Math.max(0, fx.peta.t - 3) / 1.5), label: "bà ngoại" });

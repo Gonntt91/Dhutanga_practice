@@ -1788,6 +1788,7 @@
     const here = (key) => World.PLACES[key] && distTo(World.PLACES[key]) <= NEAR_PROMISE;
     if (due && here(due.place)) return keepPromiseNow(due);
     if (!window.Village || state.role === "ghost") return;
+    if (World.npcBubbleActive && World.npcBubbleActive()) return; // one remembered line at a time, never two bubbles on top of each other
     const day = state.cp.day || 1;
     for (const key of Village.places()) {
       if (!World.PLACES[key] || distTo(World.PLACES[key]) > NEAR_VILLAGE) continue;
