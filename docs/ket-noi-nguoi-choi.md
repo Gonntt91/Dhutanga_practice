@@ -65,7 +65,9 @@ Mục tiêu: chạm vào người, địa điểm, đồ vật trên bản đồ
 - [ ] Không thấy chỉ số / nhật ký của người khác trong bất kỳ phản hồi API công khai nào.
 
 ## Điều chỉnh theo thiết kế mới (09-11-2026, chưa code)
-- **Nhân vật đã khép** (ma kết thúc kiếp, archived/read-only): không presence, không hiện online, không ghi "Từng gặp" mới, không giữ kết nối mới. Máy chủ từ chối, không chỉ ẩn giao diện. Hồ sơ cũ vẫn đọc lại được.
-- **Hồ sơ công khai dùng allowlist trường**: bỏ vật phẩm hoặc thành tựu có thể lộ tiến độ truyện; xem lại thiên hướng khi có thêm nhân vật theo vai.
+- **Nhân vật đã khép** (ma kết thúc kiếp, archived/read-only; trạng thái và phần ép phía máy chủ nằm ở một PR riêng, chưa có cảnh kết thúc và chưa có giao diện cho chính nhân vật đã khép): không presence, không hiện online, không ghi "Từng gặp" mới, không giữ kết nối mới. Máy chủ từ chối, không chỉ ẩn giao diện. Hồ sơ cũ vẫn đọc lại được.
+- **Hồ sơ công khai** giữ như hiện tại (quyết định 09-11-2026, chủ project): tên, vai, ngày tạo, thiên hướng, tối đa 6 vật phẩm, có công tắc ẩn. Thêm trường mới chỉ khi đã rà spoiler.
 - **Hù và nghe hồi hướng giữa người chơi thật** cần cờ đồng ý riêng, mặc định tắt, đặt cạnh các cờ ẩn hồ sơ / ẩn trạng thái; có chặn và báo cáo như hiện nay. NPC luôn là phương án mặc định.
 - Chỉ khi vai ma và sự kiện hồi hướng được code mới đưa vào bảng "Thứ tự MVP" của [Ghost Campaign](ghost-playable-campaign-bible.md).
+- **Kiểm tra Postgres thật:** có `test/pg-smoke.test.js` (chạy khi đặt `TEST_DATABASE_URL`, hướng dẫn Docker trong đầu file). Chưa chạy trên Neon.
+- **Quy mô máy chủ:** quyết định 09-11-2026: không dùng Colyseus, giữ Node + SSE + REST; tiến trình cá nhân do client báo, máy chủ chỉ kiểm vừa phải (đúng chủ, danh mục sự kiện cho phép, chống lặp, giới hạn tần suất, đồng ý cho tương tác xã hội). Chỉ mở lại khi có cảnh dùng chung thời gian thực hoặc hàng trăm người cùng lúc.
