@@ -1,8 +1,8 @@
-# Ghost Campaign Bible v0.2 — Hồn ma: vui tinh nghịch, khám phá cõi khuất và một cuộc đời riêng
+# Ghost Campaign Bible v0.3 — Hồn ma: vui tinh nghịch, khám phá cõi khuất và một cuộc đời riêng
 
 > **Thiết kế trước coding, KHÔNG triển khai gameplay.** Người chơi tự tạo tên và chọn `ghost` — **KHÔNG phải bà Sáu**. `npc.ba_sau` và `npc.peta_grandmother` là hai NPC khác nhau, giữ nội dung đã có trong `story.js` và `encounters.js`. Chưa khẳng định hồn ma có thân thể thật, phép thuật hay khả năng tái sinh chủ động theo giáo lý; các cơ chế thì thầm/giấc mơ/đi xuyên ranh giới là **fiction/game_interpretation**, phải có chú thích nguồn nếu đưa vào game.
 >
-> **Bản có thể đọc và review theo cảnh:** [Ghost Episode Pack 01 — G01/G03/G04](ghost-episode-pack-01.md) và [Ghost Episode Pack 02 — G02/G05/G06/G07](ghost-episode-pack-02.md). Tài liệu này là **khung campaign và năng lực**, còn hai pack là **lời thoại, lựa chọn, hậu quả**. Cùng chuẩn [Player-centric Narrative Model](player-character-narrative-model.md), [World Exploration Bible](world-exploration-bible.md), [Early Mysteries & HG27](human-world-early-mysteries-and-peta-quest.md). Thiết kế vai dân → xuất gia và ending vai ma nằm ở [Role Transition & Spoiler Isolation](role-transition-and-spoiler-isolation.md).
+> **Bản có thể đọc và review theo cảnh:** [Ghost Episode Pack 01 — G01/G03/G04](ghost-episode-pack-01.md) và [Ghost Episode Pack 02 — G02/G05/G06/G07](ghost-episode-pack-02.md). Tài liệu này là **khung campaign và năng lực**, còn hai pack là **lời thoại, lựa chọn, hậu quả**. Bổ sung: [điểm nghỉ linh hoạt và Sổ Hành Trình](journey-memory-and-return-ux.md) · [hù dọa có tác động, thẻ tâm, hồi hướng giữa người chơi](ghost-mischief-cards-and-shared-dedication.md). Cùng chuẩn [Player-centric Narrative Model](player-character-narrative-model.md), [World Exploration Bible](world-exploration-bible.md), [Early Mysteries & HG27](human-world-early-mysteries-and-peta-quest.md). Thiết kế vai dân → xuất gia và ending vai ma nằm ở [Role Transition & Spoiler Isolation](role-transition-and-spoiler-isolation.md).
 >
 > **Ranh giới game:** Nhân gian vẫn là nơi bình yên, phần cõi khuất **hơi kỳ ảo và man mác**, không làm thành game kinh dị. Cho phép chơi ngắn, tự do đi dạo và không bị khóa vì thiếu thẻ/tổng điểm tâm. Cảnh đáng nhìn hoặc pha hù người vô hại cũng là phần thưởng.
 
@@ -27,7 +27,7 @@
 |---|---|---|---|
 | **Lượn qua bóng** | bước qua khe hẹp, lối bị che, một số cửa nhà hoang; nhìn lớp dấu vết khuất | không đi xuyên mọi map/teleport khắp thế giới; ranh giới cõi có ngưỡng riêng | `G01` nhà hoang, `G04` bến |
 | **Thì thầm** | NPC người sống thoáng nghe 1–2 từ, quay đầu, thắc mắc hoặc nhớ việc đã nói | **không điều khiển ý nghĩ**, không đảm bảo NPC tin | chỉ người đi tìm vật nhớ nhìn chỗ rơi |
-| **Tiếng động/đốm lạnh** | lá xào xạc, tiếng gõ cửa, ngọn đèn lay, bóng vụt qua | không cầm, dời, ném, mở khóa hoặc gây thương tích vật lý; không ép sợ hãi quá mức | hù Ông Tư, đánh lạc hướng người tìm đồ |
+| **Tiếng động/đốm lạnh** | lá xào xạc, tiếng gõ cửa, ngọn đèn lay, bóng vụt qua | không cầm, dời, ném, mở khóa hoặc gây thương tích vật lý; NPC có thể **sợ thật**, nhưng không gây tai nạn nguy hiểm hay quấy rối người chơi thật | hù Ông Tư, đánh lạc hướng người tìm đồ |
 | **Báo mộng** | gặp người đang ngủ trong một **scene mộng ngắn**, gợi hình một vật/địa điểm có liên hệ | hiếm, cần `dreamAnchor` (người đó có ký ức/dấu vết về đồ bị mất); không cho tự viết mộng toàn năng hoặc ép NPC làm việc | hoàn thành truyện “Vật ở dưới gốc tre” |
 | **Nghe lời hồi hướng** | nghe lời sư tụng sau một đêm tu, thấy cảnh đổi và được hỏi liệu có sẵn lòng khép lại hành trình | không mặc định mọi lời tụng đều giải thoát tất cả hồn ma; phải có hoàn cảnh truyện và lựa chọn PC | `G06`, ending |
 | **Dõi theo hương cơm cúng** | phát hiện cảnh có phẩm vật dâng/câu chuyện hồi hướng; tìm nơi người sống còn nhớ tới chúng sinh đã khuất | không `pickUp(food)`, không tự đi ăn cơm vật chất như item; khả năng hưởng phước tùy kịch bản được duyệt | `G02` |
@@ -35,22 +35,13 @@
 
 **Năng lực KHÔNG phải skill tree dựa vào điểm "thiện".** Thời điểm mở cần thỏa story condition ngắn, minh chứng tương tác (ví dụ thử thì thầm, biết NPC đang tìm), không yêu cầu farm thẻ/tâm.
 
-### 2.2. Cơ chế hù dọa phải vui
+### 2.2. Cơ chế hù dọa: NPC sợ thật, PC khám phá được tâm
 
-**Hù dọa được chơi, không bắt buộc bị phán xét.** Ông Tư hoặc khách đi đêm có thể bị dọa, giật mình rồi cười; con Vàng dựng tai, sủa lên; một lá tre rơi trúng nón ông, ông tự nghĩ có ma. Cho PC chọn `Hù nhẹ`, `Để người ta yên`, `Thì thầm giúp`. Phản hồi khác nhau tùy lịch sử NPC và thời điểm. Không tạo mini-game khủng bố trẻ nhỏ hoặc lặp hù để farm thẻ Sân/Thiện. Nếu PC làm NPC hoảng đến đi lạc, nên có đường sửa chữa: dùng lời thì thầm để họ bình tĩnh/tìm lối về.
+**Hù là một hoạt động giải trí hợp lệ của vai ma.** Ông Tư/người đi đường khi bị hù rõ **phải có biểu hiện sợ thật**: run giọng, chạy về vùng sáng, đóng cửa, kể chuyện cho người khác nghe. Hù nhẹ khiến họ giật mình và cảnh giác. **Sư Tịnh/sư già** có thể ít sợ hơn hoặc bình tĩnh nhanh hơn (không tuyên bố mọi vị sư đều miễn nhiễm). Xem [spec hù NPC & thẻ](ghost-mischief-cards-and-shared-dedication.md).
 
-**Ví dụ:**
-> Ông Tư nghe cửa kêu “cộc” một tiếng, quay lại nhìn.
->
-> “Con Vàng! Mày lại làm gì đấy?”
->
-> Con Vàng vẫn ngủ. 
->
-> `Hù thêm một chút` → ông chạy vào hiên, vài hôm sau ông kể chuyện nghe tiếng lạ.
->
-> `Thì thầm: ‘Bên trái…’` → ông nhìn sang và thấy cái đèn bị quên tắt.
->
-> `Đi dạo tiếp` → không quest.
+**Phân biệt quan trọng:** `npc.fearState` là phản ứng của người **bị hù**; thẻ bất thiện của **PC hồn ma** chỉ xét từ **động cơ và lựa chọn riêng**: `tham` nếu thích thú với cảm giác áp đảo, `san` nếu có câu chuyện trả đũa/giận dữ, `hoi_han` nếu chọn ray rứt sau đó. Không phát thẻ `san` chỉ vì NPC sợ; không hù lặp để farm thẻ hoặc khuyến khích làm hại.
+
+**Sau khi hù:** việc giúp bà cụ tìm túi (G03), tình cờ nghe kinh/hồi hướng từ NPC sư hoặc PC sư/dân khác (G02/G06) là các **móc khám phá tự nhiên**, không phải bài phạt “phải tu để chuộc lỗi”. Hồn ma vẫn được tự do vào Bờ Chìm ngay từ đầu. Với **người chơi thật**, mọi hiệu ứng hù phải **opt-in**, tắt/mute/block được; không có quấy rối vô hạn.
 
 ## 2.3. Thẻ tâm cho PC ma — thu thập bằng lựa chọn, không sao chép HG27
 
@@ -60,7 +51,7 @@ Hồn ma cũng được nhận thẻ **qua hành động có ngữ cảnh của 
 |---|---|---|
 | G03 người đi tìm đồ | PC nghe người ấy lo lắng, **chọn giúp thay vì bỏ qua** → có thể ghi **Bi** | chỉ nhìn thấy vật rơi không tự rơi Bi |
 | G03 người tìm lại được đồ | PC chứng kiến người đó vui và **chọn vui theo** → có thể ghi **Tùy hỷ** | không cấp Tùy hỷ chỉ vì NPC tự xong quest |
-| G01 hù nhẹ | PC nhận ra đã làm người khác sợ, **chọn ngừng hù và dẫn họ về an toàn** → tình huống minh họa **Không sân**, tùy catalog | không khuyến khích hù gây hại để farm thẻ bất thiện rồi “chuộc” |
+| G01 hù một NPC khiến họ sợ thật | nếu PC **thích thú áp đảo** → xem xét `tham`; nếu có **động cơ trả đũa** → xem xét `san`; nếu **hối tiếc** khi thấy hậu quả → xem xét `hoi_han` | NPC sợ không đồng nghĩa PC có Sân; không thưởng thẻ vì click hù, không farm lặp |
 | G04 tiếng vọng bến | PC chủ động phân biệt âm vọng giả với tiếng gọi thật, thử quan sát nhiều lần → cơ hội **Niệm** theo luật thực hành trong game | không coi việc đi qua bến là đạt Niệm/Định |
 | Chuyện sâu hơn về vật PC còn luyến tiếc (viết sau) | PC chủ động không cố chiếm giữ một kỷ vật/ý niệm của người khác → có thể minh họa **Không tham** | **không** tặng Không tham chỉ vì PC ma không thể nhặt đồ |
 
@@ -68,29 +59,26 @@ Hồn ma cũng được nhận thẻ **qua hành động có ngữ cảnh của 
 
 ## 3. Ghost-only map: “Lối nước khuất” và Bến Không Tiếng
 
-**Đề xuất đồ thị theo góc nhìn:**
+**Đề xuất đồ thị theo góc nhìn (địa hình chi tiết chờ art/graybox):**
 
 ```text
-Nhân gian (PC sống): Làng → gốc gạo → [Hang Vọng Tâm] → hồ âm vang
-                                            ↓
-                                       ngưỡng sâu
-                                            ↓
-                                  [Bến Không Tiếng — BỜ NỔI]
-                                            ↕  (chỉ 1 khu giao)
-Nhân gian (PC ma): Gốc gạo → nghĩa địa → nhà hoang → lối nước khuất
-                                                  ↓
-                                     [Bến Không Tiếng — BỜ CHÌM]
-                                             ├─ giếng cạn
-                                             ├─ xóm không khói
-                                             ├─ bến đò nghe tiếng
-                                             └─ Cột đá cũ — phần giao
+PC người sống: Làng → Hang Vọng Tâm → ngưỡng sâu → Bến Không Tiếng — BỜ NỔI
+                                                            ⇅ (chỉ vài landmark giao)
+PC hồn ma: Rừng tre → SUỐI NHỎ → KHE ĐÁ KHUẤT → Bến Không Tiếng — BỜ CHÌM
+                                                          ├─ giếng cạn
+                                                          ├─ xóm không khói
+                                                          └─ ba cột đá cũ
+Nhà hoang → G01/G03 (khám phá, giúp bà cụ, **nghỉ tùy chọn**)
+Gốc gạo / mộ cũ / bờ suối / Bờ Chìm → các điểm nghỉ khác theo sở thích
 ```
+
+**Suối thật chảy xuôi** qua rễ tre, đá rêu, liên hệ hệ ao sen/bến sông cũ nếu địa hình hợp lý; kỳ ảo là **lối chỉ ma thấy ở khe đá**, không phải vết nước ngược. **G04 không yêu cầu vào nhà hoang trước**. Bất cứ PC ma nào cũng có thể chọn nghỉ ở nhiều điểm, không có default ghost house.
 
 **Lưu ý:** đây là **logic truyện và hình ảnh, không phải tuyên bố địa lý giữa các cõi Phật giáo**. "Cùng một bến" là fantasy thiết kế; con người có thể tới qua hang, PC ma qua đường khuất mà không cần đèn. Về nguyên tắc, **chỉ khoảng 20–30% landmark/tên địa điểm chung**, còn phần trải nghiệm, câu chuyện, màu/âm thanh/đường đi **70–80% khác nhau** (tỷ lệ thiết kế thử, không áp đặt content).
 
 | Góc nhìn | PC sống nhìn thấy | PC ma nhìn thấy |
 |---|---|---|
-| **Cửa vào** | khe đá, hồ hang, ngưỡng sâu, cần nguồn sáng hoặc cách đi riêng | lối nước in bóng dưới rễ cây/cửa nhà hoang, theo tiếng gọi, không cần ngọn đèn người sống |
+| **Cửa vào** | khe đá, hồ hang, ngưỡng sâu, cần nguồn sáng hoặc cách đi riêng | khe suối rừng tre/đường bóng phía sau khe đá, theo tiếng mái chèo, không cần ngọn đèn người sống |
 | **Bến** | bờ đá ẩm, thuyền mục, dấu bước và người đứng xa | cùng ba cột đá nhưng bến ngập ánh trăng lạnh, nhà không có bóng người sống, lời thì thầm của các vong |
 | **Cột đá cũ** | thấy một vết khắc chưa hiểu | thấy dấu chữ/chuyện từ phía đối diện nhưng **thiếu văn cảnh của người sống** |
 | **Nhà/bến phía xa** | chưa vào được do lối/hang | có thể tới giếng cạn hoặc xóm không khói qua đường khuất, cần tìm lời hẹn/nhân chứng |
@@ -102,7 +90,7 @@ Nhân gian (PC ma): Gốc gạo → nghĩa địa → nhà hoang → lối nư�
 
 - Ghost có thể khám phá **cửa hang** và đi qua một số khe khuất **ngay từ đầu**, **không cần `den_nho`/Niệm/Định**.
 - Ngưỡng sâu của ghost không phải bài test `sợ hãi + nguồn sáng` của người; thay bằng **"đường vang sai"**: lạc hướng do tiếng vọng ký ức hoặc tên người khác, cần nghe phân biệt âm thanh hoặc hỏi một vong dẫn đường.
-- Có tối thiểu 2 lựa chọn qua ngưỡng: `Theo tiếng nước thật` (đã từng nghe ở nhà hoang) hoặc `Nhờ người đưa đường` (đã gặp vong già ở bến). Một người thích đi dạo có thể thấy bờ ngoài ngay, không phải "xong 5 quest" mới được vào.
+- Có tối thiểu 2 lựa chọn qua ngưỡng: `Theo tiếng mái chèo` (nghe được tại khe suối rừng tre) hoặc `Nhờ người đưa đường` (đã gặp vong già ở bến). Một người thích đi dạo có thể thấy bờ ngoài ngay, không phải "xong 5 quest" mới được vào.
 - Lối hồn ma và lối người chỉ giao ở khu **Cột đá cũ**, không copy nguyên map. Các vật phẩm người sống nhặt không tạo bản thể vật chất tương đương cho ghost; họ chỉ có thể ghi **dấu vị trí/ký ức**.
 
 ## 4. Playable story arcs và các quest cụ thể (mẫu để review)
@@ -141,7 +129,7 @@ Nhân gian (PC ma): Gốc gạo → nghĩa địa → nhà hoang → lối nư�
 
 ### G04 — Lối nước khuất (khám phá ghost-only, không yêu cầu xong G01)
 
-**Nơi:** nhà hoang → bến bờ chìm. **Đầu mối:** trong nhà hoang PC thấy đường nước loang mà người sống chỉ thấy vệt ẩm. Chạm `Lắng nghe dưới vách` → tiếng mái chèo nhẹ. Chọn `Theo tiếng mái chèo`, vào **Bến Không Tiếng — Bờ chìm**.
+**Nơi:** rừng tre → khe suối tự nhiên → khe đá khuất → **Bến Không Tiếng — Bờ Chìm**. Nước chảy xuôi; có đoạn nước vẫn chảy mà mất tiếng róc rách, chỉ PC ma nghe **tiếng mái chèo** ở khe đá. PC chủ động `Nhìn khe đá` / `Theo tiếng mái chèo` / `Đi tiếp`. **Không cần** nhà hoang, đèn hoặc thẻ của người sống.
 
 - Có ba landmark để dạo: **giếng cạn**, **xóm không khói**, **ba cột đá cũ**. Không đứng ngay giữa nơi nguy hiểm hoặc bắt gặp NPC liên tục.
 - Một người đưa đò (vong NPC mới, chưa đặt tên canon) đôi khi xuất hiện theo story state, không làm NPC luôn đứng đó. Hỏi: “Có hôm nước lớn, tôi chở nhiều người. Chẳng nhớ mặt, chỉ nhớ có đứa trẻ ôm chiếc nón.”
@@ -197,7 +185,7 @@ Khi muốn kết, PC thấy ánh sáng đầu sáng, nghe một câu: “Con đ�
 | 0–5 phút | tự đặt tên; nghe tiếng lá gạo; thử hù Ông Tư/con Vàng hoặc ngắm cảnh | biết mình **khác người sống** |
 | 5–10 phút | vào nhà hoang qua lối khuất, nhìn thấy món đồ người sống bỏ quên | có một **vấn đề chỉ mình nhìn thấy** |
 | 10–15 phút | thì thầm/báo mộng để người sống tìm đồ | thấy việc tốt thật sự xảy ra dù không cầm được đồ |
-| 15–20 phút | theo tiếng nước tới bờ chìm của Bến Không Tiếng | **thế giới ma lớn hơn nghĩa địa** |
+| 15–20 phút | theo tiếng mái chèo ở khe suối rừng tre tới Bờ Chìm | **thế giới ma lớn hơn nghĩa địa**, không cần đi nhà hoang |
 | 20–30 phút | gặp dấu chuyện năm lũ, thấy người sư ngồi tu đêm, nghe một đoạn hồi hướng | có bí ẩn bà Sáu và **cách kết nhân vật về sau** |
 
 **Đây là nhịp cơ hội, không bắt buộc thứ tự/tốc độ.** Nếu người chơi chỉ muốn ngắm nghĩa địa, họ có thể nghe tiếng chuông, nhìn trăng, dạo bờ bến, không popup.
@@ -205,10 +193,10 @@ Khi muốn kết, PC thấy ánh sáng đầu sáng, nghe một câu: “Con đ�
 ## 6. Art direction và asset MVP
 
 - **Hai lớp cùng thế giới:** Nhân gian ngày êm/ánh vàng; PC ma có vùng mát xanh bạc, nhưng không làm toàn bộ map u ám. Ban đầu chỉ dùng shader/overlay/sprite/âm thanh nhẹ trên nền Canvas có sẵn.
-- **Không jumpscare:** ánh đom đóm, bụi trăng, bóng nước, tiếng gõ xa, lời thì thầm mơ hồ. Khi hù NPC là tình huống hài duyên, không horror.
+- **Hù NPC có hiệu quả thật:** ông Tư hoặc người đi đường có thể run giọng/chạy về hiên và nhớ chuyện; sư có thể sợ ít hơn. **Không jumpscare mạnh**: đom đóm, bụi trăng, bóng nước, tiếng gõ/đốm lạnh đủ để tạo không khí; không dùng flash/âm lượng gây khó chịu.
 - **Ghost UI:** icon `Lắng nghe`, `Thì thầm`, `Tạo dấu hiệu`, `Mộng`, `Theo dấu`, `Đi tiếp`; không có `Nhặt vật`/inventory vật chất hoặc `Dâng cơm` như người sống.
 - **MVP map:** dùng lại các địa điểm và cảnh sẵn có làm lối dẫn, nhưng **nhà bỏ trống chưa phải khu đi lại trong `World.PLACES` của `develop`** (đừng nhầm các ô `ruin` với một nhà hoang có interior). Khi coding cần **graybox một gian nhà nhỏ** và một **Bờ Chìm** mới; 1 cột đá giao giữa các góc nhìn; **bà cụ giếng hiện có** là NPC tìm túi, nên không cần thêm một NPC người sống chỉ cho G03. Chưa cần dựng cả cõi dưới.
-- **Một hành động ma chỉ tác động nhỏ lên người sống:** âm thanh/lời nhắc/mộng, không có hiệu ứng vật lý làm thay đổi cây cầu, mở cửa hay kéo người.
+- **Một hành động ma chỉ tác động qua tín hiệu:** âm thanh/lời nhắc/mộng; NPC **có thể sợ thật và tự thay đổi hành vi**, nhưng PC ma không kéo người, mở cửa hay nhặt đồ. **Nghỉ tùy chọn** ở nhà hoang, mộ, gốc gạo, khe suối hoặc Bờ Chìm; dùng Sổ Hành Trình/hồi tưởng từ sự kiện đã xảy ra.
 
 ## 7. Ranh giới Phật học và nguồn cần duyệt
 
@@ -221,14 +209,14 @@ Khi muốn kết, PC thấy ánh sáng đầu sáng, nghe một câu: “Con đ�
 ## 8. Kiểm thử khi chuyển thành PR code sau
 
 - [ ] PC ma tạo tên riêng, không bị gọi là “bà Sáu”, không tự có con Hạnh/tiền kiếp NPC.
-- [ ] Có ít nhất 1 tương tác hù NPC vui và 1 đường “chỉ đi tiếp”; không ép người chơi thực hiện điều xấu.
+- [ ] Có hù NPC khiến họ **sợ thật**, nhà sư có phản ứng khác; không ép hù, không tự gán thẻ Sân cho ma chỉ vì NPC sợ.
 - [ ] PC ma không nhặt, cầm hoặc dâng vật chất; chỉ **thấy vị trí**, khiến NPC người sống tự quyết định nhặt đồ.
 - [ ] Thì thầm có phản ứng khác báo mộng, không điều khiển NPC bất hợp lý; hint đủ để hoàn thành, không random 1% xác suất.
-- [ ] Ghost vào nhà hoang và tới **bờ chìm** mà không phải đạt điều kiện `cave` của người sống; có ngưỡng/khó khăn **riêng** nhưng không gating quá sâu.
+- [ ] Ghost có thể **tùy chọn vào/nghỉ ở nhà hoang**, hoặc độc lập tìm **khe suối rừng tre để tới Bờ Chìm** mà không cần điều kiện `cave` của người sống; không gating quá sâu.
 - [ ] Có ít nhất một cảnh chung `Cột đá cũ` giữa human route và ghost route, nhưng nội dung/ánh sáng/đường đi khác biệt.
 - [ ] Bà Sáu vẫn có cốt truyện riêng; ghost nghe manh mối về nước lớn, không được tiết lộ tự động Hạnh là vợ ông Tư.
-- [ ] Nhân vật ma có thể **nghe hồi hướng từ sư sau đêm tu**, nhưng không bị auto ending.
+- [ ] Ma có thể nghe hồi hướng từ **NPC sư hoặc PC sư/dân khác có sự kiện hợp lệ**, NPC fallback; không auto ending, không spam phần thưởng.
 - [ ] Đã đủ mạch truyện nhẹ thì **có ending tự nguyện sớm**, archive đọc lại, không xóa thẻ/progress và không thể dùng save cũ để farm phần thưởng.
 - [ ] Người có nhiều PC không bị auto bật lore/codex/quest/reveal của PC này sang PC khác.
-- [ ] Có ít nhất 5–10 phút chỉ đi dạo ngắm trăng/gió/nước, không tự mở sheet.
+- [ ] Có ít nhất 5–10 phút chỉ đi dạo ngắm trăng/gió/nước, không tự mở sheet; Sổ Hành Trình/hồi tưởng có thể xem chủ động, không bắt về nhà hoang để nghỉ hoặc save.
 - [ ] Cơ chế nào gắn từ kinh phải có `loreBasis/sourceRefs`; giấc mơ/thì thầm/tái sinh ấn định là fictional.
