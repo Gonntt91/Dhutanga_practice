@@ -4,6 +4,14 @@
 >
 > **Quy tắc dành cho agent:** trước khi đọc/sửa/viết tài liệu, xem [AGENTS.md](AGENTS.md) ngay trong thư mục này. **Không tự chuyển nội dung `draft` thành `implemented`, không tự merge PR hoặc sửa nhánh `experiment/qls-ideas` đang deploy.**
 
+## Bản đồ câu chuyện tổng quan
+
+![Bản đồ tổng quan thế giới Dhutanga Practice — Nhân gian, Bến Không Tiếng, Bảo tháp cổ và cõi trời; ba vai hồn ma, người dân, nhà sư](assets/story-map-overview.webp)
+
+*Hình xem trước tối ưu dung lượng. Đây là bản đồ **ý tưởng và kết nối kịch bản**, không phải layout map hoặc các tính năng đã hoàn thiện trong game.*
+
+Bản đồ giúp hình dung nhanh các địa điểm chung, hành trình riêng của **hồn ma / người dân / nhà sư**, hai góc nhìn **Bờ Nổi / Bờ Chìm**, và nhánh **Bảo tháp cổ → Biên cảnh Tứ Đại Thiên Vương → Vườn Mây Hoan Hỷ**. Để hiểu điều kiện khám phá và nội dung đúng theo thiết kế, xem [World Exploration Bible](world-exploration-bible.md), [Ghost Campaign](ghost-playable-campaign-bible.md), [Playable Scenarios Nhân gian](human-world-playable-scenarios.md) và [Map Brief](map-brief-hang-va-coi-gioi.md).
+
 ## 1. Game là gì? (đọc 2 phút)
 
 **Dhutanga Practice / Một Đêm Đầu Đà** là game khám phá 2D phong cách tranh vẽ nhẹ nhàng, xây trên web Canvas, lấy cảm hứng từ đời sống làng quê và Phật học Theravāda. Người chơi vào để **đi dạo, ngắm cảnh, gặp nhân vật, khám phá những bí ẩn kỳ ảo, làm những việc nhỏ và thu thập thẻ tâm qua các tình huống** — **không vào để học giáo lý như một môn học**.
