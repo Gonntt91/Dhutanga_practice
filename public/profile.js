@@ -199,7 +199,7 @@ window.Profile = (() => {
       for (const sec of P.cardSections(owned)) {
         const cs = section(sec.title, sec.extra);
         if (sec.key === "good") {
-          cs.appendChild(P.catalogButton(owned));
+          cs.appendChild(P.catalogButton(owned, c.role));
         }
         cs.appendChild(P.cardGrid(sec, (cid) => P.viewCard(cid, owned[cid], owned)));
         into.appendChild(cs);
