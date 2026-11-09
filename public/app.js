@@ -1942,6 +1942,7 @@
   renderPicker();
   connect();
   Save.refresh().then(() => {
+    if (!Save.signedIn()) Save.upgradeGuest();
     state.completed = loadCompleted();
     if (!state.role) renderPicker();
     const login = new URLSearchParams(location.search).get("login");
