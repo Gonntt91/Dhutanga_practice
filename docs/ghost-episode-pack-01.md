@@ -1,6 +1,6 @@
 # Ghost Episode Pack 01 — Ba câu chuyện có thể chơi (G01, G03, G04)
 
-> **Narrative script v0.2 — chỉ viết truyện, CHƯA code/map/asset.** Nguồn chuẩn: [Ghost Campaign Bible](ghost-playable-campaign-bible.md), [Player-Centric Narrative Model](player-character-narrative-model.md), [Role Transition & Spoiler Isolation](role-transition-and-spoiler-isolation.md). PC ma là **nhân vật người chơi tự đặt tên**, không phải bà Sáu. Lời thoại sáng tác, không phải giáo lý Phật giáo.
+> **Narrative script v0.3 — chỉ viết truyện, CHƯA code/map/asset.** Nguồn chuẩn: [Ghost Campaign Bible](ghost-playable-campaign-bible.md), [Player-Centric Narrative Model](player-character-narrative-model.md), [Role Transition & Spoiler Isolation](role-transition-and-spoiler-isolation.md). PC ma là **nhân vật người chơi tự đặt tên**, không phải bà Sáu. Lời thoại sáng tác, không phải giáo lý Phật giáo. Cập nhật [hù NPC/thẻ tâm](ghost-mischief-cards-and-shared-dedication.md), [Sổ Hành Trình/điểm nghỉ](journey-memory-and-return-ux.md). **Nhà hoang chỉ là một điểm nghỉ tùy chọn; G04 vào bến từ khe suối rừng tre, không cần qua nhà hoang.**
 >
 > **Cảnh phải dùng được trên mobile:** 1–2 dòng lời dẫn; thường 1–3 lượt thoại, các chọn lựa hiển thị khi PC bấm quan sát. Tín hiệu ở nền không bật sheet tự động. Người chơi có thể rời, quay lại hay không làm gì; nhân vật/NPC vẫn sống.
 
@@ -24,42 +24,33 @@
 | **Fantasy** | tạo tiếng động nhẹ; quan sát phản ứng; đi qua một khe cửa bị khóa với người sống |
 | **Không yêu cầu** | thẻ tâm, học kinh, hoàn thành HG27, điểm thiện, nhấp vào thọ thần |
 
-### G01-S01 — Tiếng cộc bên hàng rào (ambient)
+### G01-S01 — Tiếng cộc bên hàng rào (NPC sợ thật)
 
-**Hình/âm:** lá tre rung như có ai chạm, con Vàng ngẩng đầu, Ông Tư đang loay hoay đặt đèn ở ngõ. Người chơi tự chọn `Thử làm lá rung`; chưa chọn thì chỉ là cảnh đẹp.
+**Ambient:** Ông Tư cất đèn, con Vàng đang ngủ. Người chơi **chủ động** tạo tiếng động hoặc bóng lướt qua tường, không có tự hù khi đi ngang.
 
-**Khi chủ động bấm:**
-
-> Một chiếc lá tre quay một vòng, rồi rơi xuống cạnh chân con Vàng.
+> Một tiếng “cộc” vang lên. Con Vàng bật dậy sủa.
 >
-> **Ông Tư:** “Ơ? Gió đâu mà có đúng một cái lá rớt nhỉ?”
->
-> Con Vàng sủa một tiếng, rồi lại nằm.
+> **Ông Tư:** “Ai... ai ở ngoài đó?”
 
-**Lựa chọn:**
-1. **`Hù thêm một chút`** → tiếng “cộc!” ở hàng rào, Ông Tư giật mình cầm đèn soi, cau mày: “Nửa đêm còn bày trò!”; `G01.mischief=true`. Phần thưởng vui tức thì là phản ứng/ảnh động, **không rơi thẻ bất thiện từ thao tác bấm**.
-2. **`Thì thầm: ‘Đèn chưa tắt kìa’`** → Ông Tư quay lại nhận ra chiếc đèn đang để sát khăn phơi, chuyển đèn về nơi an toàn; `G01.helpedWithLamp=true`. Hành động ma chỉ gợi ý, chính NPC dời đèn.
-3. **`Để họ yên`** → con Vàng lại ngủ; `G01.seen=true`, vẫn có lối đi.
+- `Hù rõ cho ông sợ` → ông Tư **hoảng thật**: giọng run, đánh rơi đèn, lùi hai bước rồi chạy vào hiên. Con Vàng sủa liên tục. `fearState=scared`. Sau đó chọn `Thấy khoái vì ông sợ` / `Chỉ định đùa thôi` / `Dừng hù, báo chiếc đèn`. **Tham** chỉ xét khi PC thích cảm giác lấn át; **Sân** chỉ có thêm bối cảnh giận/trả đũa, không do nỗi sợ của ông.
+- `Hù nhẹ` → ông giật mình, soi đèn tìm rồi đưa con Vàng về hiên; vẫn sợ ít.
+- `Thì thầm: “Đèn gần khăn kìa”` → ông tự phát hiện và dời đèn, PC không cầm được.
+- `Để họ yên` → tự do đi tiếp, không bị phán xét.
 
-**Lần quay lại:** Ông Tư kể với một người rằng “Hôm nọ có tiếng gõ lạ”. Nếu đã giúp, ông tự nhắc đến đèn: “May hôm ấy nhớ xem đèn.” Không biến thành NPC biết chắc ma nào đã làm.
+**Lần sau:** ông Tư nhớ đêm đã sợ, có thể kể lời đồn/đóng cửa sớm; nếu từng được giúp, lời nói đổi. Không spam hù để farm thẻ. **Sư** ở G06 có thể giật mình ít hơn, bình tĩnh nhanh hơn nhưng không nhất thiết vô cảm.
 
-### G01-S02 — Một ngôi nhà chẳng ai mở cửa (discovery)
+### G01-S02 — Nhà bỏ trống (khám phá và điểm nghỉ **tùy chọn**)
 
-**Ambient:** cửa nhà bỏ trống cài then, vệt nước đọng dưới bậc; một tấm rèm cũ động nhẹ dù trời đẹp. Người sống chỉ thấy một ngôi nhà cũ, PC ma thấy bóng mờ của khung cửa thứ hai.
+**Ambient:** cánh cửa cài then, rèm cũ rung, trăng lọt qua cửa. PC ma thấy bóng khe cửa.
 
-**PC bấm `Nhìn qua khe cửa`:**
+> Cánh cửa không mở. Nhưng bóng của nó có một khe vừa đủ.
 
-> Cánh cửa không mở. Nhưng bóng của nó lại có một khe đủ rộng.
->
-> Bên trong không có tiếng người, chỉ có giọt nước rơi đều trên nền.
+- `Bước qua bóng cửa` → vào sân sau/hiên trong, `discover:empty_house_shadow_entry`.
+- `Nhìn quanh` → thấy túi kim chỉ của bà cụ dưới bậc thềm, không nhặt được (G03).
+- `Nghỉ bên cửa sổ` → `Lắng lại` / `Nhớ lại hành trình` / `Nghe chuyện ngoài ngõ` / `Đi tiếp`.
+- `Đi chỗ khác` → hoàn toàn được nghỉ ở mộ, gốc gạo, bờ suối, Bờ Chìm hoặc địa điểm hợp vai khác.
 
-- **`Bước theo bóng cửa`** → PC tới sân sau/hiên trong, `discover:empty_house_shadow_entry`. Đây là năng lực ghost-only **trong vị trí được thiết kế**, không phải tự do xuyên mọi bức tường.
-- **`Đứng nghe một lát`** → nghe tiếng nước chảy ở nơi không có mương; ghi `G04.hintWater=true`.
-- **`Đi chỗ khác`** → không mất lối mở; lần sau có thể quay lại.
-
-**Payoff tức thì:** phòng nhỏ cũ, vệt sáng xuyên rèm, thềm gỗ và một chiếc túi **kẹt dưới gờ bậc** mà PC ma có thể nhìn thấy rõ, nhưng chạm xuyên qua. Tránh tả túi như vật ma có thể nhặt được.
-
-**Bí mật không tiết lộ:** dưới chân tường có **một vết nước chạy ngược lên trên**; PC ma có thể ghi “Nước ở đây lạ thật” mà chưa biết Bến Không Tiếng. Không kể toàn bộ xuất xứ ngôi nhà trong cảnh đầu.
+**Không có** cổng xuống Bến Không Tiếng hoặc “vết nước ngược” trong nhà hoang. G04 được tìm **độc lập** tại suối rừng tre. Nhà hoang **không** là nơi ở/checkpoint bắt buộc của mọi hồn ma.
 
 ### G01-S03 — Mình chỉ tác động được một chút (practice without tutorial popups)
 
@@ -135,26 +126,27 @@ Chỉ hiện **ba lựa chọn ngắn** `Thử gọi bà` / `Để ý chỗ túi
 
 ## 3. G04 — Bến Không Tiếng, bờ mà người sống ít thấy
 
-### G04-S01 — Vết nước đi ngược
+### G04-S01 — Khe suối dưới rặng tre
 
-**Nơi:** phòng nhỏ nhà bỏ trống, hoặc ngay mép bụi tre nếu PC chưa vào nhà; cả hai đều cho dấu vào tuyến, nhưng cảnh trong nhà đẹp/đậm hơn.
+**Nơi:** `bamboo` → dòng suối tự nhiên chảy quanh rễ tre/đá rêu → **khe đá khuất**. Dòng nước có thể nối vùng ao sen và nhánh sông cũ theo địa hình hợp lý khi vẽ map. **Nước chảy xuôi; điểm kỳ ảo là lớp bến ma chỉ PC ma nhìn thấy**, không phải nước chảy ngược.
 
-> Dưới nền nhà có vệt nước cũ. Nó không chảy xuống ngõ.
+> Nước vẫn chảy qua hai hòn đá, nhưng tiếng róc rách bỗng biến mất.
 >
-> Nó chạy về phía bức tường không có cửa.
+> Xa hơn có tiếng mái chèo. Quanh đây làm gì có thuyền?
 
-- **`Theo vệt nước`** → cảnh PC đi qua phần bóng tường tới **Lối Nước Khuất**.
-- **`Ngồi nghe âm thanh`** → vệt nước phản chiếu tiếng mái chèo, ghi một dấu Sổ; lại chọn đường khi muốn.
-- **`Để sau`** → không khóa, lần sau vẫn có vệt nước.
+- `Ngồi nghe kỹ` → nghe các dấu âm thanh, dẫn tới G04-S02.
+- `Nhìn khe đá` → PC ma thấy một đường sáng bạc trên mặt nước, `G04.creekHintSeen=true`.
+- `Men theo suối` → cảnh đẹp gần ao sen, quay lại được.
+- `Đi khám phá nơi khác` → không khóa; PC ma trở lại khe khi muốn.
 
-**Không cần:** đèn địa thần, cửa sâu của sư/dân, thẻ Niệm/Định, thành tựu G03. **Không phải mọi bóng tường đều có thể xuyên**; có dấu nước và ranh giới đã định.
+**PC ma qua lớp bóng khe đá tới Bờ Chìm** mà không cần đèn/thẻ người sống. PC dân/sư vẫn được khám phá suối theo vai, còn đi Bờ Nổi qua Hang Vọng Tâm.
 
 ### G04-S02 — Chọn tiếng nước (puzzle nhẹ, không thất bại nặng)
 
-Trước mặt có ba dấu âm thanh: `tiếng gõ mái hiên`, `tiếng sỏi rơi`, `tiếng mái chèo trên nước`.
+Trước khe đá có ba âm thanh: `lá tre cọ nhau`, `tiếng sỏi lăn trong dòng nước`, `tiếng mái chèo rất xa`.
 
 - PC chọn **`Theo tiếng mái chèo`** → vào Bờ Chìm, mở `discovery:shadow_pier_arrived`.
-- Chọn âm khác → một góc cảnh đẹp của sân sau/bờ cỏ, nghe lại tiếng nước rõ hơn; **không mất vật phẩm/không quay đầu hoàn toàn**. Gợi ý sau một lần thử sai.
+- Chọn âm khác → một góc cảnh đẹp của bờ cỏ bên suối/ao sen, nghe lại tiếng nước rõ hơn; **không mất vật phẩm/không quay đầu hoàn toàn**. Gợi ý sau một lần thử sai.
 - Nếu PC đã nói chuyện với một vong đứng ở lối nước, có thể chọn **`Nhờ chỉ hướng`**, cũng vào bến.
 
 **Bản thiết kế này thử người chơi quan sát âm thanh**, không kiểm tra sự thanh tịnh.
@@ -201,7 +193,7 @@ Trước mặt có ba dấu âm thanh: `tiếng gõ mái hiên`, `tiếng sỏi 
 
 | Đã khám phá | Mở một cơ hội, không ép |
 |---|---|
-| G01 nhìn thấy vệt nước | G04 tới Bến Không Tiếng sớm |
+| G04 nghe tiếng mái chèo ở suối rừng tre | tới Bờ Chìm sớm; **không cần hoàn thành G01/nhà hoang** |
 | G01 thấy chiếc túi | G03 quan sát bà cụ tìm đồ |
 | G03 giúp bà tìm túi | G06 PC hiểu mình vẫn có thể giúp người dù không chạm được đồ; **không** yêu cầu G03 để nghe sư |
 | G04 nghe người giữ bến | G05 có thêm câu hỏi về đêm nước lớn khi gặp NPC bà Sáu |
@@ -215,10 +207,10 @@ Trước mặt có ba dấu âm thanh: `tiếng gõ mái hiên`, `tiếng sỏi 
 | Biến trạng thái nội dung | Tác dụng khi quay lại |
 |---|---|
 | `G01.seen / mischief / helpedWithLamp` | Ông Tư/con Vàng có câu ngắn/pose khác, không dựng lại đoạn đầu |
-| `G01.shadowHouseEntered / waterHintSeen` | PC ma vào nhà theo lối bóng, ghi địa điểm đã tìm |
+| `G01.shadowHouseEntered / optionalRestPlace` | vào nhà bằng lối bóng, điểm nghỉ tùy chọn chứ không có `ghost.home` cố định |
 | `G03.itemSeen / ownerKnown / hintHeard / dreamAnchor / dreamSent` | câu chuyện có đường thì thầm hoặc báo mộng; không cần cả hai |
 | `G03.itemReturned / sharedJoy / frightened` | túi biến khỏi nhà, xuất hiện cạnh bà cụ; không nhân reward |
-| `G04.arrived / locationsSeen / ferrymanHeard` | bến phản hồi theo thăm lại, ông giữ bến có lore fragment |
+| `G04.creekHintSeen / arrived / locationsSeen / ferrymanHeard` | cảnh suối và bến phản hồi theo lúc quay lại, ông giữ bến có lore fragment |
 | `ghostCardEvents` | ghi từ **hành động PC**, không tặng thẻ vì nghe hồi tưởng NPC; idempotent per character |
 | `legacyAccountMemory` | chỉ phục vụ archive/codex meta theo kế hoạch migration, **không unlock** bí mật cho PC khác |
 
@@ -227,14 +219,14 @@ Trước mặt có ba dấu âm thanh: `tiếng gõ mái hiên`, `tiếng sỏi 
 ## 6. Checklist review game designer trước khi code
 
 - [ ] Người chơi có thể đi dạo 5–10 phút, ngắm cảnh ma, không bị bất kỳ auto popup.
-- [ ] G01 đủ vui từ một hoạt ảnh lá rung và câu ông Tư, không cần hù bằng jump-scare.
-- [ ] Hù vui không thành hệ thống farm thẻ bất thiện; người chơi thích chữa lành có thể không hù.
+- [ ] Khi hù rõ, NPC dân **sợ thật**, sư có thể ít sợ hơn; không cần jumpscare lớn.
+- [ ] Thẻ bất thiện theo **động cơ PC** có kịch bản, không phát Sân do nỗi sợ NPC, không farm qua spam hù.
 - [ ] G03 rõ **ai mất gì, vì sao làm rơi, PC biết gì và tại sao NPC cuối cùng tìm được**.
 - [ ] Báo mộng có anchor, không phải ngoại năng đọc/tạo giấc mơ cho mọi người.
 - [ ] Không có thao tác nhặt/trao đồ vật trong giao diện vai ma.
-- [ ] G04 vào Bờ Chìm không cần đèn hoặc mini-game thiền của người sống; có hai đường giải câu đố âm thanh.
+- [ ] G04 từ **khe suối rừng tre**, không phải nhà hoang; không cần đèn hay mini-game của người sống.
 - [ ] Bến có ít nhất 3 landmark đáng ngắm trước khi bất cứ quest NPC nào xuất hiện.
 - [ ] Kết nối Hạnh chỉ là manh mối, không spoil tên/vai trò hoặc chuyện người sống sót.
-- [ ] Có phản hồi cảnh vật/NPC khi quay lại sau một ngày game hoặc sau thời gian offline.
+- [ ] Có phản hồi khi quay lại và Sổ Hành Trình/hồi tưởng từ event thật; nghỉ nơi nào cũng được, nhà hoang là tùy chọn.
 - [ ] Nhà bỏ trống / Bờ Chìm **chưa phải playable zones trên `develop`**, ghi asset/graybox dependencies rõ.
 - [ ] Mọi trường hợp chưa đủ có **lối đi tiếp/để sau**, không ép grind thẻ, đăng nhập đúng giờ hoặc hoàn thành G03 mới được tới bến.
