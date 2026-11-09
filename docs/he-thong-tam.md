@@ -1127,9 +1127,9 @@ Game đã có nhiều chỗ **mở chuyện**: thẻ, cột mốc, quán xét cu
 
 > **Thiết kế hợp nhất:** kiến thức được lưu ở khu **Đã học** của [Sổ Hành Trình](journey-memory-and-return-ux.md), không mở một sổ hoặc Album thẻ kiến thức riêng. `đã ôn` và `đã vận dụng` là thuộc tính bổ sung theo mục, không phải thang khám phá độc lập.
 
-Cần mở **khu Đã học (Sổ Hành Trình)** gồm các mục ngắn như *Niệm là gì?*, *Năm triền cái*, *Tâm từ*, *Vô thường*, *Giữ lời hứa*, *Hạnh đầu-đà*. Có tên, nguồn từ kinh hoặc chú giải, câu giải thích đời thường, ví dụ trong làng, nơi dùng về sau. Trạng thái của mỗi mục: **đã nghe/đọc** → **đã ôn** → **đã vận dụng trong câu chuyện**.
+Trong **Sổ Hành Trình**, khu **Đã học** gồm các mục ngắn như *Niệm là gì?*, *Năm triền cái*, *Tâm từ*, *Vô thường*, *Giữ lời hứa*, *Hạnh đầu-đà*. Có tên, nguồn từ kinh hoặc chú giải, câu giải thích đời thường, ví dụ trong làng, nơi dùng về sau. Trạng thái của mỗi mục: **đã nghe/đọc** → **đã ôn** → **đã vận dụng trong câu chuyện**.
 
-Ví dụ người chơi giao nhân vật học về *năm triền cái*, thoát game. Khi quay lại sau khi hoàn tất bài: **"Đã học một đoạn về năm triền cái"**, có nút **Mở khu Đã học (Sổ Hành Trình)**, và gợi ý đến gặp sư già. Lúc gặp sư, nếu có kiến thức này sẽ xuất hiện thêm lựa chọn **"Con muốn học cách kinh hành khi tâm chìm xuống"**. Nếu chưa có, nhiệm vụ chính vẫn chơi được bằng cách thông thường. Kiến thức tạo lợi thế khám phá, **không phải cộng chỉ số tu chứng**.
+Ví dụ người chơi giao nhân vật học về *năm triền cái*, thoát game. Khi quay lại sau khi hoàn tất bài: **"Đã học một đoạn về năm triền cái"**, có nút **Mở Hành trình → Đã học**, và gợi ý đến gặp sư già. Lúc gặp sư, nếu có kiến thức này sẽ xuất hiện thêm lựa chọn **"Con muốn học cách kinh hành khi tâm chìm xuống"**. Nếu chưa có, nhiệm vụ chính vẫn chơi được bằng cách thông thường. Kiến thức tạo lợi thế khám phá, **không phải cộng chỉ số tu chứng**.
 
 **Ranh giới:** *đã nghe/đọc về Định* không đồng nghĩa *đã nhận diện Định trong thực hành*; offline không tự cấp thẻ Niệm, Định, giác chi hay "đã chứng". Nhưng **thẻ kiến thức từ học kinh hoàn toàn có thể nhận được khi vắng**, khác với quy tắc cũ.
 
@@ -1149,9 +1149,9 @@ Ví dụ người chơi giao nhân vật học về *năm triền cái*, thoát 
 
 ### 18.4. Trạng thái và kế hoạch
 
-**Tất cả hạng mục khu Đã học (Sổ Hành Trình), phần thưởng offline có tác dụng gameplay và sửa rau má ở mục 18 đều CHƯA CODE.** Không nhầm với nhánh PR thử đã có tuyến ma và y phấn tảo.
+**Tất cả nội dung mới thuộc khu Đã học trong Sổ Hành Trình, phần thưởng offline có tác dụng gameplay và sửa rau má ở mục 18 đều CHƯA CODE.** Không nhầm với nhánh PR thử đã có tuyến ma và y phấn tảo.
 
-Ưu tiên triển khai: **(1)** khu Đã học (Sổ Hành Trình) 6 mục; **(2)** hoạt động `study` trả một mục kiến thức và lưu chống lặp; **(3)** kiến thức mở 2–3 hội thoại phụ; **(4)** `weave/cook` có sản phẩm thật; **(5)** sửa chuỗi rau má và các chỗ cần kiểm tra giới luật; **(6)** thêm hoạt động offline theo vai.
+Ưu tiên triển khai: **(1)** sáu mục trong khu **Đã học** của Sổ Hành Trình; **(2)** hoạt động `study` trả một mục kiến thức và lưu chống lặp; **(3)** kiến thức mở 2–3 hội thoại phụ; **(4)** `weave/cook` có sản phẩm thật; **(5)** sửa chuỗi rau má và các chỗ cần kiểm tra giới luật; **(6)** thêm hoạt động offline theo vai.
 
 Tiêu chí nghiệm thu quan trọng: quay lại sớm có progress, quay lại muộn có thứ thu hoạch, phần thưởng không nhân bản, không tự nhận thẻ tu chứng, kiến thức mở được nhánh thực sự, và lời hứa với bà cụ không thể bị bỏ quên một cách vô lý.
 
