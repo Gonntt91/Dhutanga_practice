@@ -126,7 +126,7 @@ Sau đêm tu, nếu PC chủ động quay về hoặc tình cờ ở gần, sư 
 
 ### G07-S01 — Một cơ hội được an, không phải phán xét điểm tâm
 
-**Điều kiện đề xuất:** `G06.heardFullDedication` **và** một trong `G03.helpedGranny`, `G05.metBaSauMeaningfully`, hoặc một nhánh việc tốt của PC sau này. Nếu player chưa làm một trong những việc đó, vẫn được nhìn ánh sáng sớm từ gốc gạo và nghe chuyện nhưng **chưa hiện xác nhận ending**. Không bắt đi Bến Không Tiếng.
+**Điều kiện MVP:** PC đã **chủ động ở lại nghe** một lần hồi hướng của NPC sư (`G06.heardFullDedication`) **và** có một hành động giúp người thật sự có kết quả: **`G01.helpedWithLamp`** (PC gợi ý, chính ông Tư xử lý đèn) **hoặc** **`G03.helpedGranny`** (PC gợi, bà cụ tự tìm được túi). Lựa chọn G01 **không đòi phải hù trước**, và hành động G03 không bắt buộc nếu đã giúp ông Tư. Sau MVP có thể thay bằng một nhánh giúp người có ý nghĩa khác; `G05.metBaSauMeaningfully` chỉ nên xét sau khi G05 có câu chuyện/hệ quả đủ sâu, không nhận tự động vì đã gặp bà. Nếu thiếu điều kiện, vẫn thấy ánh sáng sớm và có thể tiếp tục khám phá; **không auto ending**, không bắt tới Bến Không Tiếng, không tích điểm thiện.
 
 > Phía trên tán gạo, trời bắt đầu sáng.
 >
@@ -190,7 +190,7 @@ Các ending **không dựa công thức** “thẻ tâm X → được chọn de
 - [ ] G02 xem cảnh cúng dường **không cho ghost nhặt/ăn đồ vật vật lý**, cũng không auto được an/tái sinh.
 - [ ] G05 ghép Hạnh không lộ danh tính chỉ bằng một đoạn nghe ferryman; lời kể cũ có thể không chắc và được ghi như giả thuyết.
 - [ ] G06 NPC sư phản ứng tự nhiên khi bị hù (thường ít sợ hơn người dân), không biến thành tượng hoặc bài giảng; hù NPC có thể gợi thẻ bất thiện **theo ý PC**, không theo nỗi sợ của NPC.
-- [ ] G07 có nút ở lại khám phá, không ép ending, không yêu cầu chơi hết G04/G05.
+- [ ] G07 có nút ở lại khám phá, không ép ending; **G01 giúp ông Tư xử lý đèn hoặc G03 giúp bà** là hai đường MVP; sau khi chủ động nghe hồi hướng NPC vẫn được chọn `Tiếp tục`; không yêu cầu G04/G05.
 - [ ] Ending đã xác nhận không xóa nhân vật/thẻ/Sổ, không biến PC ma thành PC trẻ hay thọ thần để tiếp tục gameplay.
 - [ ] Ma có thể **tình cờ nghe hồi hướng từ PC sư/dân khác** theo event đã xác thực và có NPC fallback, không auto ending hoặc farm thẻ.
 - [ ] Mạch G04 và ký ức liên quan đến **suối rừng tre**, không dùng vết nước ngược nhà hoang. Nhà hoang chỉ là điểm nghỉ tùy chọn.
