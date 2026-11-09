@@ -122,11 +122,13 @@ window.Mind = (() => {
     tin: { name: "dễ tin, dễ cảm động", frame: { tin: [56, 74], tan: [36, 52], niem: [28, 42], dinh: [32, 48], tue: [24, 38], tham: [34, 48], san: [20, 34], si: [26, 40] } },
     tri: { name: "thích hiểu rõ, hay xét đoán", frame: { tin: [24, 38], tan: [38, 54], niem: [32, 46], dinh: [32, 48], tue: [56, 74], tham: [22, 36], san: [28, 42], si: [18, 30] } },
   };
+  // Frame for someone who has not taken the survey yet: no temperament name, every value near the middle.
+  const NEUTRAL_FRAME = { tin: [34, 48], tan: [34, 48], niem: [26, 40], dinh: [26, 40], tue: [30, 44], tham: [28, 42], san: [24, 38], si: [26, 40] };
   const GOOD = [["tin", "Tín"], ["tan", "Tấn"], ["niem", "Niệm"], ["dinh", "Định"], ["tue", "Tuệ"]];
   const BAD = [["tham", "Tham"], ["san", "Sân"], ["si", "Si"]];
 
   // ---------- saved state ----------
-  function fresh() { return { carita: null, stats: null, cards: {}, quest: { step: "start", hit: false }, q: {}, items: [], deva: { pity: 0, last: 0, seen: 0 }, milestones: {}, msCounts: {}, village: { deeds: {} } }; }
+  function fresh() { return { carita: null, stats: null, surveySkipped: false, cards: {}, quest: { step: "start", hit: false }, q: {}, items: [], deva: { pity: 0, last: 0, seen: 0 }, milestones: {}, msCounts: {}, village: { deeds: {} } }; }
   function load() {
     try { const s = JSON.parse(Save.get(KEY) || "null"); if (s && s.cards) return { ...fresh(), ...s }; } catch {}
     return fresh();
@@ -145,7 +147,7 @@ window.Mind = (() => {
 
   // ---------- stats ----------
   function rollStats(carita) {
-    const f = CARITA[carita].frame, st = {};
+    const f = (CARITA[carita] && CARITA[carita].frame) || NEUTRAL_FRAME, st = {};
     for (const k of Object.keys(f)) st[k] = Math.round(rand(f[k][0], f[k][1]));
     return st;
   }
@@ -334,11 +336,16 @@ window.Mind = (() => {
       else pick("tam", 1);
       setTimeout(step2, 500);
     }
-    showSheet({ label: "Trước khi vào đêm", lines: ["Sân chùa đầy lá. Quét giúp sư nhé.", "Chạm vào từng chiếc lá."], body: area, choices: [] });
+    showSheet({
+      label: "Khảo sát tính cách",
+      lines: ["Sân chùa đầy lá. Quét giúp sư nhé.", "Chạm vào từng chiếc lá."],
+      body: area,
+      choices: [{ label: "Để sau", fn: () => { clearInterval(tick); finished = true; S.surveySkipped = true; save(); closeSheet(); } }],
+    });
 
     function step2() {
       showSheet({
-        label: "Trước khi vào đêm",
+        label: "Khảo sát tính cách",
         lines: ["Bên đường có một bông hoa vừa nở."],
         choices: [
           ["Đứng ngắm thật lâu", "tham"], ["Thấy một cánh đã héo", "san"], ["Đi qua, không để ý", "si"],
@@ -348,7 +355,7 @@ window.Mind = (() => {
     }
     function step3() {
       showSheet({
-        label: "Trước khi vào đêm",
+        label: "Khảo sát tính cách",
         lines: ["Có người mời bạn một bát cơm. Trong cơm lẫn vài hạt sạn."],
         choices: [
           ["Ăn ngon, xin thêm bát nữa", "tham"], ["Nhăn mặt vì hạt sạn", "san"], ["Ăn mà không biết mùi vị", "si"],
@@ -360,14 +367,19 @@ window.Mind = (() => {
       const top = Math.max(...Object.values(score));
       const best = Object.keys(score).filter((k) => score[k] === top);
       const carita = best[Math.floor(Math.random() * best.length)];
+      const roll = rollStats(carita);
+      if (!S.carita && S.stats) {
+        // first survey: the neutral numbers already shown in play are averaged with the new frame, not replaced
+        for (const k of Object.keys(roll)) S.stats[k] = Math.round(((S.stats[k] ?? roll[k]) + roll[k]) / 2);
+      } else if (!S.stats) S.stats = roll;
+      // retaking the survey only changes the label; the numbers stay as they are
       S.carita = carita;
-      S.stats = rollStats(carita);
       save();
       showSheet({
         label: "Tính cách của người này",
         lines: [`Người này thiên về tính ${CARITA[carita].name}.`, "Mỗi người một khác, và tính cách có thể đổi dần theo cách người này sống trong game.", "Các chỉ số tâm trong game là mô phỏng để chơi, không phải thước đo tâm thật."],
         choices: [
-          { label: "Vào đêm", primary: true, fn: () => { closeSheet(); done && done(); } },
+          { label: "Xong", primary: true, fn: () => { closeSheet(); done && done(); } },
           { label: "Làm lại", fn: () => survey(done) },
         ],
       });
@@ -421,8 +433,12 @@ window.Mind = (() => {
     const t = target();
     if (t) out.push({ title: t.title, body: t.body, x: t.x, y: t.y, name: t.name });
     if (role) for (const m of modules) if (m.targets) try { out.push(...m.targets()); } catch (e) { console.error(e); }
+    // the temperament survey is an optional errand, listed last until it is taken
+    if (role && !S.carita) out.push({ title: "Khảo sát tính cách (không bắt buộc)", body: S.surveySkipped ? "Đã để sau. Muốn làm lúc nào cũng được." : "Vài việc nhỏ để biết Người này thiên về tính nào. Làm lúc nào cũng được, bỏ qua cũng không sao.", survey: true, skipped: !!S.surveySkipped });
     return out;
   }
+  function startSurvey() { S.surveySkipped = false; save(); survey(() => {}); }
+  function skipSurvey() { S.surveySkipped = true; save(); }
 
   // ---------- the dog bite chain ----------
   function bite() {
@@ -552,6 +568,7 @@ window.Mind = (() => {
   let sitTimer = null;
   function sit() {
     S.quest.step = "sit"; save(); syncActors();
+    if (!S.stats) { S.stats = rollStats(S.carita); save(); }
     const st = S.stats, car = CARITA[S.carita] || {};
     const luck = rand(0.85, 1.2);
     // seconds to fill, roughly 55 to 110 depending on the person (simulation)
@@ -840,7 +857,7 @@ window.Mind = (() => {
     const has = Object.keys(S.cards).length > 0 && S.stats;
     container.hidden = !has;
     if (!has) return;
-    container.appendChild(el("p", "mind-carita", `Người này thiên về tính ${CARITA[S.carita].name}.`));
+    if (CARITA[S.carita]) container.appendChild(el("p", "mind-carita", `Người này thiên về tính ${CARITA[S.carita].name}.`));
     const g = el("div", "stat-bars");
     GOOD.forEach(([k, n]) => g.appendChild(bar(n, S.stats[k], true)));
     container.appendChild(g);
@@ -1055,11 +1072,11 @@ window.Mind = (() => {
     syncCardsBtn();
   }
   function syncCardsBtn() { $("cards-btn").hidden = !role || !Object.keys(S.cards).length; $("cards-count").textContent = String(Object.keys(S.cards).length); }
+  // The survey no longer blocks the start: a new person gets neutral numbers and can take the survey from Việc đang chờ.
   function onRoleStart(r, done) {
     role = r;
     syncCardsBtn();
-    if (!S.carita) { setTimeout(() => survey(done), 400); return true; }
-    if (!S.stats) S.stats = rollStats(S.carita);
+    if (!S.stats) { S.stats = rollStats(S.carita); save(); }
     return false;
   }
   function onRoleEnd() { role = null; stopSit(); $("mind-card").hidden = true; $("card-reveal").hidden = true; open = false; fx.devaAt = null; syncActors(); syncCardsBtn(); }
@@ -1110,5 +1127,5 @@ window.Mind = (() => {
     suggestion: () => (S.stats ? suggestion() : ""),
   };
 
-  return { soundOn: () => !api || api.sound(), register, kit, questList, parts, reload, init, onRoleStart, onRoleEnd, isOpen: () => open, bias, questInfo, renderStats, remote, openAlbum, dev, cardsChanged: syncCardsBtn };
+  return { soundOn: () => !api || api.sound(), register, kit, questList, parts, reload, init, onRoleStart, onRoleEnd, startSurvey, skipSurvey, isOpen: () => open, bias, questInfo, renderStats, remote, openAlbum, dev, cardsChanged: syncCardsBtn };
 })();

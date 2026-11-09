@@ -621,7 +621,7 @@
     sendPresence(true);
     // signed-in character only (a guest is a no-op): legacy backfill once per character, then prime the levels
     try { window.Journey && Journey.onCharacterOpened(); } catch {}
-    // first time ever: a short survey of temperament before the night begins
+    // the temperament survey is optional (a task in Việc đang chờ), so the night starts at once
     const begin = () => {
       if (!Mind.onRoleStart(role, () => { if (state.role === role) showWalkOrScene(); })) showWalkOrScene();
       if (announce) setTimeout(() => { if (state.role === role) toast(announce); }, 700);
@@ -1701,11 +1701,24 @@
     const sides = Mind.questList();
     $("quest-side").hidden = !sides.length;
     const box = $("quest-side-list"); box.replaceChildren();
-    for (const q of sides.slice(0, 6)) {
-      const item = el("div", "side-item");
+    // the optional survey always gets a row, even when six other errands are open
+    const survey = sides.find((q) => q.survey);
+    const shown = sides.filter((q) => !q.survey).slice(0, 6);
+    if (survey) shown.push(survey);
+    for (const q of shown) {
+      const item = el("div", "side-item" + (q.skipped ? " muted" : ""));
       item.appendChild(el("p", "quest-title side", q.title));
       item.appendChild(el("p", "hint", q.body));
-      if (q.x != null) {
+      if (q.survey) {
+        const go = el("button", "pill", "Làm khảo sát"); go.type = "button";
+        go.addEventListener("click", () => { $("quest-panel").hidden = true; Mind.startSurvey(); });
+        item.appendChild(go);
+        if (!q.skipped) {
+          const skip = el("button", "pill", "Bỏ qua"); skip.type = "button";
+          skip.addEventListener("click", () => { Mind.skipSurvey(); renderQuest(); });
+          item.appendChild(skip);
+        }
+      } else if (q.x != null) {
         const go = el("button", "pill", "Đưa tôi tới đó"); go.type = "button";
         go.addEventListener("click", () => { $("quest-panel").hidden = true; goTo(q.x, q.y); });
         item.appendChild(go);

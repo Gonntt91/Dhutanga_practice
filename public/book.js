@@ -96,7 +96,7 @@ window.JourneyBook = (() => {
     try { if (window.Discover) Discover.entries(); } catch (e) { console.error(e); }
     const mind = window.Mind && Mind.parts ? Mind.parts.current() : {};
     const history = window.Save && Save.history ? Save.history() : [];
-    const open = window.Mind && Mind.questList ? Mind.questList() : [];
+    const open = (window.Mind && Mind.questList ? Mind.questList() : []).filter((q) => !q.survey); // the optional survey is not part of the story
     return { mind, history, open };
   }
 

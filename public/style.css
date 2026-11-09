@@ -624,6 +624,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--lantern); o
 .side-item { padding: 6px 0 10px; border-bottom: 1px dashed var(--line); }
 .side-item:last-child { border-bottom: 0; }
 .side-item .hint { margin: 2px 0 6px; }
+.side-item.muted { opacity: 0.6; }
 .quest-panel { max-height: calc(100% - 90px); overflow-y: auto; }
 /* card and item popups sit above full-screen scenes (palace, room) */
 .card-reveal { z-index: 12; }
