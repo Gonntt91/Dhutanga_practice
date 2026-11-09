@@ -191,6 +191,41 @@ const questProjection = {
 - **Nhiều nhân vật:** event/subject/quest/spoiler gắn `characterId`. Đổi dân sang sư giữ cùng nhân vật; ghost `story_completed` vào archive read-only. Không thêm Codex cấp account trong MVP, không sync manh mối giữa nhân vật.
 - **NPC tự làm việc lúc vắng:** chỉ ghi `npc_finds_item` nếu một lịch trình/kết quả đã thực sự được giải quyết và persist; chưa có event thì Sổ không nói “bà đã tìm được”.
 
+### 6.1. Hợp đồng kỹ thuật MVP của event log (Approved design, 09-11-2026)
+
+> **Phạm vi:** đủ để làm B1–B3 (saveVersion, event log, thành phần Sổ). **Mức kiểm tra phía máy chủ được chọn ở mức vừa phải** vì đây là game chữa lành, tiến trình cá nhân do client báo; không dùng máy chủ có thẩm quyền (không Colyseus). Máy chủ không chống được người cố tình tự gửi sự kiện giả cho chính nhân vật của mình, và điều đó được chấp nhận. Sự kiện **không bao giờ** tạo phần thưởng có giá trị cho người khác hay lộ ra ở API công khai.
+
+**Lưu trữ** (cả Postgres và file store; Postgres phải qua `test/pg-smoke.test.js`):
+
+| Trường | Ý nghĩa |
+|---|---|
+| `seq` | số thứ tự tăng dần toàn cục (dùng để phân trang) |
+| `character_id` | chủ sự kiện; xóa nhân vật thì xóa sự kiện (cascade) |
+| `event_id` | id do client đặt, **duy nhất theo nhân vật** (`unique(character_id, event_id)`), dạng `^[a-z0-9_.:-]{3,80}$`, ví dụ `disc:be_na:seen`, `ms:first_card`, `char:G03:item_seen:v1` |
+| `type` | `discovery`, `report`, `milestone`, `action`, `world_change` (xem catalog) |
+| `subject_id` | mục bị tác động (`disc:cho`, `milestone:first_card`…), có trong catalog |
+| `source_type` | `observation` / `report` / `evidence` |
+| `source_actor_id`, `place_id`, `story_id` | tùy chọn, mỗi trường tối đa 60 ký tự |
+| `level` | chỉ cho `discovery`: `heard` / `seen` / `confirmed` |
+| `at` | **giờ máy chủ** (mili giây); `client_at` chỉ để tham khảo, không dùng để sắp xếp |
+| `payload` | JSON tối đa 2 KB, không chứa văn bản tự do dài |
+| `save_version` | phiên bản dữ liệu nhân vật lúc ghi (B1) |
+
+**Catalog sự kiện được phép** (`public/event-catalog.js`, file dùng chung: trình duyệt nạp bằng thẻ script, máy chủ `require`; có test bảo đảm hai bên cùng một danh sách): mỗi mục có `type`, mẫu `subjectId`, `sourceType`/`level` hợp lệ, vai được phép (nếu có), và `title`/`text` để hiển thị **từ catalog**, không từ văn bản client gửi. MVP chỉ gồm: 12 mục khám phá của `Discover` (heard/seen), toàn bộ `Milestones.defs`, và vài sự kiện `action` có tên cố định (đã làm một việc trong tuyến). Sự kiện không có trong catalog bị từ chối.
+
+**API** (đăng nhập, JSON, chỉ chủ nhân vật; khách chơi thử không dùng event log mà giữ nguyên nhật ký cục bộ):
+- `POST /api/characters/:id/events` với `{ events: [...] }`, tối đa 20 sự kiện mỗi lần. Trả về từng sự kiện `created` / `duplicate` / `rejected` kèm lý do. **Idempotent:** gửi lại cùng `event_id` là `duplicate`, không ghi thêm và không báo lỗi.
+- `GET /api/characters/:id/events?after=<seq>&limit=<n>&type=<type>` theo thứ tự `seq`, tối đa 200 mỗi trang.
+- Nhân vật **đã khép** (`story_completed`): POST bị từ chối (403), GET vẫn đọc được.
+
+**Giới hạn:** tối đa 60 sự kiện mỗi phút mỗi nhân vật (bộ đếm trong bộ nhớ); tối đa 3 000 sự kiện mỗi nhân vật, khi vượt thì xóa sự kiện `action` cũ nhất trước, **không bao giờ xóa `milestone` và `discovery`**. Dữ liệu nhân vật (`data`, tối đa 96 KB) vẫn tách riêng, nên event log không làm nó phình.
+
+**Projection phía client:** `level` của từng mục khám phá = mức cao nhất trong các sự kiện của mục đó (`heard` < `seen` < `confirmed`); các khu của Sổ được tính từ sự kiện cộng catalog và có thể lưu cache. Projection **không** là nguồn sự thật.
+
+**Dữ liệu cũ (không mất gì):** lần đầu mở một nhân vật ở `saveVersion` mới, client gửi **một đợt sự kiện suy ra từ dữ liệu cũ có thể xác minh** (`Discover` đã gặp/đã nghe, `Milestones` đã đạt), id tất định kiểu `legacy:disc:<id>:seen` nên gửi lại không nhân đôi. `Save.history` (200 dòng tự do) **không** chuyển thành sự kiện; Dòng thời gian hiển thị nó như phần "trước đây" cho tới khi hết. Không bịa ký ức.
+
+**Riêng tư và spoiler:** sự kiện thuộc `characterId`, không có endpoint của người khác đọc được, không đưa vào hồ sơ công khai, không đồng bộ giữa các nhân vật cùng tài khoản.
+
 ## 7. Giao tiếp người chơi thật — lưu ký ức sự kiện, không auto đọc suy nghĩ
 
 Nếu PC ma gặp player sư/dân và nghe lời hồi hướng/thấy gesture đã được **server phát trong thế giới**:
