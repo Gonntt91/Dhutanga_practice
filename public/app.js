@@ -425,7 +425,7 @@
       card.dataset.role = role;
       const glyph = el("div", "glyph");
       glyph.appendChild(el("span"));
-      card.append(glyph, el("div", "rc-name", info.name), el("div", "rc-who", info.who), el("div", "rc-blurb", info.blurb));
+      card.append(glyph, el("div", "rc-name", info.name), el("div", "rc-who", info.tagline), el("div", "rc-blurb", info.blurb));
       if (state.completed[role]) card.appendChild(el("div", "rc-done", "Đã đi qua đêm này"));
       card.addEventListener("click", () => playNew(role));
       list.appendChild(card);
