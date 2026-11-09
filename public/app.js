@@ -1690,7 +1690,7 @@
       box.appendChild(item);
     }
   }
-  // ---------- discovery book: unknown → heard of → met ----------
+  // ---------- Sổ Hành Trình in the quest panel (book.js): unknown → heard of → met, threads, lessons, timeline ----------
   let questTab = "tasks";
   function setQuestTab(t) {
     questTab = t;
@@ -1700,36 +1700,10 @@
     $("quest-book").hidden = t !== "book";
     if (t === "book") renderBook();
   }
+  // The Sổ Hành Trình (book.js), live view of the character in play.
   function renderBook() {
-    if (!window.Discover) return;
-    const box = $("quest-book"); box.replaceChildren();
-    const { seen, total } = Discover.count();
-    box.appendChild(el("p", "book-progress", `Đã khám phá ${seen}/${total}`));
-    const bar = el("div", "book-bar"); const fill = el("span"); fill.style.width = (seen / total) * 100 + "%"; bar.appendChild(fill); box.appendChild(bar);
-    box.appendChild(el("p", "hint", "Ô có dấu ? là điều còn chưa biết. Bắt chuyện với người qua đường để nghe thêm tin đồn."));
-    const grid = el("div", "book-grid");
-    for (const e of Discover.entries()) {
-      const item = el("div", "book-item " + e.state);
-      const place = World.PLACES[e.place];
-      if (e.state === "unknown") {
-        item.appendChild(el("b", null, "?"));
-        item.appendChild(el("p", null, e.hint));
-      } else {
-        item.appendChild(el("b", null, e.title));
-        item.appendChild(el("p", null, e.state === "seen" ? `Đã gặp · ${place ? place.name : ""}` : e.hint));
-        if (e.state === "heard") {
-          item.appendChild(el("small", "book-tag", "Nghe đồn"));
-          if (e.condText.length) item.appendChild(el("small", "book-conds", e.condText.join(" · ")));
-          if (place) {
-            const go = el("button", "text-btn", `Tới ${place.name}`); go.type = "button";
-            go.addEventListener("click", () => { $("quest-panel").hidden = true; goTo(place.x, place.y + 34); });
-            item.appendChild(go);
-          }
-        }
-      }
-      grid.appendChild(item);
-    }
-    box.appendChild(grid);
+    if (!window.JourneyBook) return;
+    JourneyBook.render($("quest-book"), { mode: "live", onGo: (x, y) => { $("quest-panel").hidden = true; goTo(x, y); } });
   }
   $("qtab-tasks").addEventListener("click", () => setQuestTab("tasks"));
   $("qtab-book").addEventListener("click", () => setQuestTab("book"));

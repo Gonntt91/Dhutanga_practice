@@ -695,5 +695,7 @@ window.Discover = (() => {
     }
   }
   setInterval(track, 500);
-  return { entries, count, rumour, placeState, COND_TEXT };
+  // the entries without their functions (for the Sổ Hành Trình views, which also work on saved characters)
+  function meta() { return ENTRIES.map(({ seen, live, ...rest }) => ({ ...rest, condText: rest.conds.map((c) => `${c} ${COND_TEXT[c]}`) })); }
+  return { entries, count, rumour, placeState, COND_TEXT, meta };
 })();
