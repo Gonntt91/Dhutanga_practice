@@ -136,6 +136,7 @@ function arcEnv() {
   const sb = makeSandbox();
   load(sb, "story.js");
   load(sb, "story-nights.js");
+  load(sb, "story-arrival.js");
   load(sb, "chapters.js");
   load(sb, "progress.js");
   return { P: sb.Progress, S: sb.STORY, C: sb.Chapters };
@@ -192,7 +193,8 @@ test("complete on a checkpoint without arc starts one from c1", () => {
 
 test("newnight carries the arc and starts at the chapter's start scene", () => {
   const { P: P_, S, C } = arcEnv();
-  const first = P_.decide(null, "villager", S.villager, SPAWN, BOUNDS).cp;
+  // a legacy first night (new characters now start in the arrival chapters, see client-arrival.test.js)
+  const first = P_.create({ role: "villager", story: S.villager, spawn: SPAWN });
   assert.equal(first.arc.chapter, "c1");
   assert.equal(first.sceneId, "v1");
   const done = finishNight(P_, S, "villager", { ...first, sceneId: "end" }, 9);
@@ -211,7 +213,7 @@ test("newnight carries the arc and starts at the chapter's start scene", () => {
 
 test("newnight for a low-trust villager goes to the doubt chapter; the account memory v_alms overrides", () => {
   const { P: P_, S } = arcEnv();
-  const first = P_.decide(null, "villager", S.villager, SPAWN, BOUNDS).cp;
+  const first = P_.create({ role: "villager", story: S.villager, spawn: SPAWN }); // legacy first night
   const done = finishNight(P_, S, "villager", { ...first, sceneId: "end" }, 2);
   assert.equal(P_.decide(done, "villager", S.villager, SPAWN, BOUNDS).cp.arc.chapter, "c2b");
   assert.equal(P_.decide(done, "villager", S.villager, SPAWN, BOUNDS, { mem: ["v_alms"] }).cp.arc.chapter, "c2a");
@@ -220,7 +222,7 @@ test("newnight for a low-trust villager goes to the doubt chapter; the account m
 test("each role walks c1 -> c2 -> ordinary nights without ever repeating a chapter", () => {
   const { P: P_, S } = arcEnv();
   for (const role of ["monk", "ghost", "villager"]) {
-    let cp = P_.decide(null, role, S[role], SPAWN, BOUNDS).cp;
+    let cp = P_.create({ role, story: S[role], spawn: SPAWN }); // legacy first night
     const seen = [cp.arc.chapter];
     for (let night = 1; night <= 7; night++) {
       const ended = finishNight(P_, S, role, { ...cp, sceneId: endReachable(S[role], cp.sceneId) }, 5);
