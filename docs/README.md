@@ -114,12 +114,11 @@ Bản đồ giúp hình dung nhanh các địa điểm chung, hành trình riên
 | Scare mechanic | NPC thường **sợ thật** với hù rõ; sư có thể bình tĩnh hơn; thẻ bất thiện theo **động cơ PC ma**, không theo nỗi sợ NPC | interactions mới/design-only, người chơi thật phải opt-in nếu bị hù |
 | Ghost cards | **PC ma không luyện thiền theo lối người/sư**, giải đố G04 không mở **Niệm/Định**; chủ yếu nhận manh mối và thẻ bất thiện theo động cơ, **thẻ thiện hiếm** khi có mạch đủ sâu | luật thẻ vai ma vẫn là design-only; đối chiếu [Ghost Campaign §2.3](ghost-playable-campaign-bible.md) |
 | Shared dedication | ma tình cờ nghe **PC sư/dân khác** hồi hướng khi có event hợp lệ; NPC fallback | presence/chat/emit có nhưng chưa có contract event hồi hướng PvP |
-| Story memory | mỗi PC có Sổ với `observed/reported/hypothesis/confirmed`; recap ngắn tự chọn | `Save.history`, `Profile`, `Reflect` có nền cũ, chưa có Sổ tổng hợp |
 | Ghost ending / villager ordination | chọn kết kiếp ma lưu archive; dân chủ động tìm hiểu xuất gia, giữ characterId | role transition/migration chưa code |
-| Sổ ghi nhớ | **Một Sổ Hành Trình** (tab "Hành trình") cho mỗi nhân vật, gộp Sổ khám phá, Nhật ký, Dấu mốc, Sổ kiến thức, Sổ loài/cõi; Album thẻ và Túi đồ vẫn riêng; Codex cấp tài khoản bỏ ở MVP. Chi tiết ở [Journey Memory §0](journey-memory-and-return-ux.md) | một nguồn sự kiện bền theo nhân vật và migration từng loại; hiện `Discover`, `Save.history` (200 dòng), `Milestones` còn tách |
+| Sổ ghi nhớ | **Một Sổ Hành Trình** theo nhân vật, có bốn khu xem; Album thẻ/Túi đồ riêng, Codex cấp tài khoản **không thuộc MVP**. Hồi tưởng chỉ mở rộng màn **Trong lúc vắng**. [Journey Memory](journey-memory-and-return-ux.md) | một event log bền theo PC và **projection/quest checkpoint** dẫn xuất; hiện `Discover`, `Save.history` (200 dòng), `Milestones` còn tách; **chưa code** |
 | Thang khám phá | Chưa biết → Nghe kể → Tận mắt → Xác nhận (khi cần), thêm `sourceType` (quan sát / lời kể / chứng cứ); `đã ôn/đã vận dụng` là thuộc tính | chưa code |
 | Hồ sơ nhân vật | Tổng quan · Hành trình · Người quen (guest không có Người quen); Nhật ký và Dấu mốc chuyển vào Sổ | `public/profile.js` còn 4 tab, `mind.js` Album còn tab Nhật ký |
-| Thứ tự MVP vai ma | G01 → G03 → một cảnh NPC sư hồi hướng + G07 kết thúc tùy chọn (archive); Bờ Chìm sau lát cắt hang (**không khóa bằng tu tập**, chỉ do khối lượng map); hồi hướng giữa người chơi thật làm cuối | chưa code |
+| Thứ tự MVP vai ma | G01 (hù và **có thể giúp ông Tư dời đèn**) → G03 (giúp bà cụ) → hồi hướng NPC/G07; **G01 giúp đèn hoặc G03 giúp bà** là hai đường mở G07, không bắt làm cả hai. Bờ Chìm sau lát cắt hang; hồi hướng PC thật cuối | chưa code; không khóa Bờ Chìm bằng tu tập |
 | Nhân vật đã khép | archived/read-only: không presence, không online, không nhận gặp mới (máy chủ từ chối) | chưa có |
 | Hồ sơ công khai | chỉ trường trong danh sách cho phép; không công khai vật phẩm/thành tựu có thể lộ spoiler | `social.js` hiện cho tên, vai, ngày tạo, thiên hướng và tối đa 6 vật phẩm: cần rà lại |
 | `loreBasis` | một enum 4 giá trị `canonical/commentary/game_interpretation/fiction` | chưa code |
@@ -174,10 +173,10 @@ Quy tắc đầy đủ, template đầu file, quy trình truy vấn và checklis
 | `G01–G07` | tuyến khám phá PC hồn ma | Ghost Campaign, Episode Packs |
 | `Bi`, `Không tham`, `Tùy hỷ` | thẻ tâm/mốc trải nghiệm; không là đo lường tâm người thật | HG27, Hệ thống tâm |
 | `Bờ Nổi` / `Bờ Chìm` | hai mặt kể chuyện của Bến Không Tiếng | World Exploration, Ghost Episode 01 |
-| `observed/reported/hypothesis/confirmed` | mức xác minh manh mối của **PC** | Journey Memory |
-| `accountMeta` vs `characterStoryState` | thành tựu tài khoản vs trải nghiệm riêng của nhân vật | Player-Centric Model, Spoiler Isolation |
+| `unknown / heard / seen / confirmed` | một thang **tiến độ khám phá theo mục**; không phải mức đáng tin của mọi lời kể | Journey Memory §0.3 |
+| `accountMeta` vs `characterStoryState` | dữ liệu tài khoản legacy/neutral vs ký ức và tiến trình riêng của PC; **không có Codex account ở MVP** | Player-Centric Model, Spoiler Isolation |
 | `loreBasis` | `canonical / commentary / game_interpretation / fiction` | Game Design Principles |
-| `sourceType` | `observation / report / evidence`: nguồn của một thông tin trong Sổ | Journey Memory §0.3 |
+| `sourceType` | `observation / report / evidence`: nguồn **từng sự kiện/thông tin** trong Sổ, độc lập với thang tiến độ | Journey Memory §0.3 |
 | Sổ Hành Trình / "Hành trình" | một sổ duy nhất cho mỗi nhân vật (thay Sổ khám phá, Nhật ký, Dấu mốc, Sổ kiến thức) | Journey Memory §0 |
 
 **Nguyên tắc kết:** *Một người mới đọc README là hiểu game muốn mang lại cảm giác gì. Một agent mở AGENTS.md là biết tìm nguồn chuẩn, chỗ sửa, cách cập nhật index và giới hạn không được vượt qua.*
