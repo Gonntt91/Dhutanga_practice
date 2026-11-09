@@ -8,6 +8,7 @@ const auth = require("./auth");
 const social = require("./social");
 const connections = require("./connections");
 const { createTracker } = require("./encounters");
+const { isArchived } = require("./store");
 
 const PORT = Number(process.env.PORT) || 3000;
 const PUBLIC_DIR = path.join(__dirname, "public");
@@ -160,7 +161,8 @@ async function bindCharacter(peer, rawId) {
   if (cid) {
     try {
       const own = await auth.store.getCharacter(peer.userId, cid);
-      if (own) {
+      // An archived (story_completed) character is never bound: no handle, no presence, no encounters.
+      if (own && !isArchived(own)) {
         handle = await auth.store.ensureHandle(peer.userId, cid);
         charId = handle ? cid : null;
       }

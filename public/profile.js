@@ -280,6 +280,8 @@ window.Profile = (() => {
       const a = Social.ago(row.lastAt);
       bits.push(a === "vừa xong" ? "vừa gặp" : a ? `gặp ${a}` : "");
       if (row.count > 1) bits.push(`${row.count} lần`);
+    } else if (row.archived) {
+      bits.push("chuyện đã khép");
     } else if (row.group === "quen") {
       const t = Social.statusText(row.status);
       if (t) bits.push(t);

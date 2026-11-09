@@ -18,6 +18,10 @@ const hashToken = (t) => crypto.createHash("sha256").update(t).digest("hex");
 // 12 random bytes -> 16 base64url chars ([A-Za-z0-9_-]). Opaque: never derived from the character id.
 const newHandle = () => crypto.randomBytes(12).toString("base64url");
 const isoOrNull = (v) => (v == null ? null : new Date(v).toISOString());
+// Character status: "active" (default) or "story_completed" (archived: a finished ghost story, read-only).
+const ARCHIVED = "story_completed";
+const STATUSES = ["active", ARCHIVED];
+const isArchived = (c) => !!c && c.status === ARCHIVED;
 
 function summary(c) {
   const mind = (c.data && c.data.mind) || {};
@@ -26,6 +30,7 @@ function summary(c) {
     cards: Object.keys(mind.cards || {}).length, items: (mind.items || []).length,
     carita: mind.carita || null,
     hideProfile: !!c.hide_profile, hideStatus: !!c.hide_status,
+    status: c.status || "active",
   };
 }
 
@@ -54,6 +59,7 @@ function pgStore(url, injectedPool) {
     alter table characters add column if not exists hide_profile boolean not null default false;
     alter table characters add column if not exists hide_status boolean not null default false;
     alter table characters add column if not exists last_seen_at bigint;
+    alter table characters add column if not exists status text not null default 'active';
     create table if not exists encounters (
       char_id text not null references characters(id) on delete cascade,
       other_char_id text not null,
@@ -136,7 +142,7 @@ function pgStore(url, injectedPool) {
     async saveAccount(userId, account) { await wait(); await q("update users set account = $2 where id = $1", [userId, account]); },
     async listCharacters(userId) {
       await wait();
-      const r = await q("select id, name, role, data, created_at, updated_at, hide_profile, hide_status from characters where user_id = $1 order by updated_at desc", [userId]);
+      const r = await q("select id, name, role, data, created_at, updated_at, hide_profile, hide_status, status from characters where user_id = $1 order by updated_at desc", [userId]);
       return r.rows.map(summary);
     },
     async createCharacter(userId, name, role, data) {
@@ -148,7 +154,7 @@ function pgStore(url, injectedPool) {
     },
     async getCharacter(userId, id) {
       await wait();
-      const r = await q("select id, name, role, data, created_at, updated_at from characters where user_id = $1 and id = $2", [userId, id]);
+      const r = await q("select id, name, role, data, created_at, updated_at, status from characters where user_id = $1 and id = $2", [userId, id]);
       return r.rows[0] || null;
     },
     async saveCharacter(userId, id, data) {
@@ -159,6 +165,13 @@ function pgStore(url, injectedPool) {
     async renameCharacter(userId, id, name) {
       await wait();
       const r = await q("update characters set name = $3, updated_at = now() where user_id = $1 and id = $2", [userId, id, name]);
+      return r.rowCount > 0;
+    },
+    // Owner only; only the two known values. No public route uses it yet (the ending flow comes later).
+    async setCharacterStatus(userId, id, status) {
+      await wait();
+      if (!STATUSES.includes(status)) return false;
+      const r = await q("update characters set status = $3 where user_id = $1 and id = $2", [userId, id, status]);
       return r.rowCount > 0;
     },
     // Cascades by hand (encounters both directions, reports) so it does not depend on FK options.
@@ -194,10 +207,10 @@ function pgStore(url, injectedPool) {
     async getByHandle(handle) {
       await wait();
       if (typeof handle !== "string" || !handle) return null;
-      const r = await q("select id, user_id, name, role, data, created_at, hide_profile, hide_status from characters where public_handle = $1", [handle]);
+      const r = await q("select id, user_id, name, role, data, created_at, hide_profile, hide_status, status from characters where public_handle = $1", [handle]);
       const c = r.rows[0];
       if (!c) return null;
-      return { id: c.id, user_id: c.user_id, name: c.name, role: c.role, data: c.data || {}, created_at: isoOrNull(c.created_at), hide_profile: !!c.hide_profile, hide_status: !!c.hide_status };
+      return { id: c.id, user_id: c.user_id, name: c.name, role: c.role, data: c.data || {}, created_at: isoOrNull(c.created_at), hide_profile: !!c.hide_profile, hide_status: !!c.hide_status, status: c.status || "active" };
     },
     async setFlags(userId, charId, flags = {}) {
       await wait();
@@ -219,6 +232,7 @@ function pgStore(url, injectedPool) {
          select a.id, b.id, $3::bigint, $3::bigint, 1
          from characters a join characters b on b.id = $2::text
          where a.id = $1::text and a.user_id <> b.user_id
+           and a.status <> 'story_completed' and b.status <> 'story_completed'
          on conflict (char_id, other_char_id) do update set last_at = excluded.last_at, count = encounters.count + 1`,
         [charId, otherCharId, nowMs]);
       await q(
@@ -252,7 +266,7 @@ function pgStore(url, injectedPool) {
       if (!charId || !otherCharId || charId === otherCharId) return false;
       // Both characters must exist and belong to different accounts.
       const pair = await q(
-        "select 1 from characters a join characters b on b.id = $2::text where a.id = $1::text and a.user_id <> b.user_id",
+        "select 1 from characters a join characters b on b.id = $2::text where a.id = $1::text and a.user_id <> b.user_id and a.status <> 'story_completed' and b.status <> 'story_completed'",
         [charId, otherCharId]);
       if (!pair.rows[0]) return false;
       const have = await q("select 1 from connections where char_id = $1 and other_char_id = $2", [charId, otherCharId]);
@@ -291,7 +305,7 @@ function pgStore(url, injectedPool) {
       await wait();
       const r = await q(
         `select o.id as other_char_id, o.user_id as other_user_id, o.name, o.role, o.public_handle,
-                o.hide_profile, o.hide_status, o.last_seen_at,
+                o.hide_profile, o.hide_status, o.last_seen_at, o.status as other_status,
                 mine.created_at as my_at, theirs.created_at as their_at, theirs.seen_at as their_seen_at
          from (select other_char_id as oid from connections where char_id = $1
                union select char_id from connections where other_char_id = $1) x
@@ -303,6 +317,7 @@ function pgStore(url, injectedPool) {
       return r.rows.map((x) => ({
         otherCharId: x.other_char_id, otherUserId: x.other_user_id, handle: x.public_handle || null,
         name: x.name, role: x.role, hideProfile: !!x.hide_profile, hideStatus: !!x.hide_status,
+        archived: x.other_status === ARCHIVED,
         lastSeenAt: x.last_seen_at == null ? null : Number(x.last_seen_at),
         iSaved: x.my_at != null, theySaved: x.their_at != null,
         savedAt: Number(x.my_at ?? x.their_at),
@@ -423,7 +438,7 @@ function fileStore(file, tracesFile) {
     },
     async createCharacter(userId, name, role, data) {
       if (Object.values(db.characters).filter((c) => c.user_id === userId).length >= MAX_CHARACTERS) throw new Error("too many characters");
-      const c = { id: newId(), user_id: userId, name, role, data: data || {}, created_at: now(), updated_at: now(), hide_profile: false, hide_status: false };
+      const c = { id: newId(), user_id: userId, name, role, data: data || {}, created_at: now(), updated_at: now(), hide_profile: false, hide_status: false, status: "active" };
       db.characters[c.id] = c; persist();
       return c;
     },
@@ -438,6 +453,12 @@ function fileStore(file, tracesFile) {
       const c = db.characters[id];
       if (!c || c.user_id !== userId) return false;
       c.name = name; c.updated_at = now(); persist();
+      return true;
+    },
+    async setCharacterStatus(userId, id, status) {
+      const c = db.characters[id];
+      if (!c || c.user_id !== userId || !STATUSES.includes(status)) return false;
+      c.status = status; persist();
       return true;
     },
     async deleteCharacter(userId, id) {
@@ -472,7 +493,7 @@ function fileStore(file, tracesFile) {
       if (typeof handle !== "string" || !handle) return null;
       const c = Object.values(db.characters).find((x) => x.public_handle === handle);
       if (!c) return null;
-      return { id: c.id, user_id: c.user_id, name: c.name, role: c.role, data: c.data || {}, created_at: c.created_at, hide_profile: !!c.hide_profile, hide_status: !!c.hide_status };
+      return { id: c.id, user_id: c.user_id, name: c.name, role: c.role, data: c.data || {}, created_at: c.created_at, hide_profile: !!c.hide_profile, hide_status: !!c.hide_status, status: c.status || "active" };
     },
     async setFlags(userId, charId, flags = {}) {
       const c = db.characters[charId];
@@ -489,6 +510,7 @@ function fileStore(file, tracesFile) {
     async recordEncounter(charId, otherCharId, nowMs) {
       const a = db.characters[charId], b = db.characters[otherCharId];
       if (!a || !b || charId === otherCharId || a.user_id === b.user_id) return false;
+      if (isArchived(a) || isArchived(b)) return false;
       const k = `${charId}|${otherCharId}`;
       const e = db.encounters[k];
       if (e) { e.last_at = nowMs; e.count += 1; }
@@ -526,6 +548,7 @@ function fileStore(file, tracesFile) {
     async addConnection(charId, otherCharId, nowMs = Date.now()) {
       const a = db.characters[charId], b = db.characters[otherCharId];
       if (!a || !b || charId === otherCharId || a.user_id === b.user_id) return false;
+      if (isArchived(a) || isArchived(b)) return false;
       const k = `${charId}|${otherCharId}`;
       if (db.connections[k]) return true; // idempotent
       if (Object.values(db.connections).filter((c) => c.char_id === charId).length >= MAX_CONNECTIONS) return false;
@@ -560,6 +583,7 @@ function fileStore(file, tracesFile) {
         return [{
           otherCharId: oid, otherUserId: o.user_id, handle: o.public_handle || null,
           name: o.name, role: o.role, hideProfile: !!o.hide_profile, hideStatus: !!o.hide_status,
+          archived: isArchived(o),
           lastSeenAt: o.last_seen_at == null ? null : Number(o.last_seen_at),
           iSaved: !!mine, theySaved: !!theirs,
           savedAt: Number(mine ? mine.created_at : theirs.created_at),
@@ -617,4 +641,4 @@ function createStore(opts = {}) {
 let shared = null;
 const getStore = () => shared || (shared = createStore());
 
-module.exports = { createStore, getStore, MAX_CHARACTERS, MAX_TRACES, MAX_ENCOUNTERS, MAX_CONNECTIONS, REPORT_REASON_MAX };
+module.exports = { createStore, getStore, isArchived, ARCHIVED, STATUSES, MAX_CHARACTERS, MAX_TRACES, MAX_ENCOUNTERS, MAX_CONNECTIONS, REPORT_REASON_MAX };
