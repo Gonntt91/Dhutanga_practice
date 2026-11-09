@@ -11,6 +11,9 @@ const MAX_CHARACTERS = 12;
 const MAX_TRACES = 500;
 const MAX_ENCOUNTERS = 50; // per character: "Từng gặp" keeps the newest ones
 const MAX_CONNECTIONS = 100; // per character: saved connections ("Đã lưu" / "Quen") it made itself
+const MAX_EVENTS = 3000; // per character: the memory log is pruned past this (oldest "action" events only)
+const EVENT_LIST_MAX = 200;
+const PROTECTED_SUBJECT = "meta:backfilled"; // never pruned
 const REPORT_REASON_MAX = 200;
 const PRUNE_EVERY = 50; // pg: trim old traces on every Nth insert, not each time
 const newId = () => crypto.randomUUID();
@@ -22,6 +25,32 @@ const isoOrNull = (v) => (v == null ? null : new Date(v).toISOString());
 const ARCHIVED = "story_completed";
 const STATUSES = ["active", ARCHIVED];
 const isArchived = (c) => !!c && c.status === ARCHIVED;
+
+// ----- character events (memory log) -----
+// Store errors carry a code (NOT_FOUND, ARCHIVED) that the route maps to an HTTP status.
+function storeError(code) {
+  const e = new Error(code);
+  e.storeCode = code;
+  return e;
+}
+// Paging options: after >= 0, limit 1..200 (default 100), optional type.
+function listOpts(opts = {}) {
+  const after = Number.isSafeInteger(opts.after) && opts.after >= 0 ? opts.after : 0;
+  const limit = Number.isSafeInteger(opts.limit) && opts.limit >= 1 ? Math.min(opts.limit, EVENT_LIST_MAX) : 100;
+  const type = typeof opts.type === "string" && opts.type ? opts.type : null;
+  return { after, limit, type };
+}
+// What listEvents returns: no character id; only event_id and the global seq identify an event.
+function eventView(r) {
+  return {
+    seq: Number(r.seq), event_id: r.event_id, type: r.type, subject_id: r.subject_id, level: r.level,
+    source_type: r.source_type, source_actor_id: r.source_actor_id ?? null, place_id: r.place_id ?? null,
+    story_id: r.story_id ?? null, at: Number(r.at),
+    client_at: r.client_at == null ? null : Number(r.client_at),
+    payload: r.payload || {},
+    save_version: r.save_version == null ? null : Number(r.save_version),
+  };
+}
 
 function summary(c) {
   const mind = (c.data && c.data.mind) || {};
@@ -93,6 +122,23 @@ function pgStore(url, injectedPool) {
     create table if not exists traces (
       seq bigserial primary key, id text not null, kind text not null, variant int not null default 0,
       role text, nick text, at bigint not null);
+    create table if not exists character_events (
+      seq bigserial primary key,
+      character_id text not null references characters(id) on delete cascade,
+      event_id text not null,
+      type text not null,
+      subject_id text not null,
+      level text,
+      source_type text not null,
+      source_actor_id text,
+      place_id text,
+      story_id text,
+      at bigint not null,
+      client_at bigint,
+      payload jsonb not null default '{}'::jsonb,
+      save_version int,
+      unique (character_id, event_id));
+    create index if not exists character_events_char_seq on character_events(character_id, seq);
   `);
   const wait = async () => { await ready; };
   let inserts = 0;
@@ -185,7 +231,63 @@ function pgStore(url, injectedPool) {
       await q("delete from encounters where char_id = $1 or other_char_id = $1", [id]);
       await q("delete from reports where reported_char_id = $1", [id]);
       await q("delete from connections where char_id = $1 or other_char_id = $1", [id]);
+      await q("delete from character_events where character_id = $1", [id]);
       await q("delete from characters where user_id = $1 and id = $2", [userId, id]);
+    },
+
+    // ----- memory log: one row per event, idempotent on (character_id, event_id) -----
+    // One transaction. The character row is locked so two batches for one character cannot race on the cap.
+    // Throws storeError NOT_FOUND / ARCHIVED; the route checks both first, this is the data-layer refusal.
+    async addEvents(charId, events, nowMs = Date.now()) {
+      await wait();
+      const client = await pool.connect();
+      try {
+        await client.query("begin");
+        const own = await client.query("select status from characters where id = $1 for update", [charId]);
+        if (!own.rows[0]) throw storeError("NOT_FOUND");
+        if (isArchived(own.rows[0])) throw storeError("ARCHIVED");
+        const out = [];
+        for (const e of events) {
+          const r = await client.query(
+            `insert into character_events (character_id, event_id, type, subject_id, level, source_type, source_actor_id, place_id, story_id, at, client_at, payload, save_version)
+             values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
+             on conflict (character_id, event_id) do nothing returning seq`,
+            [charId, e.event_id, e.type, e.subject_id, e.level, e.source_type, e.source_actor_id, e.place_id, e.story_id,
+              nowMs, e.client_at, JSON.stringify(e.payload || {}), e.save_version]);
+          out.push({ event_id: e.event_id, status: r.rowCount ? "created" : "duplicate" });
+        }
+        // Over the cap: drop the oldest plain actions. Discoveries, milestones and the backfill marker are never dropped.
+        const n = (await client.query("select count(*)::int as n from character_events where character_id = $1", [charId])).rows[0].n;
+        const excess = n - MAX_EVENTS;
+        if (excess > 0) {
+          await client.query(
+            `delete from character_events where seq in (
+               select seq from character_events
+               where character_id = $1 and type = 'action' and subject_id <> $2
+               order by seq asc limit $3)`,
+            [charId, PROTECTED_SUBJECT, excess]);
+        }
+        await client.query("commit");
+        return out;
+      } catch (err) {
+        await client.query("rollback").catch(() => {});
+        throw err;
+      } finally {
+        client.release();
+      }
+    },
+    // Owner-scoped by the caller (route checks the character first). Ascending seq. Archived characters can be read.
+    async listEvents(charId, opts) {
+      await wait();
+      const { after, limit, type } = listOpts(opts);
+      const params = [charId, after, limit];
+      if (type) params.push(type);
+      const r = await q(
+        `select seq, event_id, type, subject_id, level, source_type, source_actor_id, place_id, story_id, at, client_at, payload, save_version
+         from character_events where character_id = $1 and seq > $2 ${type ? "and type = $4" : ""}
+         order by seq asc limit $3`,
+        params);
+      return r.rows.map(eventView);
     },
 
     // ----- social: handles, flags, encounters, blocks, reports -----
@@ -385,7 +487,8 @@ function fileStore(file, tracesFile) {
   };
   // encounters: keyed "charId|otherCharId"; connections: same key, one row per direction;
   // blocks: keyed "userId|blockedUserId"; reports: array.
-  let db = { users: {}, sessions: {}, characters: {}, encounters: {}, connections: {}, blocks: {}, reports: [] };
+  // events: the memory log (one object per event, global seq in event_seq); pruned per character in addEvents.
+  let db = { users: {}, sessions: {}, characters: {}, encounters: {}, connections: {}, blocks: {}, reports: [], events: [], event_seq: 0 };
   try { db = { ...db, ...JSON.parse(fs.readFileSync(file, "utf8")) }; } catch {}
   let timer = null;
   const persist = () => {
@@ -477,7 +580,45 @@ function fileStore(file, tracesFile) {
         const t = db.connections[k];
         if (t.char_id === id || t.other_char_id === id) delete db.connections[k];
       }
+      db.events = db.events.filter((e) => e.character_id !== id);
       persist();
+    },
+
+    // ----- memory log (same rules as the Postgres store) -----
+    async addEvents(charId, events, nowMs = Date.now()) {
+      const c = db.characters[charId];
+      if (!c) throw storeError("NOT_FOUND");
+      if (isArchived(c)) throw storeError("ARCHIVED");
+      const out = [];
+      for (const e of events) {
+        if (db.events.some((x) => x.character_id === charId && x.event_id === e.event_id)) {
+          out.push({ event_id: e.event_id, status: "duplicate" });
+          continue;
+        }
+        db.event_seq = (db.event_seq || 0) + 1;
+        db.events.push({
+          seq: db.event_seq, character_id: charId, event_id: e.event_id, type: e.type, subject_id: e.subject_id,
+          level: e.level, source_type: e.source_type, source_actor_id: e.source_actor_id, place_id: e.place_id,
+          story_id: e.story_id, at: nowMs, client_at: e.client_at, payload: e.payload || {}, save_version: e.save_version,
+        });
+        out.push({ event_id: e.event_id, status: "created" });
+      }
+      // db.events is in seq order, so the first matches are the oldest.
+      const mine = db.events.filter((x) => x.character_id === charId);
+      const excess = mine.length - MAX_EVENTS;
+      if (excess > 0) {
+        const drop = new Set(mine.filter((x) => x.type === "action" && x.subject_id !== PROTECTED_SUBJECT).slice(0, excess).map((x) => x.seq));
+        db.events = db.events.filter((x) => !drop.has(x.seq));
+      }
+      persist();
+      return out;
+    },
+    async listEvents(charId, opts) {
+      const { after, limit, type } = listOpts(opts);
+      return db.events
+        .filter((e) => e.character_id === charId && e.seq > after && (!type || e.type === type))
+        .slice(0, limit)
+        .map(eventView);
     },
 
     // ----- social: handles, flags, encounters, blocks, reports -----
@@ -644,4 +785,4 @@ function createStore(opts = {}) {
 let shared = null;
 const getStore = () => shared || (shared = createStore());
 
-module.exports = { createStore, getStore, isArchived, ARCHIVED, STATUSES, MAX_CHARACTERS, MAX_TRACES, MAX_ENCOUNTERS, MAX_CONNECTIONS, REPORT_REASON_MAX };
+module.exports = { createStore, getStore, isArchived, ARCHIVED, STATUSES, MAX_CHARACTERS, MAX_TRACES, MAX_ENCOUNTERS, MAX_CONNECTIONS, MAX_EVENTS, EVENT_LIST_MAX, PROTECTED_SUBJECT, REPORT_REASON_MAX };

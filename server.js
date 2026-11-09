@@ -7,6 +7,7 @@ const crypto = require("crypto");
 const auth = require("./auth");
 const social = require("./social");
 const connections = require("./connections");
+const events = require("./events");
 const { createTracker } = require("./encounters");
 const { isArchived } = require("./store");
 
@@ -350,6 +351,8 @@ const server = http.createServer(async (req, res) => {
       res.writeHead(200, { "Content-Type": "text/javascript; charset=utf-8", "Cache-Control": "no-store" });
       return res.end(`window.APP_CONFIG = { dev: ${dev} };`);
     }
+    // Before auth.handle: that module answers every /api/characters/... path itself.
+    if (await events.handle(req, res, url)) return;
     if (await auth.handle(req, res, url)) return;
     if (await social.handle(req, res, url)) return;
     if (await connections.handle(req, res, url, { isOnline: isCharOnline })) return;
