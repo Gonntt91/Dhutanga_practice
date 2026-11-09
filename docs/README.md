@@ -112,6 +112,7 @@ Bản đồ giúp hình dung nhanh các địa điểm chung, hành trình riên
 | G04 ghost route | **suối nhỏ ở rừng tre + khe đá**, nước chảy xuôi tự nhiên; có liên hệ ao sen/bến sông; **không** còn “vết nước đi ngược trong nhà hoang” | graybox lối Bờ Chìm cần dựng |
 | Ghost rest | nhà hoang **chỉ là một trong nhiều điểm nghỉ tùy chọn**: mộ, gốc gạo, bờ suối, Bờ Chìm... | `Reflect` hoạt động khi vắng hiện có nhưng chưa hỗ trợ hệ điểm nghỉ đa dạng |
 | Scare mechanic | NPC thường **sợ thật** với hù rõ; sư có thể bình tĩnh hơn; thẻ bất thiện theo **động cơ PC ma**, không theo nỗi sợ NPC | interactions mới/design-only, người chơi thật phải opt-in nếu bị hù |
+| Ghost cards | **PC ma không luyện thiền theo lối người/sư**, giải đố G04 không mở **Niệm/Định**; chủ yếu nhận manh mối và thẻ bất thiện theo động cơ, **thẻ thiện hiếm** khi có mạch đủ sâu | luật thẻ vai ma vẫn là design-only; đối chiếu [Ghost Campaign §2.3](ghost-playable-campaign-bible.md) |
 | Shared dedication | ma tình cờ nghe **PC sư/dân khác** hồi hướng khi có event hợp lệ; NPC fallback | presence/chat/emit có nhưng chưa có contract event hồi hướng PvP |
 | Story memory | mỗi PC có Sổ với `observed/reported/hypothesis/confirmed`; recap ngắn tự chọn | `Save.history`, `Profile`, `Reflect` có nền cũ, chưa có Sổ tổng hợp |
 | Ghost ending / villager ordination | chọn kết kiếp ma lưu archive; dân chủ động tìm hiểu xuất gia, giữ characterId | role transition/migration chưa code |

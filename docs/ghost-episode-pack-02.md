@@ -36,7 +36,7 @@ Từ cảm giác nghịch ngợm G01 tới cảm xúc ấm của G07, PC ma **kh
 >
 > **PC nghĩ:** “Hóa ra có những lời dành cho người không đứng ở đây.”
 
-- `Ở lại nghe hết` → `dedicationHeardOnce=true`.
+- `Ở lại nghe hết` → `dedicationHeardOnce=true`, **chỉ lưu việc đã nghe và manh mối**, không nhận Niệm/Định hay thẻ thiện mặc định.
 - `Tự hỏi ai đang được nhớ đến` → mở một mục Sổ về hồi hướng, không bật bài giảng; **chưa khẳng định chính PC được lợi ích cụ thể**.
 - `Đi sang gốc gạo` → PC tự do khám phá.
 
@@ -113,7 +113,7 @@ Sau đêm tu, nếu PC chủ động quay về hoặc tình cờ ở gần, sư 
 >
 > Bạn nghe một lúc. Tiếng gió ngoài cổng nghĩa địa vẫn vậy, nhưng đêm bớt lạnh.
 
-- `Nghe đến cuối` → `G06.heardFullDedication=true`, mở một câu trong Sổ `Lời hồi hướng bên mộ`.
+- `Nghe đến cuối` → `G06.heardFullDedication=true`, mở một câu trong Sổ `Lời hồi hướng bên mộ`; **nghe không tự phát thẻ Niệm/Định hoặc chứng nhận đã tu tập**.
 - `Nghĩ về bà Sáu / bà ngoại` → nếu PC từng gặp NPC đó, mở **một câu nhớ chuyện**. Không biến PC thành họ, không làm bà Sáu tự rời cảnh giới.
 - `Ở lại nghe tiếng dế` → ambient có thưởng khung cảnh.
 - `Đi tiếp` → không mất đường khám phá.
