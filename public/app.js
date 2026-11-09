@@ -1148,10 +1148,11 @@
   function friendRow(r) {
     const li = el("li", "friend-row");
     const text = el("div", "friend-text");
-    const meta = [ROLE_INFO[r.role] ? ROLE_INFO[r.role].name : "", Social.statusText(r.status)].filter(Boolean).join(" · ");
+    const meta = [ROLE_INFO[r.role] ? ROLE_INFO[r.role].name : "", r.archived ? "chuyện đã khép" : Social.statusText(r.status)].filter(Boolean).join(" · ");
     text.append(el("b", null, r.name || "Người này"), el("small", null, meta));
     li.appendChild(text);
-    const peer = r.status && r.status.online ? state.peers.find((p) => p.handle === r.handle && p.pid !== state.sid) : null;
+    // An archived person is never online here, so no "Đi tới chỗ bạn".
+    const peer = !r.archived && r.status && r.status.online ? state.peers.find((p) => p.handle === r.handle && p.pid !== state.sid) : null;
     if (peer) {
       const go = el("button", "pill", "Đi tới chỗ bạn"); go.type = "button";
       go.addEventListener("click", () => { openChat(false); state.findTarget = null; World.walkTo(peer.x * World.W + 24, peer.y * World.H + 6); });
