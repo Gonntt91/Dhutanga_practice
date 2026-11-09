@@ -904,15 +904,16 @@ window.Mind = (() => {
     return grid;
   }
   // ---------- catalog popup: all 52 cards, met ones as tiles, the rest as small silhouettes ----------
-  const catalogView = (owned) => Cetasika.catalog({
-    owned, cards: CARDS,
+  // r: the character's role ("monk" | "villager" | "ghost"), or undefined for the generic view.
+  const catalogView = (owned, r) => Cetasika.catalog({
+    owned, cards: CARDS, role: r,
     count: (g, own) => { const R = MS().rules; return R.effN(CARDS[g], own.n); },
   });
   // The button under "Tâm đang tu" (profile) and in the album, under the same heading. X counts the owned cards that map to a cetasika.
-  function catalogButton(owned) {
-    const b = el("button", "pill cat-open", `Xem tất cả các thẻ (${catalogView(owned).met}/${Cetasika.all.length})`);
+  function catalogButton(owned, r) {
+    const b = el("button", "pill cat-open", `Xem tất cả các thẻ (${catalogView(owned, r).met}/${Cetasika.all.length})`);
     b.type = "button";
-    b.addEventListener("click", () => openCatalog(owned));
+    b.addEventListener("click", () => openCatalog(owned, r));
     return b;
   }
   let catalogSheet = null;
@@ -923,10 +924,10 @@ window.Mind = (() => {
   }
   function catalogKey(e) { if (e.key === "Escape") { e.stopPropagation(); if (tipClose && tipClose()) return; closeCatalog(); } }
   let tipClose = null; // closes the "Tâm sở là gì?" tooltip if it is open; returns true when it did
-  function openCatalog(owned) {
+  function openCatalog(owned, r) {
     closeCatalog();
     owned = owned || {};
-    const v = catalogView(owned);
+    const v = catalogView(owned, r);
     const scrim = el("div", "person-scrim catalog-scrim");
     const card = el("div", "person-card catalog-card");
     card.setAttribute("role", "dialog"); card.setAttribute("aria-modal", "true"); card.setAttribute("aria-labelledby", "catalog-title");
@@ -937,7 +938,7 @@ window.Mind = (() => {
     const h = el("h2", "catalog-title", "Tất cả các thẻ"); h.id = "catalog-title";
     const L = Cetasika.LORE;
     const intro = el("p", "catalog-intro");
-    intro.append(L.intro);
+    intro.append(r === "ghost" ? L.introGhost : L.intro);
     const tip = el("div", "catalog-tip"); tip.hidden = true; // stays empty and hidden while LORE.showTip is false
     if (L.showTip) {
     intro.append(" ");
@@ -1052,7 +1053,7 @@ window.Mind = (() => {
       if (sec.extra) h.appendChild(el("span", "album-extra", sec.extra));
       if (sec.key === "good") {
         list.appendChild(h);
-        list.appendChild(catalogButton(S.cards));
+        list.appendChild(catalogButton(S.cards, role));
       } else list.appendChild(h);
       list.appendChild(cardGrid(sec, (id) => showCard(id)));
     }
