@@ -1,5 +1,7 @@
 # Một Đêm Đầu Đà
 
+> **Tài liệu định hướng mới:** xem **[docs/README.md](docs/README.md)** để hiểu nhanh game, vai chơi, thế giới, các mạch truyện, hệ thống tâm và trạng thái đã/chưa triển khai. **Agent:** xem [docs/AGENTS.md](docs/AGENTS.md) trước khi thêm/sửa tài liệu. Phần README bên dưới mô tả **prototype legacy đang có trong code**; riêng cách đồng nhất vai chơi với **Sư Tịnh/Ông Tư/Bà Sáu** đã được thay bằng thiết kế **PC tự đặt tên, NPC độc lập**, nhưng code chưa chuyển hết. Các tài liệu thiết kế mới **không đồng nghĩa tính năng đã chạy**.
+
 Prototype web nhiều người chơi: một đêm ở nghĩa địa đầu làng, nhìn qua ba đôi mắt.
 
 - **Nhà sư** (thầy Tịnh): bị xua đuổi lúc khất thực, đêm ngồi giữa nghĩa địa, không nằm. Thang đo: *Tâm an*.
