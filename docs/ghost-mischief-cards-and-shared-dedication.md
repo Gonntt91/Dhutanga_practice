@@ -30,8 +30,10 @@ Từ code hiện tại (`public/mind.js`) có `san`, `tham`, `si`, `hoi_han`, `p
 | `Cố hù người đã xúc phạm mình vì muốn trả đũa` | **Sân (`san`)** nếu diễn tiến truyện thật sự thể hiện tâm chống đối, tức giận | **sợ hãi của NPC không sinh Sân cho PC**; không suy ra từ vẻ mặt của người khác |
 | `Tin ngay một lời đồn sai rồi hù nhầm người` | **Si (`si`)** khi PC truyện nhận ra sự lầm lẫn qua chứng cứ | không phán đoán “chưa biết sự thật” = Si ở mọi câu hỏi |
 | `Hù xong thấy người bị sợ và ray rứt vì điều mình làm` | **Hối (`hoi_han`)** nếu PC chọn diễn biến hối tiếc | không mặc định mọi hù dọa đều làm PC hối, và không ép popup giáo lý |
-| `Ngừng hù khi biết người ta đang sợ, lựa chọn trấn an/giúp` | **Không sân** hoặc **Bi** có thể được khám phá trong tình huống chăm sóc phù hợp | không tặng Bi chỉ vì NPC tự bình tĩnh rồi cười |
-| `Giúp bà cụ tìm túi, sau đó vui với kết quả` | **Bi / Tùy hỷ** theo hai mốc hành động **riêng** | không đổi một lần click thành 2 thẻ nếu thiếu nội dung cảm xúc và lựa chọn |
+| `Ngừng hù khi biết người ta đang sợ, lựa chọn trấn an/giúp` | một **sự kiện giúp người** và thay đổi quan hệ; **Bi chỉ là ngoại lệ hiếm** nếu có mạch truyện đủ sâu | không đổi nút dừng hù thành thẻ thiện, không tặng Bi chỉ vì NPC tự bình tĩnh |
+| `Giúp bà cụ tìm túi, sau đó vui với kết quả` | **Sổ Hành Trình + hậu cảnh** là thưởng chính; có thể xét **một Bi hiếm** sau câu chuyện giàu cảm xúc | không trao **Bi + Tùy hỷ** như bundle mặc định; vui với kết quả trước hết là ghi nhận chuyện |
+
+**Đặc thù PC ma (09-11-2026):** **không thiết kế luyện thiền hay phát thẻ Niệm/Định** cho hồn ma. Việc nhìn ra vật thất lạc, nhận biết âm thanh ở G04 và lần theo ký ức là **quan sát/giải đố**, chỉ mở Sổ/địa điểm. Bi hoặc Tùy hỷ là **ngoại lệ hiếm**, cần tuyến truyện có động cơ thiện rõ ràng và hệ quả; không mặc định mỗi việc tốt đều phát thẻ. Nghe kinh/hồi hướng mở tình tiết và cơ hội kết truyện, **không tự nhận thẻ thiện**. Xem [Ghost Campaign Bible §2.3](ghost-playable-campaign-bible.md#23-thẻ-tâm-của-pc-ma--cơ-hội-thiện-hiếm-không-trao-niệm-từ-giải-đố).
 
 **Quy tắc khóa:** thẻ bất thiện là **khám phá để hiểu**, không phải điểm xấu hay phần thưởng có giá trị đổi lấy hành động gây hại; không có “thu thập đủ 10 người sợ để nhận Sân” hoặc lợi thế mạnh từ hành vi quấy rối. **Card discovery** nên xảy ra một lần sau **một tình huống truyện có nguyên nhân và hệ quả**, các lần sau chỉ làm rõ thêm sắc thái với chống spam. Cần người thẩm định giáo lý kiểm tra mapping tâm sở (đặc biệt các tâm sở đồng sinh) trước code.
 
@@ -55,8 +57,8 @@ Từ code hiện tại (`public/mind.js`) có `san`, `tham`, `si`, `hoi_han`, `p
 **Hù người có giá trị giải trí và học tâm; nhưng con đường mở rộng thế giới không nên chỉ là “hù càng nhiều càng giỏi”.** Truyện gợi một cảm giác khác bằng hệ quả tự nhiên:
 
 1. PC ma hù Ông Tư, thấy ông sợ chạy về hiên. Vài hôm sau con Vàng vẫn cảnh giác. Một tối PC thấy bà cụ ở giếng tìm túi mà **không thể nhặt giúp** → thử thì thầm.
-2. Khi bà cụ tìm được túi, PC thấy **mình có thể tạo một thay đổi tích cực mà không cần thân xác**. G03 có thể mở `Bi` lúc **chọn giúp**; `Tùy hỷ` khi **vui trước điều tốt cho bà**. Không ép “hù → phải chuộc lỗi mới được đi bến”.
-3. PC tình cờ nghe sư tụng hoặc được người sống hồi hướng, có thể **chủ động đứng nghe** → một mảnh chuyện về cuộc sống/tâm, lối dẫn tới G06/G07, **không auto kết truyện**.
+2. Khi bà cụ tìm được túi, PC thấy **mình có thể tạo một thay đổi tích cực mà không cần thân xác**. Trước hết nhận **ký ức/hậu cảnh**; một **Bi hiếm** chỉ xem xét sau lựa chọn chủ động muốn giúp và hành động có hiệu quả. **Không** tự tặng Tùy hỷ chỉ vì bấm “Thấy vui cho bà”. Không ép “hù → phải chuộc lỗi mới được đi bến”.
+3. PC tình cờ nghe sư tụng hoặc được người sống hồi hướng, có thể **chủ động đứng nghe** → một mảnh chuyện về cuộc sống/tâm, lối dẫn tới G06/G07, **không auto kết truyện hoặc phát thẻ Niệm/Định**. Nếu có tình huống tùy hỷ phước lành, phải là **một cảnh độc lập có lựa chọn và thẩm định**.
 4. PC vẫn được **đi rừng tre → Bến Không Tiếng Bờ Chìm** sớm dù đã hù, chưa nhận thẻ thiện hay chưa nghe kinh. Những câu chuyện sâu cần manh mối và quan hệ, không cần công thức điểm thiện.
 5. `Nhật ký/Sổ Hành Trình` gợi nhẹ: “Bạn từng làm ông Tư sợ. Nhưng hôm qua bạn cũng giúp bà cụ tìm được túi.” Không dùng ngôn ngữ phán xét về phẩm hạnh người chơi ngoài đời.
 
@@ -124,7 +126,7 @@ const dedicationEvent = {
 - [ ] Hồn ma có thể mở **thẻ bất thiện** từ **động cơ/truyện của mình**, không nhận thẻ Sân vì nạn nhân đang sợ.
 - [ ] Hù không cho phép quấy rối NPC không giới hạn; không gây hậu quả nguy hiểm, không farm thẻ bằng việc lặp.
 - [ ] Hù là nhánh có thể chọn, không bắt làm thiện để chuộc hay để mở Bờ Chìm.
-- [ ] G03 giúp người và G06 nghe kinh/hồi hướng có móc truyện tự nhiên, không thành tutorial giáo lý.
+- [ ] G03 giúp người và G06 nghe kinh/hồi hướng có móc truyện tự nhiên, không thành tutorial giáo lý; **không auto phát thẻ thiện, không có thẻ Niệm/Định cho PC ma**.
 - [ ] PC ma có thể **tình cờ gặp PC sư/dân** và nghe hồi hướng thật theo phạm vi, không yêu cầu co-op; NPC sư fallback.
 - [ ] Không tự áp dụng quyền hù dọa NPC thành cưỡng ép hù người chơi thật; phải opt-in và có controls.
 - [ ] Một sự kiện hồi hướng không được claim thưởng nhiều lần; 2 PC trên cùng account không auto chia ký ức.
