@@ -1013,32 +1013,16 @@ window.Mind = (() => {
 
   let albumTab = "cards";
   function openAlbum(tab) {
-    if (tab === "cards" || tab === "bag" || tab === "log") albumTab = tab;
+    if (tab === "cards" || tab === "bag") albumTab = tab;
     const panel = $("cards-panel");
     const list = $("cards-list"); list.replaceChildren();
     if (window.Items) {
       const tabs = el("div", "bag-tabs");
-      [["cards", "Thẻ tâm sở"], ["bag", `Túi đồ (${S.items.filter((i) => Items.def(i)).length})`], ["log", "Nhật ký"]].forEach(([k, n]) => {
+      [["cards", "Thẻ tâm sở"], ["bag", `Túi đồ (${S.items.filter((i) => Items.def(i)).length})`]].forEach(([k, n]) => {
         const t = el("button", "pill", n); t.type = "button"; t.setAttribute("aria-pressed", String(albumTab === k));
         t.addEventListener("click", () => openAlbum(k)); tabs.appendChild(t);
       });
       list.appendChild(tabs);
-      if (albumTab === "log") {
-        list.appendChild(el("h3", "album-title", "Nhật ký của nhân vật"));
-        const items = Save.history().slice(-30).reverse();
-        if (!items.length) list.appendChild(el("p", "hint", "Chưa có gì. Những thẻ gặp được, quà nhận được, những đêm đã qua sẽ được ghi ở đây."));
-        const ol = el("ol", "trace-list");
-        for (const h of items) {
-          const li = el("li"); li.appendChild(el("span", "dot"));
-          const body = el("div", null, h.text);
-          const d = new Date(h.at);
-          body.appendChild(el("span", "when", d.toLocaleString("vi-VN", { hour: "2-digit", minute: "2-digit", day: "2-digit", month: "2-digit" })));
-          li.appendChild(body); ol.appendChild(li);
-        }
-        list.appendChild(ol);
-        panel.hidden = false;
-        return;
-      }
       if (albumTab === "bag") {
         list.appendChild(el("h3", "album-title", "Túi đồ"));
         const box = el("div", "bag");
