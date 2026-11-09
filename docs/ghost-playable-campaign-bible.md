@@ -43,19 +43,27 @@
 
 **Sau khi hù:** việc giúp bà cụ tìm túi (G03), tình cờ nghe kinh/hồi hướng từ NPC sư hoặc PC sư/dân khác (G02/G06) là các **móc khám phá tự nhiên**, không phải bài phạt “phải tu để chuộc lỗi”. Hồn ma vẫn được tự do vào Bờ Chìm ngay từ đầu. Với **người chơi thật**, mọi hiệu ứng hù phải **opt-in**, tắt/mute/block được; không có quấy rối vô hạn.
 
-## 2.3. Thẻ tâm cho PC ma — thu thập bằng lựa chọn, không sao chép HG27
+## 2.3. Thẻ tâm của PC ma — cơ hội thiện hiếm, không trao Niệm từ giải đố
 
-Hồn ma cũng được nhận thẻ **qua hành động có ngữ cảnh của mình**, không chỉ nhìn NPC làm. Đây là **trải nghiệm mô phỏng**, không chẩn đoán tâm thật; không nhất thiết thu đủ trong một quest.
+> **Quyết định biên kịch 09-11-2026, design-only:** PC ma thuộc nhóm chúng sinh đang sống trong cảnh khổ, **không có con đường luyện thiền, rèn Niệm/Định như nhân vật người hoặc sư**. Lắng nghe, nhận ra tiếng mái chèo, nhớ lại ký ức và giải puzzle **chỉ là khả năng quan sát/ghi nhớ trong gameplay**; **không phát thẻ Niệm (`sati`) hay Định**. Không lấy điều này làm khẳng định giáo lý rằng *mọi* loài ngạ quỷ tuyệt đối không thể sinh tâm thiện.
 
-| Tình huống | Mốc chủ động để xét thẻ | Tránh cách làm sai |
+**Tách rõ ba loại phần thưởng:**
+1. **Khám phá thế giới:** `discovery`, `clue`, `journal`, `storyThread` và phản hồi NPC. Đây là phần thưởng chủ đạo khi PC ma tìm đường, nhìn thấy thứ người sống không thấy.
+2. **Thẻ bất thiện được nhận diện:** `tham`, `san`, `hoi_han`… chỉ khi **động cơ và sự kiện của chính PC** thể hiện rõ, không phát vì NPC sợ hoặc vì click hù lặp.
+3. **Khoảnh khắc thiện hiếm:** khi PC ma thật sự muốn một người bớt khổ, giúp mà không đòi nhận lại, hoặc chân thành tùy hỷ với điều lành của người khác. **Có thể** mở một thẻ thiện rất hiếm **nếu kịch bản viết đủ bối cảnh và được duyệt**; không có quest `G03` tự tặng cả Bi + Tùy hỷ theo mặc định. Nghe kinh/hồi hướng giúp mở **câu chuyện, lòng tin, nhân duyên với ending**, **không** tự cấp Niệm/Định hay bảo đảm thẻ thiện.
+
+| Tình huống PC ma | Kết quả mặc định | Khả năng thẻ (không tự động) |
 |---|---|---|
-| G03 người đi tìm đồ | PC nghe người ấy lo lắng, **chọn giúp thay vì bỏ qua** → có thể ghi **Bi** | chỉ nhìn thấy vật rơi không tự rơi Bi |
-| G03 người tìm lại được đồ | PC chứng kiến người đó vui và **chọn vui theo** → có thể ghi **Tùy hỷ** | không cấp Tùy hỷ chỉ vì NPC tự xong quest |
-| G01 hù một NPC khiến họ sợ thật | nếu PC **thích thú áp đảo** → xem xét `tham`; nếu có **động cơ trả đũa** → xem xét `san`; nếu **hối tiếc** khi thấy hậu quả → xem xét `hoi_han` | NPC sợ không đồng nghĩa PC có Sân; không thưởng thẻ vì click hù, không farm lặp |
-| G04 tiếng vọng bến | PC chủ động phân biệt âm vọng giả với tiếng gọi thật, thử quan sát nhiều lần → cơ hội **Niệm** theo luật thực hành trong game | không coi việc đi qua bến là đạt Niệm/Định |
-| Chuyện sâu hơn về vật PC còn luyến tiếc (viết sau) | PC chủ động không cố chiếm giữ một kỷ vật/ý niệm của người khác → có thể minh họa **Không tham** | **không** tặng Không tham chỉ vì PC ma không thể nhặt đồ |
+| **G01 hù Ông Tư** | NPC sợ thật, lần sau thay lời thoại/hành vi | **Tham** nếu PC thích áp đảo, **Sân** nếu có ý trả đũa, **Hối** nếu có diễn biến ray rứt |
+| **G04 nhận ra tiếng mái chèo, đi qua khe đá** | **Manh mối + mở Bờ Chìm**, Sổ ghi điều đã thấy | **Không có thẻ Niệm/Định**; nghe phân biệt âm thanh không phải `sati` |
+| **G03 thấy túi kim chỉ và tìm được bà cụ** | Ghi `discovery` / hành trình giúp người gián tiếp | **Có thể cân nhắc một thẻ Bi hiếm**, chỉ nếu PC nghe chuyện bà khổ, tự nguyện quyết giúp và hành động thật sự mang hiệu quả; không cấp vì thấy túi |
+| **G03 thấy bà cụ vui sau khi tìm được túi** | Ghi `sharedJoy` / hồi tưởng, không nhất thiết phát thẻ | **Tùy hỷ** chỉ xem xét trong **mạch cảm xúc sâu hơn**, không nhận tự động từ nút “Thấy vui cho bà” |
+| **G02/G06 nghe kinh hoặc hồi hướng** | `heardDhamma`/`heardDedication`, thêm lore và mở lựa chọn truyện | Không phát **Niệm**, **Định**, **Hỷ** chỉ vì nghe; nếu có đoạn **chủ động tùy hỷ với phước thiện** được viết riêng, có thể xem xét **Tùy hỷ hiếm** |
+| **PC buông một luyến tiếc lớn** (tuyến về sau) | Một thay đổi trong ký ức/cảnh và lựa chọn ending | Có thể xem xét **Không tham** qua cao trào thực sự, không tự tặng vì ghost không nhặt được đồ |
 
-**Quy tắc:** cùng một thẻ có thể được học ở nhiều vai bằng **tình huống khác nhau**, nhưng không bắt ma lặp chính xác chuỗi HG27 **Bi → Không tham → Tùy hỷ** để cân bằng. Mỗi `cardId + eventId + characterId` nhận một lần; người chỉ chơi hồn ma có một album thẻ có tiến triển thực tế.
+**Cân bằng vai:** không ép album của ma phải thu thập đủ các thẻ thiện giống PC dân/sư. Người chơi ma có nhiều **thẻ bất thiện để nhận diện và khám phá tâm**, nhiều ký ức và thế giới cõi khuất, rất ít thẻ thiện có ý nghĩa. Không dùng tổng số thẻ thiện hay chỉ số Niệm/Định để chặn G04/Bờ Chìm hoặc lựa chọn kết thúc G07.
+
+**Phân biệt giáo lý:** trong Vi Diệu Pháp Theravāda, `sati` thuộc nhóm **tâm sở tịnh hảo**, khác khả năng chú ý/ghi nhớ thông thường; có thể tham khảo `Abhidhamma Studies` (Buddhist Publication Society) và `A Comprehensive Manual of Abhidhamma`. Việc **giới hạn tu tập của PC ma** là quyết định thiết kế dành cho tuyến nhân vật này, **không phải tuyên bố mọi chúng sinh thuộc cảnh giới peta tuyệt đối không thể có tâm thiện**. Các truyện `Petavatthu` có yếu tố tùy hỷ với phước hồi hướng. Phân loại `commentary` và `game_interpretation`, duyệt nội dung với người am hiểu Theravāda trước khi code/phát hành. Tài liệu tham khảo: https://www.bps.lk/olib/bp/bp439s_Karunadasa_Theravada-Abhidharma.pdf ; https://www.dhammatalks.org/suttas/KN/Khp/khp7.html .
 
 ## 3. Ghost-only map: “Lối nước khuất” và Bến Không Tiếng
 
@@ -123,7 +131,7 @@ Gốc gạo / mộ cũ / bờ suối / Bờ Chìm → các điểm nghỉ khác 
 2. **Thử thì thầm:** khi NPC đi qua, PC chọn `Lá dưới bậc…`; người nghe chỉ cảm thấy “Có ai nói gì không nhỉ?”, `npc.noticedHint`. Chọn hù quá mạnh có thể khiến NPC đi xa tạm thời, nhưng không khóa vĩnh viễn, có cách khắc phục.
 3. **Báo mộng nếu không được nghe:** sau khi PC đã **biết vật gì đang mất và gặp người tìm vật**, đến lúc NPC ngủ có dấu `dreamAnchor`. PC chọn hình ảnh **bậc thềm với một chiếc lá** để hiện trong mộng, không gửi nguyên text giải đố. Sáng hôm sau NPC kiểm tra chỗ ấy.
 4. **Thế giới đổi:** NPC nhặt lại vật, nói “Hóa ra nó nằm ở đây!”; PC ma thấy cảnh người đó giúp được người khác. Nếu chọn khiến NPC hoảng, hôm sau có đoạn xin lỗi gián tiếp hoặc chỉ dẫn lại, **không khóa**.
-5. **Thưởng:** `discovery:unseen_help`, mảnh chuyện nhân gian và một **tình huống Bi/Không tham được minh họa** tùy hành vi đã làm; không auto rơi thẻ chỉ vì click gió, không giải thích giáo lý dài.
+5. **Thưởng chính:** `discovery:unseen_help`, hậu cảnh bà cụ và mảnh chuyện nhân gian. **Thẻ thiện của PC ma là ngoại lệ rất hiếm**, chỉ xét một thẻ **Bi** nếu có đầy đủ câu chuyện về lòng muốn giúp và một lựa chọn có hệ quả; không tặng Bi/Không tham/Tùy hỷ hàng loạt, không auto rơi thẻ vì click gió.
 
 **Đường bỏ qua:** sau vài ngày NPC hoặc người khác tự tìm ra; PC vẫn có thể nghe hậu chuyện. Truyện không cần thần linh xuất hiện để chỉ từng bước.
 
