@@ -149,7 +149,7 @@ Trước khe đá có ba âm thanh: `lá tre cọ nhau`, `tiếng sỏi lăn tro
 - Chọn âm khác → một góc cảnh đẹp của bờ cỏ bên suối/ao sen, nghe lại tiếng nước rõ hơn; **không mất vật phẩm/không quay đầu hoàn toàn**. Gợi ý sau một lần thử sai.
 - Nếu PC đã nói chuyện với một vong đứng ở lối nước, có thể chọn **`Nhờ chỉ hướng`**, cũng vào bến.
 
-**Bản thiết kế này là puzzle **nghe và nhận diện âm thanh** để mở manh mối/đường mới, **không phải thực hành Niệm (`sati`) hoặc Định** và không trao bất kỳ thẻ Niệm/Định nào cho PC ma.
+**Đây là puzzle nghe và nhận diện âm thanh** để mở manh mối/đường mới, **không phải thực hành Niệm (`sati`) hoặc Định**, và không trao thẻ Niệm/Định cho PC ma.
 
 ### G04-S03 — Ba nơi đáng dừng lại
 
