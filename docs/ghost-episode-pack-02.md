@@ -133,7 +133,7 @@ Sau đêm tu, nếu PC chủ động quay về hoặc tình cờ ở gần, sư 
 > Có một khoảng lặng rất dễ chịu. Bạn nghĩ: “Mình còn muốn đi đâu nữa không?”
 
 - `Mình vẫn còn muốn khám phá` → quay lại map, tiếp tục toàn bộ G01–G06; có thể khép vào một lần khác, không phạt.
-- `Mình đã sẵn sàng khép chuyện này` → màn xác nhận **có nói rõ không tiếp tục điều khiển PC này sau khi kết**.
+- `Mình đã sẵn sàng khép chuyện này` → màn xác nhận **có nói rõ câu chuyện của PC này sẽ khép lại** (vẫn đi dạo được ở nơi đã khám phá, không nhận nhiệm vụ hay thẻ mới).
 
 ### G07-S02 — Ending chung MVP, ba gợi ý epilogue cho tương lai
 

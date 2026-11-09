@@ -119,8 +119,8 @@ Bản đồ giúp hình dung nhanh các địa điểm chung, hành trình riên
 | Thang khám phá | Chưa biết → Nghe kể → Tận mắt → Xác nhận (khi cần), thêm `sourceType` (quan sát / lời kể / chứng cứ); `đã ôn/đã vận dụng` là thuộc tính | chưa code |
 | Hồ sơ nhân vật | Tổng quan · Hành trình · Người quen (guest không có Người quen); Nhật ký và Dấu mốc chuyển vào Sổ | `public/profile.js` còn 4 tab, `mind.js` Album còn tab Nhật ký |
 | Thứ tự MVP vai ma | G01 (hù và **có thể giúp ông Tư dời đèn**) → G03 (giúp bà cụ) → hồi hướng NPC/G07; **G01 giúp đèn hoặc G03 giúp bà** là hai đường mở G07, không bắt làm cả hai. Bờ Chìm sau lát cắt hang; hồi hướng PC thật cuối | chưa code; không khóa Bờ Chìm bằng tu tập |
-| Nhân vật đã khép | archived/read-only: không presence, không online, không nhận gặp mới (máy chủ từ chối) | chưa có |
-| Hồ sơ công khai | chỉ trường trong danh sách cho phép; không công khai vật phẩm/thành tựu có thể lộ spoiler | `social.js` hiện cho tên, vai, ngày tạo, thiên hướng và tối đa 6 vật phẩm: cần rà lại |
+| Nhân vật đã khép | `story_completed`: **truyện read-only nhưng vẫn có Chế độ đi dạo ở nơi đã khám phá** (không nhiệm vụ, thẻ, mốc, khám phá mới); phía xã hội đóng: không presence/online, không gặp hoặc kết nối mới (máy chủ từ chối) | trạng thái và phần ép phía máy chủ ở một PR riêng; chưa có Chế độ đi dạo, cảnh kết thúc, giao diện |
+| Hồ sơ công khai | **Công khai là chủ ý** (quyết định 09-11-2026, chủ project): tên, vai, ngày tạo, thiên hướng và tối đa 6 vật phẩm; không có chỉ số, nhật ký hay thẻ. Người chơi vẫn có công tắc ẩn hồ sơ. Chỉ thu hẹp thêm khi có trường mới có thể lộ spoiler | `social.js` `publicProfile` đã đúng như vậy; trường mới phải qua rà soát |
 | `loreBasis` | một enum 4 giá trị `canonical/commentary/game_interpretation/fiction` | chưa code |
 
 **Chú ý:** bảng này là *quyết định tài liệu đang được review*; chỉ sau khi PR code và tests được merge mới có thể đổi trạng thái thành **implemented**.
@@ -167,6 +167,7 @@ Quy tắc đầy đủ, template đầu file, quy trình truy vấn và checklis
 
 | Từ khóa | Nghĩa | Hướng tra cứu |
 |---|---|---|
+| `thẻ` / `tâm sở` / `tâm` (trong giao diện) | **Thẻ** là thứ người chơi thu thập; mỗi thẻ ứng với một **tâm sở** (yếu tố đi cùng tâm). Tiêu đề "Tâm đang tu / Tâm đã hiểu" là cách gọi gọn trong hồ sơ. **Tâm** là sự nhận thức, cái biết. Định nghĩa dài thuộc tịnh thất/thầy giảng, **không** ở popup; cần thầy Theravāda duyệt | `he-thong-tam.md`, `public/cetasika.js` |
 | `PC`, `characterId` | nhân vật người chơi tự đặt tên | Player-Centric Model |
 | `NPC`, `npcId` | nhân vật độc lập (Sư Tịnh, Ông Tư, Bà Sáu, bà ngoại HG27...) | Player-Centric Model |
 | `HG01–HG27` | storylet/episode Nhân gian; có ID không có nghĩa hoàn thiện code | Playable Scenarios |

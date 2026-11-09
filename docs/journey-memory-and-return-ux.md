@@ -50,7 +50,11 @@
 - Các episode HG/G/T **có thể dùng cờ/state nhiệm vụ hoặc trạng thái kiến thức dẫn xuất** để kiểm tra điều kiện; **không tự tạo thêm event store, sổ, hệ kiến thức hoặc cờ tách rời không thể đối soát**. Ưu tiên hợp đồng event/projection chung trước các kịch bản lớn; trạng thái nhiệm vụ `Có thể nhận / Đang làm / Để sau / Đã xong` **khác** thang khám phá.
 
 ### 0.5. Nhân vật đã khép (ma kết thúc kiếp)
-Trạng thái **archived / read-only**: Sổ vẫn đọc được; **không presence, không xuất hiện trong danh sách online, không nhận sự kiện gặp mới, không giữ kết nối mới**. Máy chủ phải từ chối ở tầng dữ liệu, không chỉ ẩn trên giao diện.
+**Khép là kết thúc câu chuyện, không phải đóng cửa nhân vật** (quyết định 09-11-2026). Trạng thái `story_completed`:
+- **Chương truyện read-only:** không nhiệm vụ, không thẻ, không dấu mốc, không khám phá hay sự kiện truyện mới, không đổi vai. Sổ, Album và Túi đồ vẫn mở xem được.
+- **Vẫn có Chế độ đi dạo:** người chơi mở nhân vật và đi dạo ở **những nơi đã khám phá** (ngắm cảnh, nghe âm thanh, đọc lại Sổ). Không mở nơi chưa đến, không nhận tương tác sinh sự kiện mới.
+- **Phía xã hội:** không gắn `handle`, không vào danh sách online, không ghi "Từng gặp" mới, không giữ kết nối mới. Máy chủ phải từ chối ở tầng dữ liệu, không chỉ ẩn trên giao diện. Mặc định không hiện với người chơi khác; có hiện như khách vãng lai không tương tác hay không là câu hỏi mở.
+- Người chơi luôn có thể tạo nhân vật mới.
 
 ## 1. Mục tiêu trải nghiệm
 

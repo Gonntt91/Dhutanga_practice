@@ -76,7 +76,7 @@ character = {
 
 **Hai lựa chọn tách rõ:**
 - `Tiếp tục khám phá`: giữ vai ma và toàn bộ progress, **không mất cơ hội ending**.
-- `Khép lại kiếp sống này`: một màn xác nhận báo nhân vật sẽ chuyển sang trạng thái đã hoàn thành, **không tiếp tục gameplay vai ma**; cho xem trước cảnh không spoil exact ending, có nút hủy.
+- `Khép lại kiếp sống này`: một màn xác nhận báo nhân vật sẽ chuyển sang trạng thái đã hoàn thành, **không tiếp tục gameplay truyện vai ma** (vẫn đi dạo được ở nơi đã khám phá); cho xem trước cảnh không spoil exact ending, có nút hủy.
 
 **Các kết cuối gợi tái sinh (chưa là canon):**
 - **Người trong làng:** epilogue một đứa trẻ ra đời ở một mái nhà, giữ cảm giác dịu nhưng **không tự nhận đứa trẻ là NPC nào đang có**. Không biến PC ma thành PC dân chơi tiếp; người chơi có thể tạo một PC mới riêng nếu thích.
@@ -103,7 +103,7 @@ ghostEnding = {
 // character selection: [Mây (nhà sư), Gió (dân), Sương (hồn ma — Chuyện đã khép)]
 ```
 
-- **Giữ nhân vật** trên màn chọn như một **chương truyện đã hoàn thành**: xem nhật ký, album, screenshot cảnh và lời kết; không xóa record.
+- **Giữ nhân vật** trên màn chọn như một **chương truyện đã hoàn thành**: xem nhật ký, album, screenshot cảnh và lời kết, và **đi dạo ở những nơi đã khám phá** (Chế độ đi dạo, xem [Journey Memory §0.5](journey-memory-and-return-ux.md)); không xóa record.
 - Không tiếp tục điều khiển avatar đã tái sinh dưới dạng `deva/treegod` hoặc `villager` tự động. Tạo PC mới dùng flow bình thường, không kế thừa thẻ/quá khứ không hợp logic.
 - Không tự khép chỉ vì người dùng lâu không online, gặp sư, chạm ánh sáng hay hoàn thành quest phụ. Nhánh `Continue exploring` có giá trị ngang với `Conclude`.
 - Chống tái claim ending: `characterId + endingId` có transaction, một lần ghi; trên nhiều thiết bị không thể vừa end vừa tiếp tục ghi quest ma.

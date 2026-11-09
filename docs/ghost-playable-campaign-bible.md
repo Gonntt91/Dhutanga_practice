@@ -184,7 +184,7 @@ Khi muốn kết, PC thấy ánh sáng đầu sáng, nghe một câu: “Con đ�
 
 **Không có công thức:** `thẻ tâm X >= 70 → deva` là sai tinh thần. Ending căn cứ các **mảnh chuyện của chính PC**, lựa chọn khám phá/chăm sóc và cách kể đã được biên tập; một kết chung “được an và bước sang một cuộc đời khác” là phương án nếu chưa đủ chất liệu để viết ba ending sâu. *Không khẳng định làm một việc tốt hoặc nghe một lần hồi hướng bảo đảm tái sinh cõi nào theo Phật học.*
 
-**Archive:** sau khi người chơi xác nhận ending, `character.status=story_completed`, lưu journal/thẻ/ảnh cảnh và `endingId`. Avatar này **không chơi tiếp chương ma** (theo yêu cầu kết truyện); người chơi có thể xem Sổ, đọc lại cảnh và tạo PC mới. Không delete nhân vật hoặc thay `role=ghost` thành `role=monk/deva` trong save. **Cảnh xác nhận hai bước** vì đây là ending không thể rollback tùy tiện.
+**Archive:** sau khi người chơi xác nhận ending, `character.status=story_completed`, lưu journal/thẻ/ảnh cảnh và `endingId`. Avatar này **không tiếp tục chương ma** (không nhiệm vụ, thẻ, mốc hay khám phá mới) nhưng **vẫn đi dạo được ở những nơi đã khám phá** ([Journey Memory §0.5](journey-memory-and-return-ux.md)); người chơi có thể xem Sổ, đọc lại cảnh và tạo PC mới. Không delete nhân vật hoặc thay `role=ghost` thành `role=monk/deva` trong save. **Cảnh xác nhận hai bước** vì đây là ending không thể rollback tùy tiện.
 
 ## 5. Một vòng chơi mẫu 20–30 phút cho PC ma
 
@@ -241,5 +241,5 @@ Khi muốn kết, PC thấy ánh sáng đầu sáng, nghe một câu: “Con đ�
 
 - **G07 có hai đường ngay trong MVP:** `G01.helpedWithLamp` **hoặc** `G03.helpedGranny`, **và** một lần chủ động nghe hồi hướng NPC (nhánh G06-short). `helpedWithLamp` chỉ ghi khi **Ông Tư thật sự nhận và dời đèn**, không chỉ vì PC bấm một câu. **Không cần G03**, hù NPC không bắt buộc và người chơi vẫn được đi khám phá. Không phải tính toán nghiệp báo hay đảm bảo tái sinh.
 - **Bờ Chìm không bị khóa bằng kết quả tu tập.** Dời sang sau chỉ vì khối lượng map và asset.
-- Nhân vật đã kết thúc là archived/read-only (xem [Journey Memory §0.5](journey-memory-and-return-ux.md)).
+- Nhân vật đã kết thúc: truyện read-only nhưng còn **Chế độ đi dạo** ở nơi đã khám phá, không có phía xã hội (xem [Journey Memory §0.5](journey-memory-and-return-ux.md)).
 - Mọi sự kiện của G0x dùng chung **event log và projection/checkpoint** của [Sổ Hành Trình](journey-memory-and-return-ux.md); có thể dùng `G01.helpedWithLamp`/`G03.helpedGranny` như **state dẫn xuất**, không tạo nguồn sự thật thứ hai hoặc event store riêng.
