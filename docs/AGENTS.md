@@ -74,6 +74,7 @@ Tài liệu mới nên đặt vào đúng nhóm trong [README.md](README.md#4-da
    - HG27 bà ngoại khác bà Sáu, thẻ **Bi → Không tham → Tùy hỷ** đúng ba mốc.
    - PC ma hù người khiến NPC **sợ thật**; người sợ có `fearState`, thẻ tâm bất thiện của PC chỉ theo **động cơ/diễn tiến** của PC.
    - PC ma **có nhiều điểm nghỉ**; nhà hoang chỉ là một lựa chọn. G04 đến Bờ Chìm qua **khe suối rừng tre/khe đá**, không qua vết nước ngược ở nhà hoang.
+   - **Không trao thẻ Niệm/Định cho PC ma** từ quan sát, nghe tiếng vọng, tìm đường hoặc nghe kinh/hồi hướng. Giải đố cho manh mối; thẻ bất thiện theo động cơ ma; thẻ thiện cực hiếm và cần nội dung được duyệt. [Ghost Campaign](ghost-playable-campaign-bible.md).
    - PC ma gặp NPC/PC làm hồi hướng theo story event có thật; multiplayer real-player scare cần opt-in và không spam.
    - Sổ/story spoilers **per-character**, không tự chia knowledge giữa hai nhân vật một account.
 5. **Choose edit location:** luật chung → owner; một episode → episode pack; định dạng dữ liệu → contract spec; không copy-paste cả đoạn vào 5 file nếu chỉ cần link tóm tắt.
