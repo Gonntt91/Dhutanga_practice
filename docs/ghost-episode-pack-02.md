@@ -1,6 +1,6 @@
 # Ghost Episode Pack 02 — Hương cơm, lời hẹn và đêm cuối (G02, G05, G06, G07)
 
-> **Story design v0.1, CHƯA code.** Tiếp nối [Ghost Episode Pack 01](ghost-episode-pack-01.md). Các tình tiết có tính siêu nhiên là **game fiction**. Phân biệt PC ma, NPC bà ngoại ngạ quỷ (HG27), NPC bà Sáu bán xôi và bà cụ ở giếng người sống. Không biến **nghe hồi hướng một lần → chắc chắn tái sinh** thành khẳng định Phật học.
+> **Story design v0.1, CHƯA code.** Tiếp nối [Ghost Episode Pack 01](ghost-episode-pack-01.md) và các quyết định [hù dọa/thẻ tâm/hồi hướng giữa người chơi](ghost-mischief-cards-and-shared-dedication.md), [Sổ Hành Trình/hồi tưởng](journey-memory-and-return-ux.md). Các tình tiết có tính siêu nhiên là **game fiction**. Phân biệt PC ma, NPC bà ngoại ngạ quỷ (HG27), NPC bà Sáu bán xôi và bà cụ ở giếng người sống. Không biến **nghe hồi hướng một lần → chắc chắn tái sinh** thành khẳng định Phật học.
 >
 > **Giọng kể:** những câu ngắn vừa đủ để người chơi tò mò, khoảng lặng và cảnh đẹp tự kể. Ba mạch Bến Không Tiếng/Hạnh/HG27 có quan hệ chủ đề, **không buộc cùng một nhân vật hoặc cùng nguyên nhân**.
 
@@ -100,7 +100,8 @@ PC quay lại **G04 cột đá** và hỏi người giữ bến về đêm nư�
 >
 > Bạn đứng ngay cạnh. Ông không nhìn thấy bạn.
 
-- `Làm lá xào xạc` → sư mở mắt, nhìn một lát rồi trở về tư thế. “Gió mạnh thật.” PC có thể thấy vui; không biến vị sư thành người hoàn hảo bất động/không sợ.
+- `Làm lá xào xạc` → sư hơi giật mình, mở mắt và nhìn về phía tiếng động, rồi trở về tư thế. “Gió mạnh thật.” **Có phản ứng sợ thật nhưng nhẹ** hơn ông Tư; không coi mọi vị sư miễn nhiễm với sợ.
+- `Cho một bóng người lướt qua` → sư có thể khựng lại một lúc, một tay giữ mép y, rồi quan sát và bình tĩnh lại; không làm sư đứng im như tượng hoặc biến thành cutscene dạy đạo lý. **Hù người chơi thật cần opt-in riêng**, không tự gán thẻ bất thiện chỉ vì sư giật mình.
 - `Đứng nghe tiếng thở` → cảnh tĩnh, không thẻ tự động.
 - `Đi chơi chỗ khác` → sư vẫn tiếp tục đêm tu.
 
@@ -118,6 +119,8 @@ Sau đêm tu, nếu PC chủ động quay về hoặc tình cờ ở gần, sư 
 - `Đi tiếp` → không mất đường khám phá.
 
 **Sự kiện hồi hướng** được ghi lại dù PC không chọn kết thúc kiếp ma; nó **không auto giải thoát**. Khi PC đã có một mối duyên riêng hoặc từng giúp người, G07 có thể hiển thị một lời mời **tự chọn**, không phải màn ép đi.
+
+**Nhánh gặp người chơi khác (thiết kế tương lai, không phải code đã chạy):** nếu PC ma tình cờ ở gần một **PC sư** vừa tự nguyện chọn `Hồi hướng` sau thiền, hoặc **PC người dân** sau khi bố thí, hiện một ambient nhỏ: “Ngoài tường có người đang hồi hướng.” PC ma chọn `Đứng nghe` → lưu `heardDedication(source=player,eventId)` khi server xác nhận sự kiện; `Đi tiếp` → bỏ qua. **Không parse chat tự do, không tự nhận thẻ hoặc tái sinh**, không tiết lộ danh tính/địa điểm người nghe; nếu không có người chơi thật thì lịch NPC sư vẫn cho truyện tiếp tục. Chi tiết consent/rate-limit trong [Shared Dedication](ghost-mischief-cards-and-shared-dedication.md).
 
 ## 4. G07 — Đêm cuối của một bóng người (kết sớm hoặc tiếp tục)
 
@@ -161,7 +164,7 @@ Các ending **không dựa công thức** “thẻ tâm X → được chọn de
 |---|---|---|---|
 | Con Vàng sủa khi PC ma làm lá rung | một trò nghịch vui | Ông Tư kể lời đồn ở ngõ trong PC dân | con Vàng là “sứ giả cõi dưới” |
 | Túi kim chỉ bà cụ | một việc tốt trọn vẹn | bà ngồi vá quai thúng; có câu chuyện mới | túi là chìa khóa giải cứu Hạnh |
-| Vệt nước ngược nhà hoang | một chỗ để khám phá | dẫn tới Bờ Chìm, rồi Bờ Nổi qua PC người | nhà hoang là nơi mọi NPC từng chết |
+| Khe suối rừng tre và tiếng mái chèo | một nơi đẹp để dừng nghe, chỉ ma thấy lối khuất sau khe đá | dẫn tới Bờ Chìm, trong khi PC sống có lối Bờ Nổi qua hang | nhà hoang bắt buộc là cửa xuống âm giới hoặc tất cả NPC từng sống ở đó |
 | Ba cột đá | điểm giao thị giác | PC sống bất ngờ nhìn thấy từ phía khác | mọi manh mối của ghost tự chuyển account |
 | Tiếng trẻ trên bến năm lũ | câu hỏi bí ẩn | một mảnh khi tìm Hạnh/bà Sáu | người giữ đò lập tức kể Hạnh là vợ Ông Tư |
 | Lời sư hồi hướng | người chơi ma có một đêm ấm | mở cơ hội kết truyện hoặc một câu Sổ | buộc mọi ma cùng lúc siêu thoát |
@@ -186,9 +189,11 @@ Các ending **không dựa công thức** “thẻ tâm X → được chọn de
 
 - [ ] G02 xem cảnh cúng dường **không cho ghost nhặt/ăn đồ vật vật lý**, cũng không auto được an/tái sinh.
 - [ ] G05 ghép Hạnh không lộ danh tính chỉ bằng một đoạn nghe ferryman; lời kể cũ có thể không chắc và được ghi như giả thuyết.
-- [ ] G06 NPC sư không bất khả xâm phạm trước tiếng động; phản ứng ngắn tự nhiên, không phải bài giảng.
+- [ ] G06 NPC sư phản ứng tự nhiên khi bị hù (thường ít sợ hơn người dân), không biến thành tượng hoặc bài giảng; hù NPC có thể gợi thẻ bất thiện **theo ý PC**, không theo nỗi sợ của NPC.
 - [ ] G07 có nút ở lại khám phá, không ép ending, không yêu cầu chơi hết G04/G05.
 - [ ] Ending đã xác nhận không xóa nhân vật/thẻ/Sổ, không biến PC ma thành PC trẻ hay thọ thần để tiếp tục gameplay.
+- [ ] Ma có thể **tình cờ nghe hồi hướng từ PC sư/dân khác** theo event đã xác thực và có NPC fallback, không auto ending hoặc farm thẻ.
+- [ ] Mạch G04 và ký ức liên quan đến **suối rừng tre**, không dùng vết nước ngược nhà hoang. Nhà hoang chỉ là điểm nghỉ tùy chọn.
 - [ ] Ở mỗi episode có cảnh đẹp hoặc một câu thoại đáng nhớ ngay cả khi người chơi không nhận nhiệm vụ.
 - [ ] Người chơi nhiều PC không có Sổ/quest được tự điền từ PC khác.
 - [ ] Các kết tái sinh/mộng/hồn ma qua vách là nội dung sáng tác có nhãn, không khẳng định pháp lý/tôn giáo hoặc nghiệp báo máy móc.
