@@ -34,10 +34,10 @@
 
 - `Hù rõ cho ông sợ` → ông Tư **hoảng thật**: giọng run, đánh rơi đèn, lùi hai bước rồi chạy vào hiên. Con Vàng sủa liên tục. `fearState=scared`. Sau đó chọn `Thấy khoái vì ông sợ` / `Chỉ định đùa thôi` / `Dừng hù, báo chiếc đèn`. **Tham** chỉ xét khi PC thích cảm giác lấn át; **Sân** chỉ có thêm bối cảnh giận/trả đũa, không do nỗi sợ của ông.
 - `Hù nhẹ` → ông giật mình, soi đèn tìm rồi đưa con Vàng về hiên; vẫn sợ ít.
-- `Thì thầm: “Đèn gần khăn kìa”` → ông tự phát hiện và dời đèn, PC không cầm được.
+- `Thì thầm: “Đèn gần khăn kìa”` → ông **thực sự nhận ra và dời đèn** ra khỏi khăn, PC ma không cầm được. Ghi event `G01.lampMadeSafe`, dẫn xuất `G01.helpedWithLamp=true` **chỉ khi NPC đã xử lý xong**, không ghi ngay khi chỉ bấm nút; đây là **đường giúp người thay thế G03** để có thể tiến tới G07 sau khi nghe NPC sư hồi hướng.
 - `Để họ yên` → tự do đi tiếp, không bị phán xét.
 
-**Lần sau:** ông Tư nhớ đêm đã sợ, có thể kể lời đồn/đóng cửa sớm; nếu từng được giúp, lời nói đổi. Không spam hù để farm thẻ. **Sư** ở G06 có thể giật mình ít hơn, bình tĩnh nhanh hơn nhưng không nhất thiết vô cảm.
+**Lần sau:** ông Tư nhớ đêm đã sợ, có thể kể lời đồn/đóng cửa sớm; nếu từng được giúp và **đã dời đèn**, lời nói đổi. Trường hợp hù mạnh khiến ông đánh rơi đèn: nhánh `Dừng hù, báo chiếc đèn` chỉ ghi `helpedWithLamp` sau khi ông trở lại xử lý được đèn, không thưởng thiện vì thao tác hù trước đó. Không spam hù để farm thẻ. **Sư** ở G06 có thể giật mình ít hơn, bình tĩnh nhanh hơn nhưng không nhất thiết vô cảm.
 
 ### G01-S02 — Nhà bỏ trống (khám phá và điểm nghỉ **tùy chọn**)
 
@@ -206,7 +206,7 @@ Trước khe đá có ba âm thanh: `lá tre cọ nhau`, `tiếng sỏi lăn tro
 
 | Biến trạng thái nội dung | Tác dụng khi quay lại |
 |---|---|
-| `G01.seen / mischief / helpedWithLamp` | Ông Tư/con Vàng có câu ngắn/pose khác, không dựng lại đoạn đầu |
+| `G01.seen / mischief / helpedWithLamp` | Ông Tư/con Vàng có câu ngắn/pose khác; `helpedWithLamp` là projection **sau event ông đã dời đèn**, không ghi chỉ từ lựa chọn thoại |
 | `G01.shadowHouseEntered / optionalRestPlace` | vào nhà bằng lối bóng, điểm nghỉ tùy chọn chứ không có `ghost.home` cố định |
 | `G03.itemSeen / ownerKnown / hintHeard / dreamAnchor / dreamSent` | câu chuyện có đường thì thầm hoặc báo mộng; không cần cả hai |
 | `G03.itemReturned / sharedJoy / frightened` | túi biến khỏi nhà, xuất hiện cạnh bà cụ; không nhân reward |
@@ -220,7 +220,7 @@ Trước khe đá có ba âm thanh: `lá tre cọ nhau`, `tiếng sỏi lăn tro
 
 - [ ] Người chơi có thể đi dạo 5–10 phút, ngắm cảnh ma, không bị bất kỳ auto popup.
 - [ ] Khi hù rõ, NPC dân **sợ thật**, sư có thể ít sợ hơn; không cần jumpscare lớn.
-- [ ] Thẻ bất thiện theo **động cơ PC** có kịch bản, không phát Sân do nỗi sợ NPC, không farm qua spam hù; thẻ thiện **hiếm**, không tự thưởng Bi/Tùy hỷ mỗi khi giúp người.
+- [ ] Thẻ bất thiện theo **động cơ PC** có kịch bản, không phát Sân do nỗi sợ NPC, không farm qua spam hù; thẻ thiện **hiếm**, không tự thưởng Bi/Tùy hỷ mỗi khi giúp người. G01 giúp ông Tư dời đèn là đường tiến tới G07 **không yêu cầu hù trước**.
 - [ ] G03 rõ **ai mất gì, vì sao làm rơi, PC biết gì và tại sao NPC cuối cùng tìm được**.
 - [ ] Báo mộng có anchor, không phải ngoại năng đọc/tạo giấc mơ cho mọi người.
 - [ ] Không có thao tác nhặt/trao đồ vật trong giao diện vai ma.
