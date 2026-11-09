@@ -330,6 +330,8 @@ Sau đó chỉ số được **random trong khung của nhóm**, nên hai ngư�
 - Tên nhóm hiện nhẹ nhàng, ví dụ *"Người này thiên về tính hăng hái"*; không dùng "tính sân" ở lớp Dạo chơi.
 - Cho làm lại khảo sát. Tính cách cũng đổi dần theo cách chơi.
 
+**Quyết định 09-11-2026:** khảo sát là nhiệm vụ tùy chọn trong tab Việc đang chờ (khu "Việc nhỏ và chuyện lạ"), mục "Khảo sát tính cách (không bắt buộc)", có thể bỏ qua; không còn chặn lúc bắt đầu chơi. Chưa làm khảo sát thì chỉ số dùng khung trung tính (không có tên tính). Làm khảo sát sau thì chỉ số trộn đều nửa giá trị đang có với nửa giá trị theo khung của nhóm tính; làm lại chỉ đổi nhãn tính, giữ nguyên chỉ số. Sẽ cân nhắc giữ hoặc bỏ cơ chế này sau khi người chơi trải nghiệm.
+
 ## 6. Hai loại chỉ số
 
 | | **Thẻ chỉ số** (nền) | **Quả cầu** (nhiệm vụ) |
