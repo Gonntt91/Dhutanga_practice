@@ -4,6 +4,54 @@
 >
 > **Điều chỉnh bắt buộc:** **Nhà hoang chỉ là MỘT địa điểm nghỉ tùy chọn của PC hồn ma**, không phải nhà/chỗ ở mặc định, không phải tất cả hồn ma cùng sống tại đó, không phải checkpoint cố định, không yêu cầu về nhà mới được save/thoát/nhận hồi tưởng. PC hồn ma có thể tự chọn hoặc thay đổi địa điểm nghỉ tùy câu chuyện và sở thích.
 
+## 0. Quyết định hợp nhất: MỘT Sổ Hành Trình duy nhất (Approved design, 09-11-2026)
+
+> **Status:** Approved design · **Code status:** chưa code · **Last reviewed:** 2026-11-09. Mục này **thắng** các đoạn mâu thuẫn ở §3–§6 bên dưới (các đoạn đó giữ lại để tham khảo mô hình sự kiện). Sổ cũ, Sổ kiến thức, Sổ loài/cõi, Dấu mốc, Nhật ký và Hồi tưởng **không phải các hệ riêng**; chúng là cách nhìn khác nhau trên cùng một dữ liệu.
+
+**Ba nguyên tắc chốt:**
+1. **Một hệ thống ký ức cho mỗi nhân vật**, nhiều cách xem cùng dữ liệu.
+2. **Tận dụng màn đã có**, không thêm popup, nút HUD hay hệ nhiệm vụ riêng.
+3. **Khám phá thế giới và hiểu câu chuyện quan trọng hơn số mục hoàn thành.** Không ép mọi mục lên "Xác nhận".
+
+**Tên:** **Sổ Hành Trình** (nhãn ngắn trong giao diện: **Hành trình**). Không dùng "Sổ khám phá" làm tên tổng vì nội dung đã gồm chuyện đời nhân vật, kiến thức và dấu mốc.
+
+### 0.1. Cái gì gộp vào đâu
+
+| Đang có hoặc đề xuất trước | Sau khi hợp nhất |
+|---|---|
+| Sổ khám phá (`Discover`, tab trong bảng Nhiệm vụ) | Mục **Nơi chốn và nhân vật** của Sổ Hành Trình (cùng thành phần giao diện) |
+| Sổ loài và cõi giới, Bản đồ hành trình | Cũng là mục **Nơi chốn và nhân vật** (loại mục: loài, cõi) |
+| Sổ kiến thức (`knowledgeBook`) | Mục **Đã học**: mỗi bài là một mục, `đã ôn` và `đã vận dụng` là thuộc tính bổ sung |
+| Nhật ký (Hồ sơ và tab trong Album), Dấu mốc, Nhật ký thời gian | Mục **Dòng thời gian**; dấu mốc là sự kiện được ghim |
+| Mạch truyện, manh mối (`storyThreads`, `clues`) | Mục **Đang theo** |
+| Hồi tưởng khi quay lại (`recapSnapshots`) | Mở rộng màn **Trong lúc vắng** có sẵn (`reflect.js`): tối đa một đoạn đã làm, một mạch đang theo, một manh mối; không popup mới |
+| Việc có thể làm | Mục đầu của bảng **Nhiệm vụ** (trạng thái: Có thể nhận / Đang làm / Để sau / Đã xong); là trạng thái nhiệm vụ, **không trộn** với thang khám phá |
+| Codex cấp tài khoản (`accountMeta`) | **Bỏ ở MVP**; mọi manh mối thuộc nhân vật |
+
+**Giữ riêng:** **Album thẻ** (bộ sưu tập) và **Túi đồ** (inventory); Album chỉ liên kết tới sự kiện trong Sổ khi cần.
+
+### 0.2. Giao diện (dùng lại màn có sẵn)
+- **Bảng Nhiệm vụ:** hai khu **Việc có thể làm** và **Sổ Hành Trình**.
+- **Hồ sơ nhân vật:** **Tổng quan · Hành trình · Người quen**. Hai tab Nhật ký và Dấu mốc biến mất; tab Nhật ký trong Album chuyển về Sổ. **Guest** thấy Tổng quan và Hành trình, không có Người quen.
+- Bên trong Sổ: **Nơi chốn và nhân vật · Đang theo · Đã học · Dòng thời gian**. Một thành phần giao diện dùng lại ở cả hai chỗ, không có hai hệ riêng.
+- Không thêm icon quyển sổ mới ở HUD.
+
+### 0.3. Thang khám phá và nguồn thông tin
+- **Tiến độ hiển thị:** **Chưa biết → Nghe kể → Tận mắt → Xác nhận (khi cần)**. "Xác nhận" dành cho bí ẩn, lời đồn và mối liên hệ cần chứng cứ; **không ép** địa điểm hay NPC phải lên mức này (đến ao sen và nhìn tận mắt là đủ hoàn thành mục).
+- **Mỗi thông tin có thêm `sourceType`** (`observation | report | evidence`) vì "tận mắt" không đồng nghĩa "đáng tin hơn lời kể". Ví dụ: nhân vật đã tận mắt gặp người giữ bến (quan sát), còn chuyện tiếng trẻ khóc đêm lũ vẫn là lời kể chưa xác minh.
+- **Kiến thức:** `đã ôn`, `đã vận dụng` là thuộc tính bổ sung của mục, không phải thang thứ hai.
+- **"Tôi đang nghi"** là ghi chú tự chọn của người chơi, có thể bỏ khỏi MVP mà không đổi cấu trúc.
+- `loreBasis` dùng một enum `canonical | commentary | game_interpretation | fiction`; `inspired` chỉ là cách diễn đạt, không phải giá trị thứ năm.
+
+### 0.4. Dữ liệu
+- **Một nguồn sự kiện bền theo nhân vật** (`characterId`), máy chủ kiểm và ghi idempotent. **Không dùng `Save.history()` (giới hạn 200 dòng) làm nguồn sự thật**; màn Dòng thời gian chỉ nạp một phần.
+- Trạng thái dẫn xuất (ví dụ "bà cụ đã lấy túi") có thể lưu dạng projection/cache; quan trọng là **không có nhiều nguồn độc lập cùng quyết định một sự thật**.
+- **Migration từng loại**, giữ nguyên save legacy tới khi kiểm đầy đủ. `backfillMilestones()` chỉ khôi phục dấu mốc từ thẻ, **không** phải công cụ chuyển cả lịch sử thành sự kiện có cấu trúc.
+- Mọi bí ẩn, mạch truyện, bài học mới của các episode HG/G dùng chung mô hình sự kiện này, **không tự tạo cờ nhiệm vụ, trạng thái kiến thức hoặc log riêng**. Làm trước các kịch bản lớn.
+
+### 0.5. Nhân vật đã khép (ma kết thúc kiếp)
+Trạng thái **archived / read-only**: Sổ vẫn đọc được; **không presence, không xuất hiện trong danh sách online, không nhận sự kiện gặp mới, không giữ kết nối mới**. Máy chủ phải từ chối ở tầng dữ liệu, không chỉ ẩn trên giao diện.
+
 ## 1. Mục tiêu trải nghiệm
 
 - **Trở lại là nhớ được câu chuyện đang tới đâu**, không phải học lại đoạn thoại hàng chục dòng.
@@ -31,7 +79,7 @@
 
 **Nhà hoang trong G01/G03** còn có chức năng riêng (hù vui, phát hiện túi kim chỉ, ngắm cảnh). Chọn nghỉ ở đó chỉ là **một lựa chọn thêm**, không là tuyến duy nhất hoặc một nơi chứa mọi hồn ma.
 
-## 3. Sổ Hành Trình khác Nhật ký và Album thẻ
+## 3. Sổ Hành Trình khác Nhật ký và Album thẻ *(đọc kèm §0: các lớp dưới đây là cách xem của MỘT Sổ)*
 
 | Lớp | Chức năng | Ví dụ |
 |---|---|---|
@@ -43,7 +91,7 @@
 
 **Tuyệt đối không** tạo suy đoán thành sự thật chỉ để tóm tắt hay “làm câu chuyện hấp dẫn”; không lấy `accountMeta.storySeen` để mở manh mối hoặc thoại chưa trải qua ở PC này.
 
-## 4. UX đề xuất: một nút vào Sổ, một bản nhắc ngắn lúc trở lại
+## 4. UX đề xuất: một nút vào Sổ, một bản nhắc ngắn lúc trở lại *(đọc kèm §0.2: dùng bảng Nhiệm vụ và Hồ sơ có sẵn, không thêm icon HUD)*
 
 **Trong map:** icon quyển sổ nhỏ ở menu/vùng Profile, không che cảnh, có dấu chấm chỉ khi *mạch người chơi đang theo có sự kiện mới đã ghi thật*. **Trong Profile:** tab `Hành trình` nằm cạnh `Nhật ký` và `Album thẻ`, có các mục `Đang theo / Manh mối / Đã khép`. Không duplicate hai hệ nhật ký độc lập.
 

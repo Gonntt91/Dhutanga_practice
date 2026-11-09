@@ -1125,6 +1125,9 @@ Game đã có nhiều chỗ **mở chuyện**: thẻ, cột mốc, quán xét cu
 
 ### 18.2. Kiến thức khác thẻ tâm sở đã trải nghiệm
 
+> **Cập nhật 09-11-2026:** "Sổ kiến thức" ở đây là mục **Đã học** trong **Sổ Hành Trình** duy nhất ([Journey Memory §0](journey-memory-and-return-ux.md)), không phải một sổ riêng. Trạng thái đã nghe/đã ôn/đã vận dụng là thuộc tính của mục.
+
+
 Cần mở **Sổ kiến thức** gồm các mục ngắn như *Niệm là gì?*, *Năm triền cái*, *Tâm từ*, *Vô thường*, *Giữ lời hứa*, *Hạnh đầu-đà*. Có tên, nguồn từ kinh hoặc chú giải, câu giải thích đời thường, ví dụ trong làng, nơi dùng về sau. Trạng thái của mỗi mục: **đã nghe/đọc** → **đã ôn** → **đã vận dụng trong câu chuyện**.
 
 Ví dụ người chơi giao nhân vật học về *năm triền cái*, thoát game. Khi quay lại sau khi hoàn tất bài: **"Đã học một đoạn về năm triền cái"**, có nút **Mở Sổ kiến thức**, và gợi ý đến gặp sư già. Lúc gặp sư, nếu có kiến thức này sẽ xuất hiện thêm lựa chọn **"Con muốn học cách kinh hành khi tâm chìm xuống"**. Nếu chưa có, nhiệm vụ chính vẫn chơi được bằng cách thông thường. Kiến thức tạo lợi thế khám phá, **không phải cộng chỉ số tu chứng**.

@@ -37,7 +37,7 @@ Bản đồ giúp hình dung nhanh các địa điểm chung, hành trình riên
 | **Hồn ma G01–G07** | hù người có phản ứng sợ thật; giúp gián tiếp, nghe hồi hướng, khám phá nhà hoang **hoặc** khe suối, tới Bờ Chìm; có thể tự chọn ending | [Ghost Campaign Bible](ghost-playable-campaign-bible.md), [Episode 01](ghost-episode-pack-01.md), [Episode 02](ghost-episode-pack-02.md) |
 | **Khe suối → Bến Không Tiếng** | dòng suối tự nhiên qua **rừng tre/khe đá**, gần ao sen, liên hệ bờ sông cũ; hồn ma thấy lối khuất tới **Bờ Chìm**, người sống tới **Bờ Nổi** từ Hang Vọng Tâm | [World Exploration](world-exploration-bible.md), [Ghost Episode 01](ghost-episode-pack-01.md) |
 | **Thọ thần, chư thiên và cõi giới** | nghe lời đồn và dấu hiệu sớm, có cuộc gặp ít nhưng có ý nghĩa; cõi giới mở bằng tò mò và manh mối, không chỉ ngưỡng điểm tâm | [World Exploration](world-exploration-bible.md), [Map Brief](map-brief-hang-va-coi-gioi.md) |
-| **Sổ Hành Trình / lúc trở lại** | gom các sự kiện theo mạch, tách chứng kiến/lời kể/giả thuyết/xác nhận, hồi tưởng ngắn tùy chọn; nơi nghỉ linh hoạt **không bắt buộc là nhà hoang** | [Journey Memory & Return UX](journey-memory-and-return-ux.md) |
+| **Sổ Hành Trình (một sổ duy nhất) / lúc trở lại** | gộp Sổ khám phá, Nhật ký, Dấu mốc, Sổ kiến thức thành một Sổ theo nhân vật; thang chưa biết → nghe kể → tận mắt → xác nhận kèm nguồn; hồi tưởng ngắn tùy chọn; nơi nghỉ linh hoạt **không bắt buộc là nhà hoang** | [Journey Memory & Return UX](journey-memory-and-return-ux.md) |
 | **Chạm người chơi khác** | thấy người trong thế giới, kết nối/tiếng động/chuyện được hồi hướng; tương tác hợp ngữ cảnh và có quyền riêng tư | [Kết nối người chơi](ket-noi-nguoi-choi.md), [Ghost Mischief & Shared Dedication](ghost-mischief-cards-and-shared-dedication.md) |
 
 **Bí ẩn cần giữ:** trong code legacy `story.js` có reveal lớn về **Hạnh và gia đình Ông Tư**. Không copy sự thật này vào các đoạn đầu truyện của PC ma hoặc Sổ của PC chưa tìm đủ chứng cứ. Chỉ dành spoiler cho tài liệu biên kịch/agent, **không viết ra lời giới thiệu cho người chơi mới**.
@@ -98,7 +98,7 @@ Bản đồ giúp hình dung nhanh các địa điểm chung, hành trình riên
 | Tài liệu | Dùng khi |
 |---|---|
 | [Hệ thống tâm](he-thong-tam.md) | chi tiết mô phỏng tâm, thẻ, các tầng hiểu, phần đã có/chưa có, cần duyệt giáo lý |
-| [Journey Memory & Return UX](journey-memory-and-return-ux.md) | Sổ Hành Trình, phân loại manh mối, hồi tưởng, nơi nghỉ tự chọn |
+| [Journey Memory & Return UX](journey-memory-and-return-ux.md) | **Sổ Hành Trình hợp nhất (§0)**, phân loại manh mối, hồi tưởng, nơi nghỉ tự chọn |
 | [Kết nối người chơi](ket-noi-nguoi-choi.md) | hồ sơ, người quen, presence, quyền riêng tư |
 
 **Tổng cộng:** 19 file thiết kế chuyên môn ở cấp `docs/` tại thời điểm tạo README này, cộng README và hướng dẫn agent. Khi thêm tài liệu mới, cập nhật bảng này ngay trong cùng PR.
@@ -116,6 +116,13 @@ Bản đồ giúp hình dung nhanh các địa điểm chung, hành trình riên
 | Shared dedication | ma tình cờ nghe **PC sư/dân khác** hồi hướng khi có event hợp lệ; NPC fallback | presence/chat/emit có nhưng chưa có contract event hồi hướng PvP |
 | Story memory | mỗi PC có Sổ với `observed/reported/hypothesis/confirmed`; recap ngắn tự chọn | `Save.history`, `Profile`, `Reflect` có nền cũ, chưa có Sổ tổng hợp |
 | Ghost ending / villager ordination | chọn kết kiếp ma lưu archive; dân chủ động tìm hiểu xuất gia, giữ characterId | role transition/migration chưa code |
+| Sổ ghi nhớ | **Một Sổ Hành Trình** (tab "Hành trình") cho mỗi nhân vật, gộp Sổ khám phá, Nhật ký, Dấu mốc, Sổ kiến thức, Sổ loài/cõi; Album thẻ và Túi đồ vẫn riêng; Codex cấp tài khoản bỏ ở MVP. Chi tiết ở [Journey Memory §0](journey-memory-and-return-ux.md) | một nguồn sự kiện bền theo nhân vật và migration từng loại; hiện `Discover`, `Save.history` (200 dòng), `Milestones` còn tách |
+| Thang khám phá | Chưa biết → Nghe kể → Tận mắt → Xác nhận (khi cần), thêm `sourceType` (quan sát / lời kể / chứng cứ); `đã ôn/đã vận dụng` là thuộc tính | chưa code |
+| Hồ sơ nhân vật | Tổng quan · Hành trình · Người quen (guest không có Người quen); Nhật ký và Dấu mốc chuyển vào Sổ | `public/profile.js` còn 4 tab, `mind.js` Album còn tab Nhật ký |
+| Thứ tự MVP vai ma | G01 → G03 → một cảnh NPC sư hồi hướng + G07 kết thúc tùy chọn (archive); Bờ Chìm sau lát cắt hang (**không khóa bằng tu tập**, chỉ do khối lượng map); hồi hướng giữa người chơi thật làm cuối | chưa code |
+| Nhân vật đã khép | archived/read-only: không presence, không online, không nhận gặp mới (máy chủ từ chối) | chưa có |
+| Hồ sơ công khai | chỉ trường trong danh sách cho phép; không công khai vật phẩm/thành tựu có thể lộ spoiler | `social.js` hiện cho tên, vai, ngày tạo, thiên hướng và tối đa 6 vật phẩm: cần rà lại |
+| `loreBasis` | một enum 4 giá trị `canonical/commentary/game_interpretation/fiction` | chưa code |
 
 **Chú ý:** bảng này là *quyết định tài liệu đang được review*; chỉ sau khi PR code và tests được merge mới có thể đổi trạng thái thành **implemented**.
 
@@ -170,5 +177,7 @@ Quy tắc đầy đủ, template đầu file, quy trình truy vấn và checklis
 | `observed/reported/hypothesis/confirmed` | mức xác minh manh mối của **PC** | Journey Memory |
 | `accountMeta` vs `characterStoryState` | thành tựu tài khoản vs trải nghiệm riêng của nhân vật | Player-Centric Model, Spoiler Isolation |
 | `loreBasis` | `canonical / commentary / game_interpretation / fiction` | Game Design Principles |
+| `sourceType` | `observation / report / evidence`: nguồn của một thông tin trong Sổ | Journey Memory §0.3 |
+| Sổ Hành Trình / "Hành trình" | một sổ duy nhất cho mỗi nhân vật (thay Sổ khám phá, Nhật ký, Dấu mốc, Sổ kiến thức) | Journey Memory §0 |
 
 **Nguyên tắc kết:** *Một người mới đọc README là hiểu game muốn mang lại cảm giác gì. Một agent mở AGENTS.md là biết tìm nguồn chuẩn, chỗ sửa, cách cập nhật index và giới hạn không được vượt qua.*

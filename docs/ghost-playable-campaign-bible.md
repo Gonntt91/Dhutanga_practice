@@ -228,3 +228,18 @@ Khi muốn kết, PC thấy ánh sáng đầu sáng, nghe một câu: “Con đ�
 - [ ] Người có nhiều PC không bị auto bật lore/codex/quest/reveal của PC này sang PC khác.
 - [ ] Có ít nhất 5–10 phút chỉ đi dạo ngắm trăng/gió/nước, không tự mở sheet; Sổ Hành Trình/hồi tưởng có thể xem chủ động, không bắt về nhà hoang để nghỉ hoặc save.
 - [ ] Cơ chế nào gắn từ kinh phải có `loreBasis/sourceRefs`; giấc mơ/thì thầm/tái sinh ấn định là fictional.
+
+## 9. Thứ tự triển khai MVP vai ma (Approved design, 09-11-2026)
+
+| Thứ tự | Nội dung | Mục tiêu |
+|---|---|---|
+| 1 | G01 hù Ông Tư, NPC sợ thật, thẻ bất thiện theo động cơ | Chứng minh vai ma vui và độc lập |
+| 2 | G03 giúp bà cụ tìm túi bằng thì thầm hoặc giấc mơ | Ma giúp người theo cách riêng |
+| 3 | Một cảnh ngắn **NPC sư hồi hướng** + G07 kết thúc tùy chọn, archive nhân vật | Một câu chuyện ngắn nhưng trọn vẹn |
+| 4 | G04 Bờ Chìm, người giữ bến, G05 bà Sáu (sau lát cắt hang) | Mở rộng không gian và bí ẩn |
+| 5 | Nghe hồi hướng từ PC sư/dân thật, tương tác ma với người chơi thật (cần đồng ý riêng) | Giao thoa khi multiplayer đủ ổn định |
+
+- G07 **không bắt buộc** sau G03: người chơi ma vẫn được đi khám phá; ai muốn kết thúc chọn khi đủ tình tiết.
+- **Bờ Chìm không bị khóa bằng kết quả tu tập.** Dời sang sau chỉ vì khối lượng map và asset.
+- Nhân vật đã kết thúc là archived/read-only (xem [Journey Memory §0.5](journey-memory-and-return-ux.md)).
+- Mọi sự kiện của G0x dùng chung nguồn sự kiện và Sổ Hành Trình ([Journey Memory §0](journey-memory-and-return-ux.md)), không tự tạo cờ riêng.

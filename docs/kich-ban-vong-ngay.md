@@ -198,6 +198,9 @@ Tránh hai cực đoan: (1) chờ 8 giờ rồi chỉ nhận ba dòng chuyện k
 
 ### 9.2. Hai loại "thẻ" và Sổ kiến thức
 
+> **Cập nhật 09-11-2026:** "Sổ kiến thức" là mục **Đã học** trong **Sổ Hành Trình** duy nhất ([Journey Memory §0](journey-memory-and-return-ux.md)); kết quả khi vắng hiện ở màn "Trong lúc vắng" có sẵn.
+
+
 Cần hỗ trợ **nhận thẻ sau việc vắng** mà không ngụ ý nhân vật đã thực tu hay người chơi chứng đắc.
 
 | | **Thẻ kiến thức / Sổ kiến thức** | **Thẻ tâm sở qua trải nghiệm** |
