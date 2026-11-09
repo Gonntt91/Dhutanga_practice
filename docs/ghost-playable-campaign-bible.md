@@ -172,7 +172,7 @@ Gốc gạo / mộ cũ / bờ suối / Bờ Chìm → các điểm nghỉ khác 
 
 ### G07 — Đêm cuối của một bóng người (ending **tự nguyện, có thể sớm**)
 
-**Điều kiện truyện nhẹ:** PC đã (a) nghe một lần hồi hướng/biết một mối duyên giúp mình được an, và (b) trải qua **một việc có nghĩa** như G03 hoặc G05, hoặc tìm một ký ức quan trọng của chính PC. Không bắt tất cả 6 chuyện/đi hết bến/cày điểm tâm. Cho `Tiếp tục khám phá` **bất cứ lúc nào** trước khi xác nhận ending.
+**Điều kiện truyện nhẹ:** PC đã (a) chủ động ở lại nghe một lần hồi hướng của NPC sư (MVP; hồi hướng từ PC thật là mở rộng sau), và (b) trải qua **một việc giúp người có hệ quả thực**: **G01 giúp ông Tư nhận ra/di chuyển chiếc đèn nguy hiểm** *hoặc* **G03 giúp bà cụ tìm túi**. Về sau G05 hoặc một hành động có nghĩa/ký ức riêng đủ chiều sâu có thể mở thêm đường tương đương. **Không bắt làm G03, không bắt hoàn thành G01 hù người, không yêu cầu bến hay cày điểm tâm**. Cho `Tiếp tục khám phá` bất cứ lúc nào; hồi hướng chỉ mở **cơ hội chọn ending**, không tự bảo đảm tái sinh.
 
 Khi muốn kết, PC thấy ánh sáng đầu sáng, nghe một câu: “Con đường phía trước có thể không còn là con đường này.” PC chọn **`Khép lại hành trình`** hoặc **`Tôi vẫn muốn đi thêm`**.
 
@@ -228,3 +228,18 @@ Khi muốn kết, PC thấy ánh sáng đầu sáng, nghe một câu: “Con đ�
 - [ ] Người có nhiều PC không bị auto bật lore/codex/quest/reveal của PC này sang PC khác.
 - [ ] Có ít nhất 5–10 phút chỉ đi dạo ngắm trăng/gió/nước, không tự mở sheet; Sổ Hành Trình/hồi tưởng có thể xem chủ động, không bắt về nhà hoang để nghỉ hoặc save.
 - [ ] Cơ chế nào gắn từ kinh phải có `loreBasis/sourceRefs`; giấc mơ/thì thầm/tái sinh ấn định là fictional.
+
+## 9. Thứ tự triển khai MVP vai ma (Approved design, 09-11-2026)
+
+| Thứ tự | Nội dung | Mục tiêu |
+|---|---|---|
+| 1 | G01 hù Ông Tư, NPC sợ thật, thẻ bất thiện theo động cơ | Chứng minh vai ma vui và độc lập |
+| 2 | G03 giúp bà cụ tìm túi bằng thì thầm hoặc giấc mơ | Ma giúp người theo cách riêng |
+| 3 | Một cảnh ngắn **NPC sư hồi hướng** + G07 kết thúc tùy chọn, archive nhân vật | Một câu chuyện ngắn nhưng trọn vẹn |
+| 4 | G04 Bờ Chìm, người giữ bến, G05 bà Sáu (sau lát cắt hang) | Mở rộng không gian và bí ẩn |
+| 5 | Nghe hồi hướng từ PC sư/dân thật, tương tác ma với người chơi thật (cần đồng ý riêng) | Giao thoa khi multiplayer đủ ổn định |
+
+- **G07 có hai đường ngay trong MVP:** `G01.helpedWithLamp` **hoặc** `G03.helpedGranny`, **và** một lần chủ động nghe hồi hướng NPC (nhánh G06-short). `helpedWithLamp` chỉ ghi khi **Ông Tư thật sự nhận và dời đèn**, không chỉ vì PC bấm một câu. **Không cần G03**, hù NPC không bắt buộc và người chơi vẫn được đi khám phá. Không phải tính toán nghiệp báo hay đảm bảo tái sinh.
+- **Bờ Chìm không bị khóa bằng kết quả tu tập.** Dời sang sau chỉ vì khối lượng map và asset.
+- Nhân vật đã kết thúc là archived/read-only (xem [Journey Memory §0.5](journey-memory-and-return-ux.md)).
+- Mọi sự kiện của G0x dùng chung **event log và projection/checkpoint** của [Sổ Hành Trình](journey-memory-and-return-ux.md); có thể dùng `G01.helpedWithLamp`/`G03.helpedGranny` như **state dẫn xuất**, không tạo nguồn sự thật thứ hai hoặc event store riêng.

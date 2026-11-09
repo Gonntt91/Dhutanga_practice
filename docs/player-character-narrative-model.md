@@ -25,8 +25,9 @@
 ```js
 const character = {
   id: "char_123", displayName: "Mây Nhỏ", roleId: "monk",
-  progress: {}, knowledgeBook: {}, observedCards: {},
-  visitedPlaces: {}, relationships: {}, questStates: {}
+  eventLogRef: "character-owned", // event history bền theo characterId (design-only)
+  progress: {}, observedCards: {}, inventory: [], checkpoint: {},
+  visitedPlaces: {}, relationships: {}, questStates: {} // các projection, không phải nguồn lore riêng
 };
 const actor = {
   id: "npc.ong_tu", kind: "npc", name: "Ông Tư",
@@ -45,8 +46,8 @@ const episode = {
 
 Mô hình phân quyền tiến trình:
 
-- **Per character:** `questStates`, `npcRelationships`, `personalKnowledge`, `observedCards`, `inventory`, `storyletHistory`, `explorationJournal`, `checkpoint`. Kết quả khi vắng phải nhận đúng một lần ở server.
-- **Per account (tùy chọn):** thành tựu meta *người dùng đã xem một truyện* hoặc `codexRead` phục vụ không phải đọc lại; **không tự đồng bộ điều đã học hay hứa giữa các nhân vật**.
+- **Per character:** **một event log bền** làm lịch sử cho sự kiện truyện/khám phá/kiến thức của PC; `questStates`, `npcRelationships`, `personalKnowledge`, `visitedPlaces` là **projection hoặc checkpoint dẫn xuất**, không là các Sổ/nguồn sự thật độc lập. `observedCards`, `inventory` vẫn thuộc hệ thống riêng; kết quả khi vắng phải nhận đúng một lần ở server. Xem [Sổ Hành Trình — hợp đồng event/projection](journey-memory-and-return-ux.md).
+- **Per account:** đăng nhập, lựa chọn chung trung tính và **legacy archive** khi migration (nếu cần). **Không có Codex cấp tài khoản/`codexRead` trong MVP**, không tự đồng bộ manh mối, bài học hay lời hứa giữa các nhân vật. Đề xuất Codex ngoài gameplay chỉ xét riêng ở giai đoạn sau với consent và chống spoiler.
 - **Per world/shared:** thời gian/ngày, thay đổi môi trường chung nếu đã có luật cộng đồng và đồng bộ; tách khỏi lựa chọn riêng của các player. Một chiếc đèn Ông Tư treo trong timeline của nhân vật A **không tự xuất hiện** ở timeline của nhân vật B trừ khi gameplay đã chủ ý định nghĩa world event chung.
 - **NPC facts:** Sư Tịnh, Ông Tư, Bà Sáu có tiểu sử canonical *trong thế giới game*, không thay đổi theo tên người chơi.
 
@@ -78,7 +79,7 @@ Mô hình phân quyền tiến trình:
 
 - **Mở cảnh:** tối đa **1–2 câu ngắn** để gợi tò mò trong UI, không tả phong cảnh quá dài; cảnh đẹp nên thể hiện qua ánh sáng/âm thanh/sprite.
 - **Lời thoại lượt đầu:** thường **1–3 lượt trao đổi**, mỗi lượt một ý; cho **Nghe tiếp / Tìm hiểu / Đi dạo tiếp**. Giới hạn là mục tiêu biên tập, không cắt những truyện cần cảm xúc.
-- **Dạy thông qua tình huống:** Sư già có thể nói "Ngồi một lát mà nghĩ đủ thứ rồi à?" hơn là giảng ngay định nghĩa phóng tâm; nguồn Pāli/luận đặt trong Sổ kiến thức, không gắn nhãn 'trích kinh' cho lời thoại tự sáng tác.
+- **Dạy thông qua tình huống:** Sư già có thể nói "Ngồi một lát mà nghĩ đủ thứ rồi à?" hơn là giảng ngay định nghĩa phóng tâm; nguồn Pāli/luận đặt trong khu **Đã học** của **Sổ Hành Trình**, không gắn nhãn 'trích kinh' cho lời thoại tự sáng tác.
 - **Tự nhiên, không giáo điều:** không giải thích bài học cuối mỗi quest, không đánh giá "bạn tu tốt/chưa đủ thiện", không đổi thanh tâm thành phán xét người thật.
 - **Dễ cười nhưng tôn trọng:** chó nằm lười, ông Tư cộc nhưng tốt bụng, trẻ tự nhiên, sư nói ngắn và ấm; tránh mỉa mai người khổ/niềm tin, không biến ngạ quỷ thành trò đùa.
 - **Lời dẫn:** ưu tiên "Bạn thấy…" / mô tả trực tiếp, **không kể PC có ký ức chưa trải qua**; nếu NPC nói thì dùng "Ông Tư nhớ…" với `perspective=hears_story` hoặc phân cảnh rõ.

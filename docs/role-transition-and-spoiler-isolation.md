@@ -129,7 +129,7 @@ Hiện tại `public/save.js` khai báo `dhutanga.memory`, `dhutanga.runs`, `dhu
 - PC ma: từ **khe suối rừng tre/khe đá khuất → Bờ Chìm**, thấy mặt sau của ba cột đá và chuyện người đưa đò; **không tự biết** Hạnh là vợ Ông Tư.
 - PC sống: từ **Hang Vọng Tâm → Bờ Nổi**, thấy mặt trước ba cột đá và câu chuyện của người sống; **không tự đọc** lời người đưa đò ma đã nghe.
 - Khoảng giao **cột đá, tiếng mái chèo, vật thể mái cũ** để người chơi thật nhận ra “mình từng đến đây”, còn nội dung mới mỗi bên.
-- Nếu cùng account đã chơi ghost trước, PC sống vẫn phải **thu thập manh mối của chính mình**; có thể có **tùy chọn account Codex** chỉ để đọc ở ngoài gameplay (không mở mặc định khi tạo PC).
+- Nếu cùng account đã chơi ghost trước, PC sống vẫn phải **thu thập manh mối của chính mình**. **Không triển khai Codex cấp tài khoản trong MVP**, kể cả chế độ chỉ đọc. Đề xuất Codex ngoài gameplay là **deferred**, chỉ được xem xét sau khi có chính sách spoiler/opt-in riêng, không làm nguồn mở khóa. Tham chiếu [quyết định Một Sổ](journey-memory-and-return-ux.md).
 
 ### 4.3. Version/migration không phá cũ
 
@@ -161,14 +161,14 @@ Hiện tại `public/save.js` khai báo `dhutanga.memory`, `dhutanga.runs`, `dhu
 ## 6. Chốt phạm vi trước coding
 
 **MVP ghost & role transitions:**
-- Ghost: G01 (hù nhẹ + nhà hoang), G03 (thấy vật, giúp qua thì thầm hoặc báo mộng), G04 (lối Bờ Chìm mẫu), G06 (nghe hồi hướng), G07 (ending màn xác nhận + archive). G02/G05 đầy đủ viết tiếp sau vòng thử.
+- Ghost MVP: G01 (hù Ông Tư, ông sợ thật; có lựa chọn **nhắc ông xử lý chiếc đèn**), G03 (giúp bà cụ bằng thì thầm/báo mộng), **một cảnh NPC sư hồi hướng thuộc G06**, G07 (ending tự chọn + archive). **G01 giúp ông Tư tránh nguy hiểm từ đèn hoặc G03 giúp bà** đều là đường hợp lệ tiến tới G07; không bắt hoàn thành cả hai. G04/Bờ Chìm và G05 để sau lát cắt hang (do khối lượng map, **không phải khóa bởi tu tập**); hồi hướng giữa PC thật để phase cuối.
 - Villager: **một câu chuyện quyết định phát tâm** và thử sinh hoạt xuất gia; nếu chưa đủ khả năng đảm bảo save/role migration, đưa **toàn bộ tính năng đổi vai vào Phase 2** nhưng chốt API/save contract từ đầu.
 - Spoiler: character-private ngay từ PR đầu, 2 character cùng account kiểm tra không lộ.
 - Không đụng tới 27 HG và map lớn ngoài các marker cần để chơi vòng mẫu.
-- **Điều kiện trước khi code:** playable script có lời thoại/trigger/exit, schema `characterStoryState`, `roleHistory`, `endingState`, legacy migration plan, hai scene bến khác góc nhìn và danh mục ảnh tối thiểu.
+- **Điều kiện trước khi code MVP:** playable script G01/G03/G06-short/G07 có lời thoại/trigger/exit, hợp đồng **event/projection** theo [Sổ Hành Trình](journey-memory-and-return-ux.md) (không tạo event store thứ hai), `roleHistory`, `endingState`, legacy migration plan và danh mục ảnh tối thiểu. Hai scene bến khác góc nhìn là điều kiện **phase G04**, không bắt MVP đầu dựng cả hai bờ.
 
 **Cần review tác giả trước khi viết code** (các vấn đề còn mở):
-1. Vai ma kết thúc sớm sau **một hay hai** việc tốt, hay chỉ sau khi đã khám phá bến một lần? Đề xuất: một việc tốt + một lần nghe hồi hướng, **không yêu cầu bến**.
+1. **Đã định hướng MVP:** một hành động giúp người có hệ quả thực (G01 giúp ông Tư xử lý đèn **hoặc** G03 giúp bà cụ) + một lần chủ động nghe hồi hướng từ **NPC sư**; **không yêu cầu Bờ Chìm**. Điều kiện chỉ mở **lựa chọn khép chuyện**, không auto tái sinh, không chấm điểm công đức; về sau có thể có các cách mở bằng truyện khác.
 2. Mộng chỉ được gửi khi người sống có `dreamAnchor`, hay PC ma có thể báo mộng cho bất kỳ ai? Đề xuất: có mối liên hệ với vật/người để tránh phép thuật toàn năng.
 3. Chọn ending cụ thể (người/thọ thần/chư thiên) nên là **tuyến truyện được viết** từ bối cảnh, không menu chọn cõi. Đề xuất: MVP một kết chung trước.
 4. Xuất gia ở phiên bản đầu được hiểu là **đang tìm hiểu/đệ tử tập sự**, hay phải mô tả nghi thức pabbajjā/sa-di? Đề xuất: giai đoạn tìm hiểu, tuyệt đối không tự xưng đã thành tỳ-kheo.
