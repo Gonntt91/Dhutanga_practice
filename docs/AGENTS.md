@@ -44,7 +44,7 @@ Tài liệu mới nên đặt vào đúng nhóm trong [README.md](README.md#4-da
 > **Status:** Proposed / Approved design / Implemented / Legacy reference
 > **Scope:** narrative / world / UX / save / multiplayer
 > **Owner doc:** [game-design-principles.md](game-design-principles.md)
-> **Related:** [<other relevant doc>](<file>.md)
+> **Related:** [Player-Centric Narrative Model](player-character-narrative-model.md) (thay bằng tài liệu thật tương ứng)
 > **Code status:** Design-only; chưa sửa code (hoặc dẫn commit/test kiểm chứng)
 > **Last reviewed:** YYYY-MM-DD
 
