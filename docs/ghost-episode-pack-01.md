@@ -212,7 +212,7 @@ Trước khe đá có ba âm thanh: `lá tre cọ nhau`, `tiếng sỏi lăn tro
 | `G03.itemReturned / sharedJoy / frightened` | túi biến khỏi nhà, xuất hiện cạnh bà cụ; không nhân reward |
 | `G04.creekHintSeen / arrived / locationsSeen / ferrymanHeard` | cảnh suối và bến phản hồi theo lúc quay lại, ông giữ bến có lore fragment |
 | `ghostCardEvents` | ghi từ **hành động PC**, không tặng thẻ vì nghe hồi tưởng NPC; idempotent per character |
-| `legacyAccountMemory` | chỉ phục vụ archive/codex meta theo kế hoạch migration, **không unlock** bí mật cho PC khác |
+| `legacyAccountMemory` | dữ liệu legacy chỉ giữ để migration/đối soát, **không tạo Codex tài khoản trong MVP** và không unlock bí mật cho PC khác |
 
 **G03 có nhiều kiểu hoàn tất hợp lệ:** bà tự tìm nhờ hint tức thì; bà nhận mộng sáng sau; người làng nhặt hộ nếu PC bỏ qua. Chỉ hai trường hợp đầu **có mốc PC giúp**, trường hợp cuối chỉ là scene NPC tự sống, không tự nhận thẻ.
 
