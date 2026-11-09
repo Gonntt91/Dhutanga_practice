@@ -26,6 +26,8 @@
 - **Giọng văn:** nhẹ, gần người trẻ bằng câu ngắn, sinh hoạt và hài hước tự nhiên; không giáo điều, không ép trendy slang. Mặc định 1–3 lượt thoại/scene nhỏ, có `Nghe thêm`, `Đi tiếp`, phần kinh/luận dài ở Sổ.
 - Mẫu kiểm tra: PC dân nói chuyện với Ông Tư mà không gặp chính mình; PC ma thấy câu chuyện Bà Sáu mà không tự có con Hạnh; PC sư gặp Sư Tịnh mà không mặc định đã bị xua đuổi.
 
+> **Trí nhớ hành trình:** [Journey Memory & Return UX](journey-memory-and-return-ux.md) đề xuất Sổ Hành Trình theo character, tách lời NPC kể và sự thật được xác nhận, hồi tưởng ngắn tùy chọn; điểm nghỉ tự do, **không** có nơi nghỉ mặc định cho mọi hồn ma. [Ghost Mischief](ghost-mischief-cards-and-shared-dedication.md) làm rõ NPC dân có thể **sợ thật** khi bị ma hù, sư thường bình tĩnh hơn; thẻ bất thiện của PC ma chỉ xét theo **động cơ PC**, không theo nỗi sợ của NPC, hù người chơi thật cần opt-in.
+
 > **Một vai, một trải nghiệm đáng chơi:** [Ghost Campaign Bible](ghost-playable-campaign-bible.md) quy định PC ma phải có **cơ chế khác** thay vì chỉ bị cấm làm việc của người sống: hù nhẹ/âm thanh/giấc mơ, giúp người dù không nhặt đồ, khám phá cõi khuất và nghe hồi hướng. [Role Transition & Spoiler Isolation](role-transition-and-spoiler-isolation.md) quy định **dân phát nguyện xuất gia không chỉ vì đạt điểm tâm**, kết hồn ma tái sinh là **ending chứ không phải đổi sang avatar trời**, và manh mối phải **per-character** khi cùng account tạo nhiều nhân vật. **Cần review trước code.**
 
 ## 2. Nhiều động cơ, cùng một thế giới
