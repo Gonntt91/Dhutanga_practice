@@ -77,6 +77,7 @@ Tài liệu mới nên đặt vào đúng nhóm trong [README.md](README.md#4-da
    - **Không trao thẻ Niệm/Định cho PC ma** từ quan sát, nghe tiếng vọng, tìm đường hoặc nghe kinh/hồi hướng. Giải đố cho manh mối; thẻ bất thiện theo động cơ ma; thẻ thiện cực hiếm và cần nội dung được duyệt. [Ghost Campaign](ghost-playable-campaign-bible.md).
    - PC ma gặp NPC/PC làm hồi hướng theo story event có thật; multiplayer real-player scare cần opt-in và không spam.
    - Sổ/story spoilers **per-character**, không tự chia knowledge giữa hai nhân vật một account.
+   - **Chỉ một Sổ Hành Trình** theo `characterId`: Nơi chốn & nhân vật / Đang theo / Đã học / Dòng thời gian. Hồ sơ 3 tab và bảng Nhiệm vụ **dùng lại cùng thành phần**, không tạo icon HUD, Sổ kiến thức, Nhật ký hay `recapSnapshots` riêng. `sourceType` là nguồn của từng sự kiện; thang khám phá `unknown/heard/seen/confirmed` không dùng để xếp độ tin cậy của lời đồn. Event log bền + quest projection/checkpoint hợp lệ, không buộc cấm mọi cờ quest. **Không có Codex cấp tài khoản ở MVP.** [Journey Memory](journey-memory-and-return-ux.md).
 5. **Choose edit location:** luật chung → owner; một episode → episode pack; định dạng dữ liệu → contract spec; không copy-paste cả đoạn vào 5 file nếu chỉ cần link tóm tắt.
 6. **Write and link:** thay/chèn đúng mục; dùng relative Markdown links khi cùng `docs/`; liên kết hai chiều (owner/index ↔ detail) khi hợp lý.
 7. **Update index in same PR:** [README.md](README.md) nhóm tương ứng, các “quick paths” và bảng status nếu thay đổi quyết định nền.
