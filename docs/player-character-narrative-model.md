@@ -109,6 +109,8 @@ Mỗi storylet phải có: `storyId`, `npcOwner` (hoặc `environment`), `eligib
 - [ ] Sư/ma/dân có xưng hô và hành động phù hợp bối cảnh, luật giới và quan hệ.
 - [ ] Người mới đi dạo 5–10 phút không bị popup quest và không cần biết truyện cũ.
 
+> **Sổ Hành Trình / hồi tưởng theo từng character (design-only):** [Journey Memory & Return UX](journey-memory-and-return-ux.md). Ma có thể nghỉ ở nhiều nơi (nhà hoang chỉ một lựa chọn), save không buộc về hub; lịch sử, manh mối và recap theo `characterId` chứ không chia spoiler theo account. Các lần gặp PC khác chỉ lưu event có thật, không lấy chat tự do để hoàn thành hồi hướng.
+
 > **Quy tắc mở rộng vai để chốt trước coding:** [Ghost Campaign Bible](ghost-playable-campaign-bible.md) và [Role Transition & Spoiler Isolation](role-transition-and-spoiler-isolation.md). `villager → monastic_aspirant/novice` là tiến trình tự nguyện, giữ characterId và memory đúng vai; `ghost → story_completed` là **ending**, không phải đổi role sang deva/thọ thần. Các PC trên cùng account giữ **story spoilers, manh mối và lối khám phá riêng**; phần giao bến chỉ là landmark, không chia sẻ quest flag. **Chưa code.**
 
 ## 6. Thứ tự chuyển đổi an toàn
