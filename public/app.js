@@ -49,6 +49,8 @@
     moodShift: 0,           // temporary swing of the mind colour (decays back to the baseline)
     readTonight: new Set(), // books read tonight (each calms the mind once per night)
     cp: null,               // current checkpoint (Progress shape): runId, day, endedRunId...
+    clockH: 17.2,           // world clock of the player's own story (clock.js); only used while clockOn()
+    clockAt: 0,             // Date.now() of the last clock update
     findTarget: null,     // find the player is walking towards
     findOpen: null,       // { find, step } while the card is showing
     lastTouch: Date.now(),
@@ -79,7 +81,8 @@
   // ---------- night checkpoint ----------
   let lastCpJson = "", lastPos = "", lastPosAt = 0;
   const POS_SAVE_MS = 20000; // position alone is saved at most this often (each save sends the whole character)
-  const cpJson = (cp) => JSON.stringify(cp, (k, v) => (k === "savedAt" || k === "x" || k === "y" ? undefined : v));
+  // clockH moves every second; it is left out of the change check so it is saved with the position (not every tick).
+  const cpJson = (cp) => JSON.stringify(cp, (k, v) => (k === "savedAt" || k === "x" || k === "y" || k === "clockH" ? undefined : v));
   function loadCheckpoint() {
     try { return JSON.parse(Save.get(PROGRESS_KEY) || "null"); } catch { return null; }
   }
@@ -87,7 +90,7 @@
     if (!state.role || !state.cp) return;
     const p = World.getPlayer();
     const nightVars = [...state.vars].filter((k) => !loadMem().has(k)); // account memory is saved elsewhere
-    state.cp = Progress.snapshot(state.cp, { sceneId: state.sceneId, meter: state.meter, found: state.found, readTonight: state.readTonight, x: p.x, y: p.y, nightVars });
+    state.cp = Progress.snapshot(state.cp, { sceneId: state.sceneId, meter: state.meter, found: state.found, readTonight: state.readTonight, x: p.x, y: p.y, nightVars, clockH: clockOn() ? state.clockH : undefined });
     const json = cpJson(state.cp);
     const pos = state.cp.x + "," + state.cp.y;
     if (json === lastCpJson && (pos === lastPos || Date.now() - lastPosAt < POS_SAVE_MS)) return;
@@ -200,6 +203,19 @@
     "Gà gáy": { h: 28.6, hint: "gần sáng" },
     "Rạng sáng": { h: 29.7, hint: "trời hửng sáng" },
   };
+  // World clock: only the player's own story (arrival) has one; legacy characters keep the scene's time of day.
+  const clockOn = () => !!state.role && !!state.cp && !!state.cp.arc && state.cp.arc.mode === "arrival" && !state.devTime;
+  const nightEnded = () => !!state.cp && state.cp.endedRunId === state.cp.runId;
+  // Redraws the view as the clock moves, at most once a second and only when the light or the hour name changed.
+  let clockPushAt = 0, clockPushDark = -1, clockPushName = "";
+  function clockPush() {
+    const now = Date.now();
+    if (now - clockPushAt < 1000) return;
+    const c = Clock.at(state.clockH);
+    if (Math.abs(c.dark - clockPushDark) <= 0.004 && c.name === clockPushName) return;
+    clockPushAt = now; clockPushDark = c.dark; clockPushName = c.name;
+    pushView();
+  }
   const sky = { h: 20, target: 20, raf: null, name: "" };
   function drawSky() {
     const cv = $("sky-canvas"), g = cv.getContext("2d");
@@ -239,8 +255,9 @@
     }
   }
   function updateSky(sc) {
-    const name = state.devTime || (sc ? sc.time : null);
-    const clock = name && CLOCK[name];
+    const on = clockOn();
+    const name = on ? Clock.at(state.clockH).name : state.devTime || (sc ? sc.time : null);
+    const clock = on ? Clock.at(state.clockH) : name && CLOCK[name];
     $("sky").hidden = !state.role || !clock;
     if (!clock) return;
     $("sky-name").textContent = name;
@@ -260,6 +277,7 @@
 
   // Darkness comes from the scene's time of day, unless the dev panel forces a value.
   function currentDarkness(sc) {
+    if (clockOn()) return Clock.at(state.clockH).dark;
     if (state.devDark != null) return state.devDark;
     return sc ? DARKNESS[sc.time] ?? 0.8 : 0.78;
   }
@@ -593,6 +611,12 @@
     const spawn = World.SPAWN[role];
     const plan = Progress.decide(loadCheckpoint(), role, STORY[role], spawn, { minX: 12, maxX: World.W - 12, minY: 60, maxY: World.H }, { mem: loadMem() });
     state.cp = plan.cp;
+    state.clockAt = Date.now();
+    if (clockOn()) {
+      // a saved clock resumes; a new night starts at the hour of its first scene
+      const first = STORY[role].scenes[plan.cp.sceneId];
+      state.clockH = Number.isFinite(plan.cp.clockH) ? plan.cp.clockH : (Clock.hOf(first && first.time) ?? 17.2);
+    }
     state.sceneId = plan.cp.sceneId;
     state.sceneOpen = false;
     state.meter = plan.cp.meter;
@@ -620,6 +644,8 @@
     lastCpJson = "";
     saveProgress();
     pushView();
+    // a new night starts with the sky already at its hour, not sweeping across the day
+    if (plan.mode === "newnight") { sky.h = sky.target; drawSky(); }
     sendPresence(true);
     // signed-in character only (a guest is a no-op): legacy backfill once per character, then prime the levels
     try { window.Journey && Journey.onCharacterOpened(); } catch {}
@@ -754,6 +780,11 @@
 
   function renderScene() {
     const scene = currentScene();
+    if (clockOn()) {
+      const h = Clock.hOf(scene.time);
+      if (h != null && h > state.clockH) state.clockH = h; // the clock never goes back
+      if (scene.end && state.clockH < Clock.hOf("Rạng sáng")) state.clockH = Clock.hOf("Rạng sáng");
+    }
     const f = flags();
     $("time-label").textContent = scene.time;
     renderMeter();
@@ -1866,6 +1897,14 @@
 
   // arrival + presence loop
   setInterval(() => {
+    // the world clock of the player's own story runs with play; a hidden tab does not move it (dt is capped)
+    const now = Date.now();
+    if (clockOn() && document.visibilityState === "visible") {
+      const dt = Math.min(5, (now - state.clockAt) / 1000);
+      state.clockH = Clock.advance(state.clockH, dt, nightEnded() ? Clock.DAY_CAP : Clock.NIGHT_CAP);
+      clockPush();
+    }
+    state.clockAt = now;
     if (state.role && !state.sceneOpen && !state.findOpen && !Mind.isOpen()) {
       const t = state.findTarget;
       if (t) {

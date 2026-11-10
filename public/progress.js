@@ -121,11 +121,14 @@ window.Progress = (() => {
   }
 
   // live: { sceneId, meter, found, readTonight, x, y, nightVars }
+  // clockH: the world clock of the player's own story (only when the live view has one); kept out of the save otherwise.
   function snapshot(cp, live) {
+    const clock = typeof live.clockH === "number" && isFinite(live.clockH) ? { clockH: Math.round(live.clockH * 100) / 100 } : {};
     return {
       ...cp, sceneId: live.sceneId, meter: live.meter,
       found: [...live.found], readTonight: [...live.readTonight], vars: [...(live.nightVars || [])],
       x: Math.round(live.x), y: Math.round(live.y), savedAt: Date.now(),
+      ...clock,
     };
   }
 
