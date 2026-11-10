@@ -74,6 +74,7 @@ Bản đồ giúp hình dung nhanh các địa điểm chung, hành trình riên
 | [Human World Story Bible](human-world-story-bible.md) | Nhân gian, NPC, thời tiết, nắng/mưa, các địa danh |
 | [Map Brief — Hang và cõi giới](map-brief-hang-va-coi-gioi.md) | bản đồ, khoảng giao, art direction, vertical slice |
 | [Kịch bản vòng ngày](kich-ban-vong-ngay.md) | hành trình theo ngày, sinh hoạt, làm việc khi vắng, mạch NPC |
+| [Đồng hồ thế giới](dong-ho-the-gioi.md) | ngày đêm liền nhau cho từng nhân vật (M0), đường tới đồng hồ chung (đề xuất) |
 
 ### C — Kịch bản và bí ẩn Nhân gian
 
