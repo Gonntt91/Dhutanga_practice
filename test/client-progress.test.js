@@ -303,3 +303,40 @@ test("newnight keeps promise and away carry-over alongside the arc", () => {
   assert.deepEqual({ ...r.cp.promise }, { id: "p1", day: 1 });
   assert.ok(r.cp.arc.chapter);
 });
+
+// World clock of the player's own story (clockH)
+const liveOf = (cp, extra) => ({ sceneId: cp.sceneId, meter: cp.meter, found: [], readTonight: [], x: 10, y: 20, ...extra });
+
+test("snapshot keeps clockH rounded to two decimals when the live view has one", () => {
+  const P_ = P();
+  const cp = P_.create({ role: "monk", story: STORY.monk, spawn: SPAWN, day: 1 });
+  const snap = P_.snapshot(cp, liveOf(cp, { clockH: 29.8765 }));
+  assert.equal(snap.clockH, 29.88);
+});
+
+test("snapshot adds no clockH key when the live view has none or a bad one", () => {
+  const P_ = P();
+  const cp = P_.create({ role: "monk", story: STORY.monk, spawn: SPAWN, day: 1 });
+  for (const bad of [undefined, NaN, Infinity, "30", null]) {
+    const snap = P_.snapshot(cp, liveOf(cp, { clockH: bad }));
+    assert.equal("clockH" in snap, false, `bad value ${String(bad)}`);
+  }
+});
+
+test("decide resume keeps clockH", () => {
+  const P_ = P();
+  const base = P_.create({ role: "monk", story: STORY.monk, spawn: SPAWN, day: 1 });
+  const cp = { ...base, sceneId: "a1", clockH: 33.5 };
+  const r = P_.decide(cp, "monk", STORY.monk, SPAWN, BOUNDS);
+  assert.equal(r.mode, "resume");
+  assert.equal(r.cp.clockH, 33.5);
+});
+
+test("decide newnight does not carry clockH", () => {
+  const P_ = P();
+  const base = P_.create({ role: "monk", story: STORY.monk, spawn: SPAWN, day: 3 });
+  const done = { ...P_.complete({ ...base, sceneId: "end", clockH: 41 }).cp };
+  const r = P_.decide(done, "monk", STORY.monk, SPAWN, BOUNDS);
+  assert.equal(r.mode, "newnight");
+  assert.equal("clockH" in r.cp, false);
+});
