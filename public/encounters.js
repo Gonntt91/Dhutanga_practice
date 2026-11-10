@@ -138,10 +138,17 @@
         { label: "Hỏi bà là ai", primary: true, fn: () => K.showSheet({
           label: "Giữa các ngôi mộ",
           lines: ["“Bà là bà ngoại đây. Lúc sống, bà tiếc từng hạt gạo, không cho ai cái gì.”", "“Giờ thì đói. Nếu có ai làm phước rồi hồi hướng, bà mới được no.”"],
-          choices: [{ label: "Tiếp", primary: true, fn: () => {
-            q.step = "rice"; K.save(); K.closeSheet(); K.cooldown(2500);
-            toast("Bà cụ ở giếng làng thường nấu cơm. Thử ra đó xin một bát.");
-          } }],
+          choices: [
+            { label: "Con sẽ tìm cách giúp bà", primary: true, fn: () => {
+              q.step = "rice"; K.save(); K.closeSheet();
+              // Bi only when the player chooses to help after hearing her; leaving after the story gives no card.
+              K.award("bi", "Người này nghe bà kể nỗi khổ và muốn giúp bà bớt đói.", () => {
+                K.cooldown(2500);
+                toast("Bà cụ ở giếng làng thường nấu cơm. Thử ra đó xin một bát.");
+              });
+            } },
+            { label: "Nghe xong rồi đi", fn: () => { snooze(q); K.closeSheet(); } },
+          ],
         }) },
         { label: "Xem tâm bà", fn: () => K.beingMind("Tâm của ngạ quỷ", "Bà đói, tiếc, nhớ nhà.", [["Tham", 80, false], ["Bỏn xẻn", 86, false], ["Si", 58, false], ["Không tham", 12, true], ["Không sân", 30, true]], "Theo kinh điển, người nặng tham và bỏn xẻn có thể sinh vào cõi ngạ quỷ, luôn đói khát.", petaMeet) },
         { label: "Sợ quá, lùi lại", fn: () => { snooze(q, 45000); K.closeSheet(); api().swingMood(-0.1); } },
@@ -150,17 +157,57 @@
   }
   function grannyRice() {
     const q = Q("peta");
+    let picked = new Set(), closed = false;
+    // Short scooping step first: three taps on the rice, no fail and no score.
+    const area = K.el("div", "scoop-row");
+    area.style.display = "flex"; area.style.justifyContent = "center"; area.style.gap = "18px"; area.style.padding = "18px 0";
+    for (let i = 0; i < 3; i++) {
+      const b = K.el("button", "scoop");
+      b.type = "button";
+      b.setAttribute("aria-label", "Muỗng cơm");
+      b.addEventListener("click", () => {
+        if (picked.has(i)) return;
+        picked.add(i); b.classList.add("picked");
+        if (picked.size === 3) setTimeout(() => { if (!closed) choose(); }, 400);
+      });
+      area.appendChild(b);
+    }
+    const receive = (shared) => {
+      q.shared = shared; q.step = "offer"; K.giveItem("bat_com"); K.save(); K.closeSheet(); K.setOpen(true);
+      K.gotItem("bat_com", () => { K.setOpen(false); K.cooldown(2500); toast("Đem bát cơm dâng vị sư già ở nghĩa địa."); });
+    };
+    function choose() {
+      K.showSheet({
+        label: "Giếng làng",
+        lines: ["Cơm đã xới xong, còn bốc khói nhẹ.", "Người này có thể nhận bát cơm của bà, hoặc đặt thêm phần cơm tối của mình vào bát."],
+        choices: [
+          { label: "Nhận bát cơm của bà", primary: true, fn: () => receive(false) },
+          { label: "Nhận, và đặt thêm phần cơm tối của mình vào bát", fn: () => receive(true) },
+        ],
+      });
+    }
     K.showSheet({
       label: "Giếng làng",
-      lines: ["Bà cụ nghe chuyện, gật gù: “Ừ, phải làm phước cho người đã khuất.”", "Bà xới đầy một bát cơm trắng còn nóng."],
-      choices: [{ label: "Nhận bát cơm", primary: true, fn: () => {
-        q.step = "offer"; K.giveItem("bat_com"); K.save(); K.closeSheet(); K.setOpen(true);
-        K.gotItem("bat_com", () => { K.setOpen(false); K.cooldown(2500); toast("Đem bát cơm dâng vị sư già ở nghĩa địa."); });
-      } }],
+      lines: ["Bà cụ nghe chuyện, gật gù: “Ừ, phải làm phước cho người đã khuất.”", "Bà xới đầy một bát cơm trắng còn nóng. Chạm vào từng muỗng để xới cơm."],
+      body: area,
+      choices: [{ label: "Để sau", fn: () => { closed = true; snooze(q); K.closeSheet(); } }],
     });
   }
   function offerRice() {
     const q = Q("peta");
+    // After the scene: both choices close it; cards come one after another, never during the scene.
+    function finish(stayed) {
+      const shared = !!q.shared;
+      q.shared = false;
+      q.step = "done"; deed("peta_fed"); K.save(); K.closeSheet(); fx.peta = null; World.resetLook();
+      Save.log("Đã giúp bà ngoại bên mộ thấp được an.");
+      const endCooldown = () => K.cooldown(2500);
+      const tuyHy = () => (stayed
+        ? K.award("tuy_hy", "Người này đứng lại nhìn bà sáng lên rồi tan vào ánh trăng, lòng vui vì bà được an.", endCooldown)
+        : endCooldown());
+      if (shared) return K.award("khong_tham", "Người này chia cả phần cơm tối của mình để hồi hướng cho bà ngoại.", tuyHy);
+      tuyHy();
+    }
     K.showSheet({
       label: "Dâng cơm",
       lines: ["Sư già nhận bát cơm, chắp tay.", "“Phước này, xin hồi hướng cho bà ngoại. Mong bà được no, được an.”"],
@@ -173,10 +220,10 @@
           K.showSheet({
             label: "Giữa các ngôi mộ",
             lines: ["Bà ngoại ngẩng lên, cái bóng gầy guộc sáng dần.", "“Lành thay, lành thay…”, rồi bà tan vào ánh trăng."],
-            choices: [{ label: "Chắp tay", primary: true, fn: () => {
-              q.step = "done"; deed("peta_fed"); K.save(); K.closeSheet(); fx.peta = null; World.resetLook();
-              K.award("khong_tham", "Người này dâng cơm và hồi hướng phước cho bà ngoại đã khuất.", () => K.cooldown(2500));
-            } }],
+            choices: [
+              { label: "Đứng lại nhìn cho tới khi ánh trăng tan", primary: true, fn: () => finish(true) },
+              { label: "Chắp tay rồi đi", fn: () => finish(false) },
+            ],
           });
         }, 3800);
       } }],

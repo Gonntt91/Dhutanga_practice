@@ -374,4 +374,5 @@ awayJob = {
 - **Thiết kế ở tài liệu này:** vòng ngày 5 buổi, cung y phấn tảo đủ 5 ngày, tuyến ông Tư 4 ngày, hoạt động tự do, **offline rewards + Đã học (Sổ Hành Trình) + dùng kiến thức mở tương tác**, và sửa logic lời nhờ hái rau má.
 - **Bản mã thử của đợt A:** xem mô tả PR; các hạng mục chưa code **không** được ghi là "đã triển khai" trong README hoặc tài liệu hệ thống tâm.
 - **Bộ chọn tình huống (storylets.js):** chạy cho nhân vật đến nơi, 3 tình huống mẫu HG26/HG12/HG20, chưa thẻ.
+- **HG27 (bà ngoại):** Bi khi chọn giúp, Không tham khi chia phần cơm của mình, Tùy hỷ khi ở lại nhìn; thẻ trao sau cảnh kết.
 
