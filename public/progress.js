@@ -129,5 +129,11 @@ window.Progress = (() => {
     };
   }
 
-  return { VERSION, newRunId, create, valid, decide, complete, snapshot, normArc, needsChoice, switchToArrival, keepLegacy };
+  // A "free night": the player's own story (arrival) has reached its closing scene, so the night does not end by itself.
+  // The player walks around and ends the night with a button. Epilogues and legacy characters are not free nights.
+  function isFreeNight(cp, scene) {
+    return !!cp && !!cp.arc && cp.arc.mode === "arrival" && !!scene && !!scene.end && !scene.epilogue;
+  }
+
+  return { VERSION, newRunId, create, valid, decide, complete, snapshot, normArc, needsChoice, switchToArrival, keepLegacy, isFreeNight };
 })();
