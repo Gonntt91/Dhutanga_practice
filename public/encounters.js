@@ -70,8 +70,12 @@
       label: "Ngõ làng",
       lines: ["Mẹ bé Na chạy ra ôm chầm lấy con, khóc mà cười.", "“Con tôi đây rồi. Cảm ơn, cảm ơn.”"],
       choices: [{ label: "Tiếp", primary: true, fn: () => {
-        q.step = "thank"; deed("na_home"); K.save(); K.closeSheet(); api().swingMood(0.25);
-        K.award("tuy_hy", "Người này thấy hai mẹ con đoàn tụ và vui lây niềm vui của họ.", () => { K.cooldown(2500); toast(dusk() ? "Ở gốc cây gạo, lá lại sáng lên." : "Lúc chạng vạng, quay lại gốc cây gạo nhé."); });
+        // Tùy hỷ is earned only by comforting the child; a child who was shouted at goes home without it.
+        const scared = !!q.scared;
+        q.step = "thank"; q.scared = false; deed("na_home"); K.save(); K.closeSheet(); api().swingMood(0.25);
+        const after = () => { K.cooldown(2500); toast(dusk() ? "Ở gốc cây gạo, lá lại sáng lên." : "Lúc chạng vạng, quay lại gốc cây gạo nhé."); };
+        if (scared) return after();
+        K.award("tuy_hy", "Người này thấy hai mẹ con đoàn tụ và vui lây niềm vui của họ.", after);
       } }],
     });
   }
@@ -135,8 +139,8 @@
           label: "Giữa các ngôi mộ",
           lines: ["“Bà là bà ngoại đây. Lúc sống, bà tiếc từng hạt gạo, không cho ai cái gì.”", "“Giờ thì đói. Nếu có ai làm phước rồi hồi hướng, bà mới được no.”"],
           choices: [{ label: "Tiếp", primary: true, fn: () => {
-            q.step = "rice"; K.save(); K.closeSheet();
-            K.award("bon_xen", "Người này thấy nơi bà ngoại một đời tiếc của, không chịu chia cho ai.", () => { K.cooldown(2500); toast("Bà cụ ở giếng làng thường nấu cơm. Thử ra đó xin một bát."); });
+            q.step = "rice"; K.save(); K.closeSheet(); K.cooldown(2500);
+            toast("Bà cụ ở giếng làng thường nấu cơm. Thử ra đó xin một bát.");
           } }],
         }) },
         { label: "Xem tâm bà", fn: () => K.beingMind("Tâm của ngạ quỷ", "Bà đói, tiếc, nhớ nhà.", [["Tham", 80, false], ["Bỏn xẻn", 86, false], ["Si", 58, false], ["Không tham", 12, true], ["Không sân", 30, true]], "Theo kinh điển, người nặng tham và bỏn xẻn có thể sinh vào cõi ngạ quỷ, luôn đói khát.", petaMeet) },
@@ -519,7 +523,7 @@
     } });
     if (has("rau_ma") && !has("banh_da")) choices.push({ label: "Tặng ông nắm rau má", fn: () => {
       K.dropItem("rau_ma"); K.giveItem("banh_da"); K.grow("tham", -1.5); K.save(); cart.talked = true; cart.pause = false; K.closeSheet(); K.setOpen(true);
-      K.gotItem("banh_da", () => K.award("khong_tham", "Người này tặng ông lái buôn nắm rau má, ông đổi lại gói bánh đa.", () => K.cooldown(2500)));
+      K.gotItem("banh_da", () => K.cooldown(2500));
     } });
     choices.push({ label: "Chào ông rồi đi", fn: done });
     K.showSheet({
