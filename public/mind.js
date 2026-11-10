@@ -306,42 +306,20 @@ window.Mind = (() => {
   function survey(done) {
     const score = { tham: 0, san: 0, si: 0, tam: 0, tin: 0, tri: 0 };
     const pick = (k, v = 2) => { score[k] += v; };
-    // 1. sweeping the temple yard
-    const area = el("div", "sweep");
-    const N = 9;
-    let left = N, t0 = 0, finished = false; // the clock starts at the first leaf
-    const timer = el("div", "sweep-time", "");
-    for (let i = 0; i < N; i++) {
-      const b = el("button", "leaf");
-      b.type = "button";
-      b.setAttribute("aria-label", "Chiếc lá");
-      b.style.left = rand(4, 88) + "%";
-      b.style.top = rand(8, 78) + "%";
-      b.style.transform = `rotate(${rand(-60, 60)}deg)`;
-      b.addEventListener("click", () => { if (b.dataset.done) return; if (!t0) t0 = Date.now(); b.dataset.done = "1"; b.classList.add("swept"); left--; if (!left) end(); });
-      area.appendChild(b);
+    // 1. a choice about a situation (the answer, not the speed of tapping, shows temperament)
+    step1();
+
+    function step1() {
+      showSheet({
+        label: "Khảo sát tính cách",
+        lines: ["Sân chùa đầy lá. Sư nhờ bạn quét giúp.", "Bạn thường làm thế nào?"],
+        choices: [
+          ["Quét thật kỹ từng góc, khó dừng tay", "tham"], ["Quét thật nhanh cho xong, hơi gắt tay", "san"], ["Quét lơ đãng, chỗ này chỗ kia", "si"],
+          ["Quét một lúc rồi nghĩ ra việc khác, bỏ dở", "tam"], ["Quét chậm, lòng thấy trang nghiêm", "tin"], ["Chia sân từng khu, làm lần lượt", "tri"],
+        ].map(([label, k]) => ({ label, fn: () => { pick(k); step2(); } }))
+          .concat([{ label: "Để sau", fn: () => { S.surveySkipped = true; save(); closeSheet(); } }]),
+      });
     }
-    area.appendChild(timer);
-    const shown = Date.now();
-    const tick = setInterval(() => {
-      if (!t0) { if (Date.now() - shown > 30000) end(); return; }
-      const s = 9 - Math.floor((Date.now() - t0) / 1000); timer.textContent = s > 0 ? `${s}` : ""; if (s <= 0) end();
-    }, 250);
-    function end() {
-      if (finished) return; finished = true; clearInterval(tick);
-      const secs = t0 ? (Date.now() - t0) / 1000 : 99;
-      if (left >= 3) pick("si", 3);
-      else if (secs < 4.5) pick("san", left ? 2 : 3);
-      else if (left === 0) pick("tham", 3);
-      else pick("tam", 1);
-      setTimeout(step2, 500);
-    }
-    showSheet({
-      label: "Khảo sát tính cách",
-      lines: ["Sân chùa đầy lá. Quét giúp sư nhé.", "Chạm vào từng chiếc lá."],
-      body: area,
-      choices: [{ label: "Để sau", fn: () => { clearInterval(tick); finished = true; S.surveySkipped = true; save(); closeSheet(); } }],
-    });
 
     function step2() {
       showSheet({
@@ -414,11 +392,7 @@ window.Mind = (() => {
     const st = S.quest.step;
     if (st === "well") return { ...P().well, name: "Giếng làng", title: "Ra giếng rửa vết cắn", body: "Vết chó cắn còn rát. Ở giếng làng có bà cụ đang múc nước." };
     if (st === "herb") return { ...P().mit, name: "Gốc mít", title: "Hái rau má ở gốc mít", body: "Bà cụ nhờ hái một nắm rau má ở gốc mít cuối làng." };
-    if (st === "deliver") {
-      const tu = S.quest.to === "tu";
-      return tu ? { ...DOG(), name: "Nhà ông Tư", title: "Mang rau sang nhà ông Tư", body: "Nhà ông Tư, chủ con chó vừa cắn bạn, ở ngay đầu ngõ." }
-        : { ...P().well, name: "Giếng làng", title: "Mang rau về cho bà cụ", body: "Bà cụ vẫn đứng chờ ở giếng làng." };
-    }
+    if (st === "deliver") return { ...P().well, name: "Giếng làng", title: "Mang rau về cho bà cụ", body: "Bà cụ vẫn đứng chờ ở giếng làng." };
     if (st === "monk") return { x: MONK_SPOT().x + 30, y: MONK_SPOT().y + 4, name: "Sư già", title: "Ghé chỗ vị sư ở nghĩa địa", body: "Giữa các ngôi mộ có một vị sư già ngồi yên. Hình như thầy đang đợi ai." };
     return null;
   }
@@ -510,43 +484,28 @@ window.Mind = (() => {
         lines: ["Được một nắm rau má xanh mướt."],
         choices: [
           { label: "Mang về cho bà cụ", fn: () => { S.quest.step = "deliver"; S.quest.to = "granny"; save(); closeSheet(); api.goTo(P().well.x, P().well.y + 14); } },
-          { label: "Mang sang nhà ông Tư", tag: "Chủ con chó vừa cắn bạn", fn: () => { S.quest.step = "deliver"; S.quest.to = "tu"; save(); closeSheet(); const d = DOG(); api.goTo(d.x - 20, d.y + 18); } },
           { label: "Giữ lại nấu canh", fn: () => {
-            grow("tham", 2); S.quest.step = "monk"; save();
+            S.quest.step = "monk"; save();
             closeSheet();
-            award("tham", "Người này có rau trong tay và muốn giữ lại cho mình.", () => { cooldownUntil = Date.now() + 2500; api.toast("Trên đường về, người này thấy có ánh đèn giữa nghĩa địa."); api.refresh(); });
+            cooldownUntil = Date.now() + 2500; api.toast("Trên đường về, người này thấy có ánh đèn giữa nghĩa địa."); api.refresh();
           } },
         ],
       });
     }
   }
 
+  // The herbs always go to the grandmother at the well. (Older saves with quest.to === "tu" are treated the same way.)
   function deliver() {
-    const tu = S.quest.to === "tu";
-    if (tu) {
-      const k = 3 * (1 + understanding("san") * 0.2) * rand(0.8, 1.2);
-      grow("san", -k); S.quest.friend = true;
-      api.swingMood(0.28);
-      showSheet({
-        label: "Nhà ông Tư",
-        lines: ["Ông Tư ngượng ngùng nhận nắm rau.", "“Con Vàng nhà tôi dữ quá, xin lỗi nhé.”", "Con chó ngửi tay bạn, vẫy đuôi."],
-        choices: [{ label: "Tiếp", fn: () => {
-          S.quest.step = "monk"; dropItem("rau_ma"); deed("tu_herbs"); save(); closeSheet();
-          award("khong_san", "Người này đem rau sang cho chính nhà có con chó vừa cắn mình.", afterGift);
-        } }],
-      });
-    } else {
-      grow("tham", -2 * rand(0.8, 1.2));
-      api.swingMood(0.22);
-      showSheet({
-        label: "Giếng làng",
-        lines: ["Bà cụ cười móm mém, nhận nắm rau.", "“Lành thay, con.”"],
-        choices: [{ label: "Tiếp", fn: () => {
-          S.quest.step = "monk"; dropItem("rau_ma"); deed("granny_herbs"); save(); closeSheet();
-          award("khong_tham", "Người này hái rau rồi đem cho bà cụ, không giữ lại.", afterGift);
-        } }],
-      });
-    }
+    grow("tham", -2 * rand(0.8, 1.2));
+    api.swingMood(0.22);
+    showSheet({
+      label: "Giếng làng",
+      lines: ["Bà cụ cười móm mém, nhận nắm rau.", "“Lành thay, con.”"],
+      choices: [{ label: "Tiếp", fn: () => {
+        S.quest.step = "monk"; dropItem("rau_ma"); deed("granny_herbs"); save(); closeSheet();
+        afterGift();
+      } }],
+    });
   }
   // village memory: the day comes from the app; a deed is remembered from the next night on
   const deed = (id) => { try { window.Village && Village.record(id, api && api.day ? api.day() : 1); } catch (e) { console.error(e); } };

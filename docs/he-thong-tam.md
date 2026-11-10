@@ -8,7 +8,7 @@
 
 | Hạng mục | Mục trong tài liệu | Trạng thái | Ghi chú |
 |---|---|---|---|
-| Khảo sát tính cách bằng việc làm (quét lá, nhận bát), sáu hạng tính | mục 5 | **Đã có** | — |
+| Khảo sát tính cách bằng câu chọn tình huống (quét sân, hoa, bát cơm; tùy chọn trong Việc đang chờ), sáu hạng tính | mục 5 | **Đã có** | — |
 | Chỉ số tâm ngầm, quả cầu tâm đầy khi ngồi | mục 6 | **Đã có** | — |
 | Chuỗi "chó cắn" | mục 7 | **Đã có** | — |
 | Thẻ tâm sở, mở mặt khi gặp lại, album | mục 4a | **Một phần** | Có 10 thẻ (Sân, Hối hận, Tham, Không sân, Không tham, Niệm, Hỷ, Bỏn xẻn, Bi, Tùy hỷ); album chưa tự xếp lại theo nhóm |
@@ -313,7 +313,7 @@ Thanh Tịnh Đạo (chương III) chia sáu hạng tính: **tham, sân, si, tí
 
 ### Khảo sát bằng việc làm, không hỏi đáp
 
-Màn đầu là 3–4 việc nhỏ: **quét sân, nhận bát cơm, đi ngang con chó, nhìn một bông hoa**. Game đo cách làm (nhanh hay chậm, kỹ hay sót, chọn gì) để xếp nhóm tính. Người chơi không thấy đây là bài kiểm tra.
+Màn đầu là 3–4 việc nhỏ: **quét sân, nhận bát cơm, đi ngang con chó, nhìn một bông hoa**. Bước quét sân là một câu chọn tình huống (quét kỹ, quét nhanh, quét lơ đãng…), không đo tốc độ chạm; game xem cách người này chọn để xếp nhóm tính. Người chơi không thấy đây là bài kiểm tra.
 
 Sau đó chỉ số được **random trong khung của nhóm**, nên hai người cùng nhóm vẫn khác nhau.
 
