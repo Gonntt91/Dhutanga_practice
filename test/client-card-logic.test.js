@@ -90,15 +90,18 @@ function boot(save, { role = "villager", darkness = 0, mood = 0.6, pos = { x: 0,
 }
 
 // ---------- B1: the grandmother's story no longer gives Bỏn xẻn ----------
-test("B1: hearing the grandmother's story gives no card and opens the rice errand", () => {
+test("B1: hearing the grandmother's story gives no Bỏn xẻn; choosing to help gives Bi and opens the rice errand", () => {
   const g = boot(saved({ q: { peta: { step: "none" } } }), { darkness: 0.6, pos: { x: 444, y: 374 } });
   g.tick();
   assert.equal(g.sheetLabel(), "Giữa các ngôi mộ");
   g.choice("Hỏi bà là ai");
-  g.choice("Tiếp");
+  g.choice("Con sẽ tìm cách giúp bà");
   assert.equal(g.S().q.peta.step, "rice");
   assert.equal(g.S().cards.bon_xen, undefined, "no Bỏn xẻn card");
-  assert.equal(g.cardOpen(), false, "no card popup");
+  assert.ok(g.cardOpen(), "the Bi card opens (chosen help)");
+  g.cardOk();
+  assert.ok(g.S().cards.bi, "Bi is recorded");
+  assert.equal(g.cardOpen(), false, "card closed");
   assert.equal(g.sheetOpen(), false, "sheet closed");
   assert.ok(g.toasts.some((t) => t.includes("xin một bát")), "the hint to ask for rice is shown");
   // the next step runs straight from the loop, with no award callback in between

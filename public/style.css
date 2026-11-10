@@ -345,6 +345,10 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--lantern); o
 .herb { position: absolute; width: 30px; height: 30px; padding: 0; border: 0; border-radius: 50%;
   background: radial-gradient(circle at 40% 40%, #8fd06a, #3f8a30 70%); box-shadow: 0 0 0 3px rgba(95,174,70,0.18); transition: opacity 0.4s, transform 0.4s; }
 .herb.picked { opacity: 0; transform: translateY(-30px) scale(0.5); pointer-events: none; }
+/* muỗng cơm for xới cơm: a small off-white disc, not a plant */
+.scoop { width: 34px; height: 34px; padding: 0; border: 0; border-radius: 50%;
+  background: radial-gradient(circle at 40% 40%, #fbf6e9, #d8cdb0 70%); box-shadow: 0 0 0 3px rgba(232,224,200,0.2); transition: opacity 0.4s, transform 0.4s; }
+.scoop.picked { opacity: 0.25; transform: scale(0.8); pointer-events: none; }
 
 .sit { position: relative; height: 230px; margin: 4px 0; overflow: hidden; }
 .orb-meter { position: absolute; left: 50%; bottom: 34px; width: 96px; height: 96px; margin-left: -48px; border-radius: 50%; overflow: hidden;
@@ -456,7 +460,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--lantern); o
     .mind:hover .orb { filter: brightness(1.2); }
     .sheet-handle:hover .grip { background: var(--ash-dim); }
     .album-slot:hover { border-color: var(--ash-dim); }
-    .thought:hover, .leaf:hover, .herb:hover { filter: brightness(1.2); }
+    .thought:hover, .leaf:hover, .herb:hover, .scoop:hover { filter: brightness(1.2); }
     .sheet-handle, .role-card, .choice { cursor: pointer; }
     button:disabled { cursor: default; }
   }
