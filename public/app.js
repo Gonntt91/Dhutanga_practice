@@ -111,6 +111,8 @@
   }
 
   const currentScene = () => (state.role ? STORY[state.role].scenes[state.sceneId] : null);
+  // The player's own story has reached its closing scene and the player is free to walk until they end the night.
+  const isFreeNight = () => Progress.isFreeNight(state.cp, currentScene()) && !state.sceneOpen && !state.detour;
   const currentPose = () => {
     const sc = currentScene();
     if (state.mindPose) return state.mindPose;
@@ -690,10 +692,18 @@
       $("walk-time").textContent = sc.time;
       $("walk-text").textContent = `Đi tới ${World.PLACES[sc.place].name}`;
     }
+    // a free night: no destination, the button ends the night instead (reset every time, so no old label sticks)
+    const free = isFreeNight();
+    if (free) {
+      $("walk-time").textContent = "Đêm nay";
+      $("walk-text").textContent = "Đi dạo, khám phá làng. Khi muốn nghỉ thì kết thúc đêm.";
+    }
+    $("walk-btn").textContent = free ? "Kết thúc đêm" : "Đi tới";
     pushView();
   }
   function showWalkOrScene() {
-    if (!state.detour && !state.leftScene && distanceToPlace() <= ARRIVE_DIST) return openScene();
+    // a free night never opens its closing scene by itself (the player ends it with the button)
+    if (!state.detour && !state.leftScene && !Progress.isFreeNight(state.cp, currentScene()) && distanceToPlace() <= ARRIVE_DIST) return openScene();
     showWalkBar();
   }
   // Step out of the story to walk around freely. The scene stays pending.
@@ -1001,16 +1011,22 @@
     addEndButtons();
   }
 
-  // End of a night: the reflection is the main way on; picking another role stays as a quiet option.
+  // End of a night (the closing scene, or an epilogue): the reflection is the main way on; starting a new night
+  // straight away, skipping the reflection, stays as a quiet option. Shared by ordinary and epilogue endings.
   function addEndButtons() {
     const reflect = el("button", "choice primary", "Quán xét cuối đêm");
     reflect.type = "button";
     reflect.addEventListener("click", openReflection);
     $("choices").appendChild(reflect);
-    const again = el("button", "choice rf-secondary", "Chọn một vai khác");
-    again.type = "button";
-    again.addEventListener("click", leaveRole);
-    $("choices").appendChild(again);
+    const role = state.role;
+    const next = el("button", "choice rf-secondary", "Sang đêm mới");
+    next.type = "button";
+    next.addEventListener("click", () => {
+      try { window.Milestones && Milestones.notify("newnight", {}); } catch {}
+      lastCpJson = ""; saveProgress();
+      if (state.role === role) startRole(role);
+    });
+    $("choices").appendChild(next);
   }
 
   function openReflection() {
@@ -1672,6 +1688,8 @@
   $("walk-btn").addEventListener("click", () => {
     const sc = currentScene();
     if (!sc) return;
+    // a free night: this button ends it (opens the closing scene) instead of walking
+    if (isFreeNight()) { openScene(); return; }
     state.findTarget = null;
     const place = targetPlace();
     World.walkTo(place.x, place.y + 6);
@@ -1684,13 +1702,19 @@
     const sc = currentScene();
     if (!sc) return;
     const place = World.PLACES[sc.place];
-    $("quest-title").textContent = state.detour ? "Đi tịnh thất đọc kinh" : sc.end ? "Đêm đã xong" : `Đi tới ${place.name}`;
-    const first = (sc.lines || []).find((l) => typeof l === "string") || "";
-    $("quest-body").textContent = state.detour
-      ? `Thầy đang đi về ${World.PLACES[state.detour.place].name} để đọc vài trang kinh. Đọc xong thầy quay lại ${place.name}, nơi câu chuyện đang chờ.`
-      : sc.end ? "Câu chuyện đêm nay đã khép lại." : `${sc.time}. ${first.length > 160 ? first.slice(0, 157) + "…" : first}`;
-    $("quest-go").hidden = !!sc.end;
-    $("quest-go").textContent = state.detour ? "Đưa tôi tới tịnh thất" : "Đưa tôi tới đó";
+    const free = isFreeNight();
+    if (free) {
+      $("quest-title").textContent = "Đêm nay";
+      $("quest-body").textContent = "Bạn có thể đi dạo và khám phá. Khi muốn nghỉ, bấm Kết thúc đêm.";
+    } else {
+      $("quest-title").textContent = state.detour ? "Đi tịnh thất đọc kinh" : sc.end ? "Đêm đã xong" : `Đi tới ${place.name}`;
+      const first = (sc.lines || []).find((l) => typeof l === "string") || "";
+      $("quest-body").textContent = state.detour
+        ? `Thầy đang đi về ${World.PLACES[state.detour.place].name} để đọc vài trang kinh. Đọc xong thầy quay lại ${place.name}, nơi câu chuyện đang chờ.`
+        : sc.end ? "Câu chuyện đêm nay đã khép lại." : `${sc.time}. ${first.length > 160 ? first.slice(0, 157) + "…" : first}`;
+    }
+    $("quest-go").hidden = !!sc.end && !free;
+    $("quest-go").textContent = free ? "Kết thúc đêm" : state.detour ? "Đưa tôi tới tịnh thất" : "Đưa tôi tới đó";
     const low = monkLow() && !state.detour;
     $("quest-tip").hidden = !low;
     $("quest-tip").textContent = "Lòng thầy đang xao động, thiếu vững tin. Trong tịnh thất có kệ kinh và bàn thờ Đức Phật; đọc vài trang có thể giúp tâm vững lại.";
@@ -1818,6 +1842,7 @@
   $("quest-btn").addEventListener("click", () => ($("quest-panel").hidden ? openQuest() : ($("quest-panel").hidden = true)));
   $("quest-close").addEventListener("click", () => ($("quest-panel").hidden = true));
   $("quest-go").addEventListener("click", () => {
+    if (isFreeNight()) { $("quest-panel").hidden = true; openScene(); return; }
     const place = targetPlace();
     if (!place) return;
     $("quest-panel").hidden = true;
@@ -1852,7 +1877,7 @@
       } else if (!state.detour) {
         const d = distanceToPlace();
         if (state.leftScene && d > ARRIVE_DIST + 40) state.leftScene = false; // walked away: arriving again reopens the scene
-        else if (!state.leftScene && d <= ARRIVE_DIST) openScene();
+        else if (!state.leftScene && d <= ARRIVE_DIST && !isFreeNight()) openScene();
       }
     }
     // Stood still for a while with a destination waiting? Nudge toward it (chevrons in the world, pulsing button).
