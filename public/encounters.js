@@ -17,7 +17,25 @@
   const toast = (t) => api() && api().toast(t);
   const deed = (id) => { try { window.Village && Village.record(id, api() && api().day ? api().day() : 1); } catch (e) { console.error(e); } };
   const sound = () => api() && api().sound();
-  const fx = { treeT: 0, peta: null, earth: 0, sparks: [] };
+  const fx = { treeT: 0, peta: null, earth: 0, sparks: [], cry: null };
+  // "lần theo tiếng khóc": the crying rhythm and the distance hints (not saved; rebuilt from the step each time)
+  const cryState = { next: 0, level: null };
+  const cryLevel = (d) => (d > 260 ? "far" : d > 120 ? "mid" : "close");
+  const CRY_TEXT = { far: "Tiếng khóc còn xa…", mid: "Tiếng khóc gần hơn…", close: "Rất gần rồi…" };
+  function cryTick(tq) {
+    if (tq.step !== "child" || !villageRole()) { fx.cry = null; cryState.level = null; cryState.next = 0; return; }
+    if (api().busy() || (Mind.isOpen && Mind.isOpen())) return;
+    const p = World.getPlayer(), c = spot.child();
+    const d = Math.hypot(p.x - c.x, p.y - c.y);
+    const now = Date.now();
+    if (now >= cryState.next) {
+      cryState.next = now + Math.min(3.2, Math.max(0.9, d / 80)) * 1000;
+      if (sound()) NightAudio.sigh && NightAudio.sigh();
+      fx.cry = { t: 0, d };
+    }
+    const lv = cryLevel(d);
+    if (lv !== cryState.level) { cryState.level = lv; toast(CRY_TEXT[lv]); }
+  }
 
   const spot = {
     tree: () => ({ x: P().gao.x + 38, y: P().gao.y + 14 }),
@@ -40,7 +58,7 @@
       label: "Gốc cây gạo",
       lines: ["Lá cây gạo sáng lên từng chiếc. Một bà cụ hiền hậu hiện ra từ thân cây.", "“Có đứa bé lạc trong bụi tre, khóc mãi. Đưa nó về nhà giúp ta nhé.”"],
       choices: [
-        { label: "Đi tìm đứa bé", primary: true, fn: () => { q.step = "child"; K.save(); K.closeSheet(); api().goTo(spot.child().x + 24, spot.child().y + 8); } },
+        { label: "Đi tìm đứa bé", primary: true, fn: () => { q.step = "child"; K.save(); K.closeSheet(); toast("Có tiếng khóc nhỏ vọng ra từ bụi tre. Lần theo tiếng khóc nhé."); } },
         { label: "Xem tâm vị ấy", fn: () => K.beingMind("Tâm của thọ thần", "Vị này hiền, thương người, ít giận.", [["Không tham", 70, true], ["Không sân", 84, true], ["Không si", 60, true], ["Tham", 22, false], ["Sân", 10, false], ["Si", 30, false]], "Theo kinh điển, thọ thần là chư thiên ở mặt đất, nương nơi cây lớn, nhờ phước đời trước.", treeMeet) },
         { label: "Để sau", fn: () => { snooze(q); K.closeSheet(); } },
       ],
@@ -397,7 +415,8 @@
       const tq = Q("tree");
       if (villageRole() && dusk() && tq.step !== "done") out.push({ kind: "treegod", ...spot.tree(), alpha: 0.85, label: "thọ thần" });
       else if (villageRole() && night() && tq.step === "done") out.push({ kind: "treegod", ...spot.tree(), alpha: 0.5, label: "" });
-      if (villageRole() && tq.step === "child") out.push({ kind: "child", ...spot.child(), crying: true, label: "bé Na" });
+      // the child stays hidden in the bamboo until the player is close enough to hear and see them
+      if (villageRole() && tq.step === "child") { const p = World.getPlayer(), c = spot.child(); if (Math.hypot(p.x - c.x, p.y - c.y) <= 90) out.push({ kind: "child", ...c, crying: true, label: "bé Na" }); }
       if (villageRole() && tq.step === "follow") { const p = World.getPlayer(); out.push({ kind: "child", x: p.x - 16, y: p.y + 4, moving: p.moving, crying: !!tq.scared, label: "bé Na" }); }
       // Once the child is home the mother is home too at night; she only waits in the lane while the quest needs her.
       if (villageRole() && (tq.step === "follow" || tq.step === "thank" || (tq.step === "done" && !night()))) out.push({ kind: "mother", ...spot.mother(), label: "mẹ bé Na" });
@@ -415,7 +434,8 @@
     targets() {
       const out = [];
       const tq = Q("tree"), pq = Q("peta");
-      if (villageRole() && tq.step === "child") out.push({ title: "Tìm bé Na trong bụi tre", body: "Thọ thần nhờ đưa đứa bé lạc về nhà.", ...stand(spot.child(), 24, 8), name: "Bé Na" });
+      // the whole bamboo grove is the errand, not the child's exact spot: the player follows the sound
+      if (villageRole() && tq.step === "child") out.push({ title: "Lần theo tiếng khóc", body: "Tiếng khóc nhỏ vọng ra từ bụi tre. Đi quanh đó và lắng nghe.", ...stand(P().bamboo, 0, 20), name: "Bụi tre" });
       if (villageRole() && tq.step === "follow") out.push({ title: "Đưa bé Na về ngõ làng", body: "Mẹ bé đang đứng chờ ở ngõ làng.", ...stand(spot.mother()), name: "Mẹ bé Na" });
       if (villageRole() && tq.step === "thank") out.push({ title: "Quay lại gốc cây gạo", body: dusk() ? "Thọ thần đang đợi ở gốc gạo." : "Thọ thần chỉ hiện ra lúc chạng vạng trở đi.", ...stand(spot.tree(), -30, 10), name: "Thọ thần" });
       if (villageRole()) {
@@ -445,6 +465,7 @@
       if (!!Q("cave").found !== !!World.getMap().caveFound) syncCave();
       const near = K.near;
       const tq = Q("tree");
+      if (villageRole()) cryTick(tq);
       if (villageRole() && !snoozed(tq)) {
         if (tq.step === "none" && dusk() && near(spot.tree(), 60)) { treeMeet(); return true; }
         if (tq.step === "child" && near(spot.child(), 40)) { childFound(); return true; }
@@ -484,6 +505,18 @@
       if (villageRole() && dusk() && Q("tree").step !== "done") {
         const g = P().gao;
         if (fx.sparks.length < 26 && Math.random() < 0.5) fx.sparks.push({ x: g.x - 40 + Math.random() * 110, y: g.y - 70 - Math.random() * 60, v: 6 + Math.random() * 10, t: 0, life: 3 + Math.random() * 2 });
+      }
+      if (fx.cry) {
+        // a faint ripple from the player's spot, a little brighter when the crying is near
+        fx.cry.t += dt;
+        const p = World.getPlayer(), k = Math.max(0, 1 - fx.cry.t / 1.2);
+        if (fx.cry.t > 1.2) fx.cry = null;
+        else {
+          const near = 1 - Math.min(1, fx.cry.d / 260), r = Math.min(1, fx.cry.t / 1.2) * 70;
+          ctx.globalCompositeOperation = "lighter";
+          ctx.strokeStyle = `rgba(220,235,200,${(0.18 + 0.2 * near) * k})`; ctx.lineWidth = 1.5;
+          ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, 7); ctx.stroke();
+        }
       }
       ctx.globalCompositeOperation = "lighter";
       for (const s of fx.sparks) {
