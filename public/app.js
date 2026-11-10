@@ -1823,6 +1823,8 @@
     emit: (topic) => post("/api/emit", { topic }),
     setPose: (p) => { state.mindPose = p; pushView(); sendPresence(true); },
     day: () => (state.cp && state.cp.day) || 1,
+    phase: () => (clockOn() ? Clock.at(state.clockH).name : null),
+    runId: () => (state.cp && state.cp.runId) || null,
     busy: () => uiBusy(),
   });
 
