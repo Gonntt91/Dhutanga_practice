@@ -103,7 +103,7 @@ function boot(save, { pos = { x: 0, y: 0 }, darkness = 0.6, sound = true, role =
     },
     sheetLabel: () => $("mind-label").textContent,
     sheetOpen: () => !$("mind-card").hidden,
-    cryToasts: () => toasts.filter((t) => /Tiếng khóc|Rất gần rồi/.test(t)),
+    cryToasts: () => toasts.filter((t) => /Tiếng khóc lúc gần|Gần hơn rồi|Ngay đây/.test(t)),
     childActors: () => enc.actors().filter((a) => a.kind === "child"),
     frame(ms = 16) { const ctx = CTX(); enc.fx(ctx, { dayMix: 0, time: 0, camY: 0, viewH: 0 }, ms / 1000); return ctx; },
   };
@@ -118,7 +118,7 @@ test("treeMeet: 'Đi tìm đứa bé' sets the child step, does not call goTo, a
   assert.equal(g.prompt(), "Lại gần gốc gạo", "the tree is offered, not opened");
   g.tap();
   assert.equal(g.sheetLabel(), "Gốc cây gạo");
-  g.choice("Đi tìm đứa bé");
+  g.choice("Đi tìm đứa bé, kẻo trời tối hẳn");
   assert.equal(g.S().q.tree.step, "child");
   assert.equal(g.goTo.length, 0, "the player is not led to the child");
   assert.equal(g.sheetOpen(), false, "sheet closed");
@@ -148,7 +148,7 @@ test("actors: the child is not drawn far away and is drawn within 90", () => {
 test("loop: a far hint is shown once no matter how often the loop runs", () => {
   const g = boot(CHILD_SAVE(), { pos: { x: 0, y: 0 } });
   for (let i = 0; i < 6; i++) g.tick();
-  assert.deepEqual(g.cryToasts(), ["Tiếng khóc còn xa…"]);
+  assert.deepEqual(g.cryToasts(), ["Tiếng khóc lúc gần lúc xa, lẫn trong tiếng tre cọ nhau."]);
 });
 
 test("loop: moving closer changes the hint once per level, then stays quiet", () => {
@@ -158,7 +158,7 @@ test("loop: moving closer changes the hint once per level, then stays quiet", ()
   g.run(1000);
   g.setPos(CHILD.x - 100, CHILD.y); // d = 100: close
   g.run(1000);
-  assert.deepEqual(g.cryToasts(), ["Tiếng khóc còn xa…", "Tiếng khóc gần hơn…", "Rất gần rồi…"]);
+  assert.deepEqual(g.cryToasts(), ["Tiếng khóc lúc gần lúc xa, lẫn trong tiếng tre cọ nhau.", "Gần hơn rồi. Có tiếng nấc sau khóm tre to.", "Ngay đây. Lá tre dưới đất bị ai ngồi đè lên."]);
 });
 
 test("loop: NightAudio.sigh follows the rhythm; the interval is d/80 clamped to 0.9..3.2 s", () => {
@@ -211,7 +211,7 @@ test("an old save at step 'child' still plays: the child can be found by walking
   const g = boot(CHILD_SAVE(), { pos: { x: CHILD.x - 10, y: CHILD.y + 10 } });
   g.tick();
   assert.equal(g.sheetLabel(), "Bụi tre");
-  g.choice("Ngồi xuống, dỗ dành");
+  g.choice("Ngồi xuống ngang tầm, cho bé bớt sợ");
   assert.equal(g.S().q.tree.step, "follow");
 });
 
@@ -243,4 +243,28 @@ test("nothing is offered while the player is busy in a story scene", () => {
   g.setBusy(true);
   g.tick();
   assert.equal(g.prompt(), null);
+});
+
+// ---------- the scene in the bamboo: one line follows the temperament, and waiting is a kind choice with no card ----------
+test("childFound: the second line follows the temperament; no temperament reads the neutral line; the choices are the same", () => {
+  const lines = (g) => g.sb.document.getElementById("mind-lines").children.map((p) => p.textContent);
+  const labels = (g) => g.sb.document.getElementById("mind-choices").children.map((c) => c.textContent);
+  const neutral = boot(CHILD_SAVE(), { pos: CHILD });
+  neutral.tick();
+  assert.equal(lines(neutral)[1], "Bé khóc đã lâu, giọng khản đi.");
+  const san = boot({ ...CHILD_SAVE(), carita: "san" }, { pos: CHILD });
+  san.tick();
+  assert.equal(lines(san)[1], "Tiếng khóc xoáy vào tai. Người này thấy bực, dù chưa biết bực ai.");
+  assert.deepEqual(labels(san), labels(neutral));
+  assert.equal(Object.keys(san.S().cards).length, 0, "the line itself gives no card");
+});
+
+test("childFound: waiting at a distance brings the child along with no card and no fear", () => {
+  const g = boot(CHILD_SAVE(), { pos: CHILD });
+  g.tick();
+  g.choice("Đứng xa một chút, chờ bé tự nín");
+  assert.equal(g.S().q.tree.step, "follow");
+  assert.equal(g.S().q.tree.scared, false);
+  assert.equal(Object.keys(g.S().cards).length, 0);
+  assert.equal(g.sb.document.getElementById("card-reveal").hidden, true, "no card is shown");
 });
