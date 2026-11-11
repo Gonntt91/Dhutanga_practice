@@ -466,37 +466,40 @@
       const near = K.near;
       const tq = Q("tree");
       if (villageRole()) cryTick(tq);
-      if (villageRole() && !snoozed(tq)) {
-        if (tq.step === "none" && dusk() && near(spot.tree(), 60)) { treeMeet(); return true; }
-        if (tq.step === "child" && near(spot.child(), 40)) { childFound(); return true; }
-        if (tq.step === "follow" && near(spot.mother(), 44)) { childHome(); return true; }
-        if (tq.step === "thank" && dusk() && near(spot.tree(), 60)) { treeThanks(); return true; }
+      // A scene that STARTS a story is only offered (K.offer): the player taps to open it, and "Để sau" just closes it.
+      // A step of an errand the player already took on opens on arrival, as before.
+      if (villageRole()) {
+        if (tq.step === "none" && dusk() && near(spot.tree(), 60)) return K.offer("tree", "Lại gần gốc gạo", treeMeet);
+        if (!snoozed(tq)) {
+          if (tq.step === "child" && near(spot.child(), 40)) { childFound(); return true; }
+          if (tq.step === "follow" && near(spot.mother(), 44)) { childHome(); return true; }
+          if (tq.step === "thank" && dusk() && near(spot.tree(), 60)) { treeThanks(); return true; }
+        }
       }
       if (K.role() === "ghost") {
         const gm = Q("ghost_memory");
-        if (gm.step !== "done" && !snoozed(gm)) {
+        if (gm.step !== "done") {
           const step = gm.step || "none";
           const pt = step === "none" ? spot.tree() : step === "bamboo" ? spot.child() : step === "wall" ? P().hermitage : spot.peta();
-          if ((step !== "none" || dusk()) && near(pt, 54)) { ghostMemory(); return true; }
+          if ((step !== "none" || dusk()) && near(pt, 54)) return K.offer("ghost_memory", "Dừng lại lắng nghe", ghostMemory);
         }
       }
       if (villageRole()) {
         const pq = Q("peta");
+        if (pq.step === "none" && night() && near(spot.peta(), 50)) return K.offer("peta", "Đến gần bóng người", petaMeet);
         if (!snoozed(pq)) {
-          if (pq.step === "none" && night() && near(spot.peta(), 50)) { petaMeet(); return true; }
           if (pq.step === "rice" && near(spot.granny(), 44)) { grannyRice(); return true; }
           if (pq.step === "offer" && near(K.MONK_SPOT(), 54)) { offerRice(); return true; }
         }
       }
       const eq = Q("earth");
-      if (eq.step !== "done" && earthReady() && !snoozed(eq) && near(spot.earth(), 56)) { earthMeet(); return true; }
+      if (eq.step !== "done" && earthReady() && near(spot.earth(), 56)) return K.offer("earth", "Dừng lại ở cổng làng", earthMeet);
       const cq = Q("cave");
-      if (villageRole() && place("hang") && cq.step !== "done" && !snoozed(cq) && near(place("hang"), 50)) { if (cq.found) caveEnter(); else boulderVisit(); return true; }
-      const oq = Q("pond");
-      if (place("ao") && !snoozed(oq) && near(place("ao"), 64)) { pondVisit(); return true; }
-      if (villageRole() && has("hoa_sen") && !snoozed(Q("lotus")) && near(P().hermitage, 50)) { offerLotus(); return true; }
-      const sq = Q("palace");
-      if (villageRole() && place("thap") && !snoozed(sq) && near(place("thap"), 52)) { stupaVisit(); return true; }
+      if (villageRole() && place("hang") && cq.step !== "done" && !snoozed(cq) && near(place("hang"), 50)) return cq.found ? K.offer("cave", "Vào hang đá", caveEnter) : K.offer("boulder", "Xem tảng đá lớn", boulderVisit);
+      // The pond, the cave and the stupa keep their own rest time after a visit (snooze), so they are not offered again at once.
+      if (place("ao") && !snoozed(Q("pond")) && near(place("ao"), 64)) return K.offer("pond", "Ra bờ ao", pondVisit);
+      if (villageRole() && has("hoa_sen") && near(P().hermitage, 50)) return K.offer("lotus", "Dâng sen ở tịnh thất", offerLotus);
+      if (villageRole() && place("thap") && !snoozed(Q("palace")) && near(place("thap"), 52)) return K.offer("stupa", "Xem tháp cổ", stupaVisit);
       return false;
     },
     fx(ctx, v, dt) {

@@ -68,6 +68,17 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--lantern); o
 }
 .toast.show { opacity: 1; }
 
+/* ---------- a scene offered nearby (mind.js offer): tap to open ---------- */
+.mind-prompt {
+  position: absolute; z-index: 3; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 96px); transform: translateX(-50%);
+  max-width: 86%; padding: 10px 18px; border-radius: 999px; border: 1px solid var(--lantern);
+  background: rgba(12, 18, 17, 0.86); color: var(--lantern); font: 500 14px/1.2 var(--font-ui); white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis; backdrop-filter: blur(6px); animation: prompt-in 0.35s ease;
+}
+.mind-prompt[hidden] { display: none; }
+@keyframes prompt-in { from { opacity: 0; transform: translate(-50%, 6px); } to { opacity: 1; transform: translate(-50%, 0); } }
+@media (prefers-reduced-motion: reduce) { .mind-prompt { animation: none; } }
+
 /* ---------- walk bar ---------- */
 .walk-bar {
   position: absolute; z-index: 3; left: 0; right: 0; bottom: 0;

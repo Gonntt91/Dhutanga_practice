@@ -69,6 +69,9 @@ function boot(save, { role = "villager", darkness = 0, pos = { x: 0, y: 0 } } = 
     S: () => M.kit.S,
     setPos(x, y) { player = { ...player, x, y }; },
     tick() { M.kit.cooldown(-1); M.kit.setOpen(false); loopFn(); },
+    // the scene offered nearby: its label (null when none), and a tap on it
+    prompt: () => { const b = sb.document.getElementById("mind-prompt"); return b.hidden ? null : b.textContent; },
+    tap() { M.kit.setOpen(false); sb.document.getElementById("mind-prompt").listeners.click(); },
     choiceLabels: () => $("mind-choices").children.map((c) => c.textContent),
     choice(label) {
       const btn = $("mind-choices").children.find((c) => c.textContent === label);
@@ -94,6 +97,9 @@ const GRANNY_AT = { x: 322, y: 308 };
 function petaStory(save) {
   const g = boot(save, { darkness: 0.6, pos: PETA_AT });
   g.tick();
+  assert.equal(g.sheetOpen(), false, "walking near does not open the scene");
+  assert.equal(g.prompt(), "Đến gần bóng người");
+  g.tap();
   assert.equal(g.sheetLabel(), "Giữa các ngôi mộ");
   g.choice("Hỏi bà là ai");
   return g;
@@ -263,6 +269,7 @@ test("offerRice: the done log line is written on both branches", async () => {
 test("the whole chain: Bi, then rice with a share, then Không tham and Tùy hỷ, with the scene uncut", async () => {
   const g = boot(saved({ q: { peta: { step: "none" } } }), { darkness: 0.6, pos: PETA_AT });
   g.tick();
+  g.tap();
   g.choice("Hỏi bà là ai");
   g.choice("Con sẽ tìm cách giúp bà");
   g.drainCards();

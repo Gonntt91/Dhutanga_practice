@@ -82,6 +82,9 @@ function boot({ save = saved(), role = "villager", phase = "Chiều tàn", day =
     setPos(x, y) { player = { ...player, x, y }; },
     set(over) { Object.assign(now, over); },
     tick() { M.kit.cooldown(-1); M.kit.setOpen(false); loopFn(); },
+    // the scene offered nearby: its label (null when none), and a tap on it
+    prompt: () => { const b = sb.document.getElementById("mind-prompt"); return b.hidden ? null : b.textContent; },
+    tap() { M.kit.setOpen(false); sb.document.getElementById("mind-prompt").listeners.click(); },
     choiceLabels: () => $("mind-choices").children.map((c) => c.textContent),
     choice(label) {
       const btn = $("mind-choices").children.find((c) => c.textContent === label);
@@ -197,9 +200,13 @@ test("module: a legacy character (phase null) gets no targets and no sheet", () 
   assert.equal(g.logs.length, 0);
 });
 
-test("module: a villager on the clock opens the errand when near its place in the right phase", () => {
+test("module: a villager near the place in the right phase is offered the errand; a tap opens it", () => {
   const g = boot({ pos: { x: 610, y: 600 } });
   g.tick();
+  assert.equal(g.sheetOpen(), false, "walking near does not open the scene");
+  assert.equal(g.prompt(), "Đứng nghe chuông");
+  g.tap();
+  assert.equal(g.prompt(), null, "the button goes away once the scene is open");
   assert.equal(g.sheetOpen(), true);
   assert.equal(g.sheetLabel(), "Tịnh thất");
   assert.deepEqual(g.lines(), ["Tiếng chuông chiều ngân lên từ tịnh thất, chậm và thưa.", "Chim bay về tổ. Không có việc gì phải làm."]);
@@ -209,12 +216,14 @@ test("module: a villager on the clock opens the errand when near its place in th
 test("module: a temperament variant of the lines is used when the character has one", () => {
   const g = boot({ save: saved({ carita: "tham" }), pos: { x: 610, y: 600 } });
   g.tick();
+  g.tap();
   assert.deepEqual(g.lines(), ["Tiếng chuông chiều ngân lên, chậm và thưa.", "Người này muốn đứng nghe mãi, chưa muốn đi đâu."]);
 });
 
 test("module: a choice with a log writes one journal line, completes the errand, and waits for a new run and cooldown", () => {
   const g = boot({ pos: { x: 610, y: 600 } });
   g.tick();
+  g.tap();
   g.choice("Đứng nghe thêm một lúc");
   assert.deepEqual(g.logs, ["Đã đứng nghe tiếng chuông chiều ở tịnh thất."]);
   assert.equal(g.sheetOpen(), false);
@@ -222,25 +231,30 @@ test("module: a choice with a log writes one journal line, completes the errand,
   assert.equal(g.S().q.storylets.done.chuong_chieu.lastDay, 1);
   assert.deepEqual(J(g.S().q.storylets.tonight), { runId: "run-1", ids: ["chuong_chieu"] });
   g.tick();
-  assert.equal(g.sheetOpen(), false, "same run: not offered again");
+  assert.equal(g.prompt(), null, "same run: not offered again");
   assert.equal(g.logs.length, 1, "the log is written once");
   g.set({ runId: "run-2", day: 2 });
   g.tick();
-  assert.equal(g.sheetOpen(), false, "new run, but the cooldown of 2 days still holds");
+  assert.equal(g.prompt(), null, "new run, but the cooldown of 2 days still holds");
   g.set({ runId: "run-3", day: 3 });
   g.tick();
-  assert.equal(g.sheetOpen(), true, "after 2 days it can come back");
+  assert.equal(g.prompt(), "Đứng nghe chuông", "after 2 days it is offered again");
 });
 
-test("module: 'Đi tiếp' closes the errand without completing it and does not reopen it at once", () => {
+test("module: 'Đi tiếp' closes the errand without completing it; it never reopens by itself, and the button leaves when the player walks on", () => {
   const g = boot({ pos: { x: 610, y: 600 } });
   g.tick();
+  g.tap();
   g.choice("Đi tiếp");
   assert.equal(g.sheetOpen(), false);
   assert.equal(g.logs.length, 0, "no journal line");
   assert.equal(g.S().q.storylets.done.chuong_chieu, undefined, "not completed");
+  for (let i = 0; i < 400; i++) g.tick();
+  assert.equal(g.sheetOpen(), false, "standing there never reopens the scene");
+  assert.equal(g.prompt(), "Đứng nghe chuông", "the button is still there for a change of mind");
+  g.setPos(2000, 2000);
   g.tick();
-  assert.equal(g.sheetOpen(), false, "snoozed, so it does not come back straight away");
+  assert.equal(g.prompt(), null, "walking away removes the button");
 });
 
 test("module: targets list the errands open for the phase; the morning has two side errands at once", () => {
