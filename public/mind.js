@@ -760,7 +760,33 @@ window.Mind = (() => {
 
   // ---------- proximity loop ----------
   function near(pt, r) { const p = World.getPlayer(); return Math.hypot(p.x - pt.x, p.y - pt.y) <= r; }
+  // ---------- "bấm mới mở": a scene that starts a story is offered as a small button, never opened by walking near ----------
+  // A module calls kit.offer(id, label, fn) every tick while the player stands in reach. The button stays while it is
+  // offered and goes away when the player walks on. Only a tap opens the scene (docs/game-design-principles.md).
+  let prompt = null, offeredTick = false;
+  function offer(id, label, fn) {
+    offeredTick = true;
+    const btn = $("mind-prompt");
+    if (!prompt || prompt.id !== id || prompt.label !== label) { btn.textContent = label; btn.hidden = false; }
+    prompt = { id, label, fn };
+    return true;
+  }
+  function clearPrompt() {
+    if (!prompt) return;
+    prompt = null;
+    $("mind-prompt").hidden = true;
+  }
+  function tapPrompt() {
+    const p = prompt;
+    if (!p || !role || open || !api || api.busy()) return;
+    clearPrompt();
+    p.fn();
+  }
   function loop() {
+    offeredTick = false;
+    try { step(); } finally { if (!offeredTick) clearPrompt(); }
+  }
+  function step() {
     syncActors();
     if (!role || open || !api || api.busy() || Date.now() < cooldownUntil) return;
     const st = S.quest.step;
@@ -1028,6 +1054,8 @@ window.Mind = (() => {
     setInterval(loop, 250);
     $("cards-close").addEventListener("click", () => ($("cards-panel").hidden = true));
     $("cards-btn").addEventListener("click", () => openAlbum());
+    $("mind-prompt").hidden = true;
+    $("mind-prompt").addEventListener("click", tapPrompt);
     syncCardsBtn();
   }
   function syncCardsBtn() { $("cards-btn").hidden = !role || !Object.keys(S.cards).length; $("cards-count").textContent = String(Object.keys(S.cards).length); }
@@ -1038,7 +1066,7 @@ window.Mind = (() => {
     if (!S.stats) { S.stats = rollStats(S.carita); save(); }
     return false;
   }
-  function onRoleEnd() { role = null; stopSit(); $("mind-card").hidden = true; $("card-reveal").hidden = true; open = false; fx.devaAt = null; syncActors(); syncCardsBtn(); }
+  function onRoleEnd() { role = null; clearPrompt(); stopSit(); $("mind-card").hidden = true; $("card-reveal").hidden = true; open = false; fx.devaAt = null; syncActors(); syncCardsBtn(); }
 
   const dev = {
     resetSurvey() { S.carita = null; save(); survey(); },
@@ -1064,7 +1092,7 @@ window.Mind = (() => {
   const kit = {
     get S() { return S; }, save, showSheet, closeSheet, award, giveItem, dropItem, gotItem, grow, near, el, rand, P, MONK_SPOT,
     role: () => role, api: () => api, setOpen: (v) => { open = v; }, cooldown: (ms) => { cooldownUntil = Date.now() + ms; },
-    syncActors, saveMoment, beingMind, understanding, SIM_NOTE,
+    syncActors, saveMoment, beingMind, understanding, SIM_NOTE, offer,
   };
 
   // Load the progress of the character now being played (or the guest's).

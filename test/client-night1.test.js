@@ -93,6 +93,9 @@ function boot(save, { pos = { x: 0, y: 0 }, darkness = 0.6, sound = true, role =
     // one 250 ms frame of the proximity loop, with the clock moved forward first
     tick(ms = 250) { clock += ms; M.kit.cooldown(-1); M.kit.setOpen(false); loopFn(); },
     run(ms) { for (let t = 0; t < ms; t += 250) this.tick(250); },
+    // the scene offered nearby: its label (null when none), and a tap on it
+    prompt: () => { const b = sb.document.getElementById("mind-prompt"); return b.hidden ? null : b.textContent; },
+    tap() { M.kit.setOpen(false); sb.document.getElementById("mind-prompt").listeners.click(); },
     choice(label) {
       const btn = $("mind-choices").children.find((c) => c.textContent === label);
       if (!btn) throw new Error(`no choice "${label}"; have: ${$("mind-choices").children.map((c) => c.textContent).join(" | ")}`);
@@ -112,6 +115,8 @@ const CHILD_SAVE = () => saved({ q: { tree: { step: "child" } } });
 test("treeMeet: 'Đi tìm đứa bé' sets the child step, does not call goTo, and shows the hint", () => {
   const g = boot(saved({ q: { tree: { step: "none" } } }), { pos: { x: 38, y: 14 } });
   g.tick();
+  assert.equal(g.prompt(), "Lại gần gốc gạo", "the tree is offered, not opened");
+  g.tap();
   assert.equal(g.sheetLabel(), "Gốc cây gạo");
   g.choice("Đi tìm đứa bé");
   assert.equal(g.S().q.tree.step, "child");
@@ -208,4 +213,34 @@ test("an old save at step 'child' still plays: the child can be found by walking
   assert.equal(g.sheetLabel(), "Bụi tre");
   g.choice("Ngồi xuống, dỗ dành");
   assert.equal(g.S().q.tree.step, "follow");
+});
+
+// ---------- scenes that start a story are offered, never opened by walking near ----------
+test("the tree spirit: 'Để sau' closes the scene, which stays offered and never opens by itself", () => {
+  const g = boot(saved({ q: { tree: { step: "none" } } }), { pos: { x: 38, y: 14 } });
+  g.tick();
+  g.tap();
+  g.choice("Để sau");
+  for (let i = 0; i < 400; i++) g.tick(); // 100 seconds standing under the tree
+  assert.equal(g.S().q.tree.step, "none");
+  assert.equal(g.prompt(), "Lại gần gốc gạo", "still offered, with no waiting time");
+  g.setPos(900, 900);
+  g.tick();
+  assert.equal(g.prompt(), null, "gone when the player walks on");
+});
+
+test("a step of an errand already taken on still opens on arrival", () => {
+  const g = boot(CHILD_SAVE(), { pos: CHILD });
+  g.tick();
+  assert.equal(g.prompt(), null);
+  assert.equal(g.sheetLabel(), "Bụi tre");
+});
+
+test("nothing is offered while the player is busy in a story scene", () => {
+  const g = boot(saved({ q: { tree: { step: "none" } } }), { pos: { x: 38, y: 14 } });
+  g.tick();
+  assert.equal(g.prompt(), "Lại gần gốc gạo");
+  g.setBusy(true);
+  g.tick();
+  assert.equal(g.prompt(), null);
 });

@@ -67,7 +67,7 @@ window.Storylets = (() => {
       id: "chuong_chieu", kind: "side", weight: 1, roles: ["villager"], needs: [],
       phases: ["Chiều tàn", "Chạng vạng", "Đầu hôm"], cooldownDays: 2,
       place: "hermitage", placeName: "Tịnh thất", radius: 70,
-      title: "Tiếng chuông chiều", body: "Có tiếng chuông nhỏ từ tịnh thất.",
+      prompt: "Đứng nghe chuông", title: "Tiếng chuông chiều", body: "Có tiếng chuông nhỏ từ tịnh thất.",
       scene: {
         label: "Tịnh thất",
         lines: {
@@ -85,7 +85,7 @@ window.Storylets = (() => {
       id: "ao_sen", kind: "side", weight: 1, roles: ["villager"], needs: [],
       phases: ["Sáng sớm", "Sáng", "Trưa", "Chiều"], cooldownDays: 2,
       place: "ao", placeName: "Ao sen", radius: 70,
-      title: "Ao sen", body: "Ao sen đầu làng, mặt nước phẳng lặng.",
+      prompt: "Ngắm ao sen", title: "Ao sen", body: "Ao sen đầu làng, mặt nước phẳng lặng.",
       scene: {
         label: "Ao sen",
         lines: {
@@ -101,7 +101,7 @@ window.Storylets = (() => {
       id: "sang_thuong", kind: "side", weight: 1, roles: ["villager"], needs: [],
       phases: ["Sáng sớm", "Sáng"], cooldownDays: 2,
       place: "village", placeName: "Ngõ làng", radius: 80,
-      title: "Một buổi sáng bình thường", body: "Khói bếp lên từ nhà ai đó.",
+      prompt: "Dừng lại ở ngõ", title: "Một buổi sáng bình thường", body: "Khói bếp lên từ nhà ai đó.",
       scene: {
         label: "Ngõ làng",
         lines: {
@@ -121,8 +121,6 @@ window.Storylets = (() => {
 // ---------- Part 2: the errands shown in Việc đang chờ and opened on arrival ----------
 (() => {
   const K = Mind.kit;
-  const SNOOZE_MS = 60000;
-  const snoozedUntil = {};   // in memory only: a snoozed errand comes back after a minute
 
   // Chỉ nhân vật đến nơi (có đồng hồ) mới có tình huống; ngoài ra phase là null và không làm gì.
   function ctx() {
@@ -155,13 +153,11 @@ window.Storylets = (() => {
   function loop() {
     const c = ctx();
     if (!c) return false;
-    const now = Date.now();
     for (const d of openList(c)) {
       const p = World.PLACES[d.place];
-      if (!p || (snoozedUntil[d.id] && now < snoozedUntil[d.id])) continue;
-      if (!K.near(p, d.radius || 60)) continue;
-      show(d, c);
-      return true;
+      if (!p || !K.near(p, d.radius || 60)) continue;
+      // Offered as a button; only a tap opens the scene (never by walking near).
+      return K.offer("storylet:" + d.id, d.prompt || d.title, () => show(d, c));
     }
     return false;
   }
@@ -176,8 +172,7 @@ window.Storylets = (() => {
 
   function choose(d, ch, c) {
     if (ch.snooze) {
-      // Đóng và hoãn, không tính là xong.
-      snoozedUntil[d.id] = Date.now() + SNOOZE_MS;
+      // Đóng, không tính là xong. Nút gợi ý vẫn còn đó khi người chơi còn đứng gần.
       K.closeSheet();
       return;
     }

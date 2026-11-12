@@ -74,6 +74,9 @@ function boot(save, { role = "villager", darkness = 0, mood = 0.6, pos = { x: 0,
     setPos(x, y) { player = { ...player, x, y }; },
     // one pass of the proximity loop, as if 250 ms had passed and nothing was open
     tick() { M.kit.cooldown(-1); M.kit.setOpen(false); loopFn(); },
+    // the scene offered nearby: its label (null when none), and a tap on it
+    prompt: () => { const b = sb.document.getElementById("mind-prompt"); return b.hidden ? null : b.textContent; },
+    tap() { M.kit.setOpen(false); sb.document.getElementById("mind-prompt").listeners.click(); },
     choiceLabels: () => $("mind-choices").children.map((c) => c.textContent),
     choice(label) {
       const btn = $("mind-choices").children.find((c) => c.textContent === label);
@@ -93,6 +96,7 @@ function boot(save, { role = "villager", darkness = 0, mood = 0.6, pos = { x: 0,
 test("B1: hearing the grandmother's story gives no Bỏn xẻn; choosing to help gives Bi and opens the rice errand", () => {
   const g = boot(saved({ q: { peta: { step: "none" } } }), { darkness: 0.6, pos: { x: 444, y: 374 } });
   g.tick();
+  g.tap();
   assert.equal(g.sheetLabel(), "Giữa các ngôi mộ");
   g.choice("Hỏi bà là ai");
   g.choice("Con sẽ tìm cách giúp bà");
