@@ -9,6 +9,9 @@
   const dark = () => (api() ? api().darkness() : 0);
   const dusk = () => dark() >= 0.4;
   const night = () => dark() >= 0.5;
+  // null: a legacy character with no world clock (keeps the old single-night rhythm of the grandmother's errand)
+  const phase = () => (api() && api().phase ? api().phase() : null);
+  const morning = () => ["Sáng sớm", "Sáng"].includes(phase());
   const Q = (k) => (K.S.q[k] = K.S.q[k] || { step: "none" });
   const has = (id) => K.S.items.includes(id);
   const villageRole = () => ["monk", "villager"].includes(K.role());
@@ -45,6 +48,8 @@
     mother: () => ({ x: P().village.x + 52, y: P().village.y + 14 }),
     peta: () => ({ x: P().graves.x + 44, y: P().graves.y - 26 }),
     granny: () => ({ x: P().well.x + 22, y: P().well.y + 8 }),
+    // where the old monk walks past in the morning: in the lane, 40px from where chị Ba stands so the two do not overlap
+    alms: () => ({ x: P().village.x + 12, y: P().village.y + 14 }),
     earth: () => ({ x: P().gate.x + 58, y: P().gate.y + 4 }),
   };
   const place = (k) => P()[k] || null;
@@ -175,32 +180,61 @@
   // ---------- the hungry-ghost grandmother (Kinh Ngoài Bức Tường) ----------
   function petaMeet() {
     const q = Q("peta");
+    const ask = () => K.showSheet({
+      label: "Giữa các ngôi mộ",
+      lines: ["“Bà là bà ngoại của một nhà trong làng. Lâu lắm rồi.”", "“Bà đói. Mà cơm người ta để đó, bà không ăn được.”"],
+      choices: [
+        { label: "Chưa biết làm sao, nhưng muốn bà bớt đói: “Để con đi hỏi.”", primary: true, fn: () => {
+          q.step = "rice"; K.save(); K.closeSheet();
+          // Bi only when the player chooses to help after hearing her; leaving after the story gives no card.
+          K.award("bi", "Người này nghe bà kể mình đói và muốn bà bớt khổ.", () => {
+            K.cooldown(2500);
+            toast("“Ừ… Bà chờ. Bà chờ quen rồi.” Bà cụ ở giếng sống ở làng lâu nhất, thử ra đó hỏi.");
+          });
+        } },
+        { label: "Hỏi: ai cho thì bà mới ăn được?", fn: () => K.showSheet({
+          label: "Giữa các ngôi mộ",
+          lines: ["“Bà không biết. Bà chỉ biết đói.”"],
+          choices: [{ label: "Quay lại", primary: true, fn: ask }],
+        }) },
+        { label: "Nghe xong, cúi chào rồi đi", fn: () => { snooze(q); K.closeSheet(); } },
+      ],
+    });
     K.showSheet({
       label: "Giữa các ngôi mộ",
-      lines: ["Một bóng người gầy guộc đứng mãi bên ngôi mộ thấp. Sương lạnh quanh chân.", "“Đói lắm… không ai nhớ.”"],
+      lines: ["Một bóng người gầy đứng bên ngôi mộ thấp. Sương đọng quanh chân bà mà cỏ không ướt.", "“Có ai còn nhớ đến bà không?”"],
       choices: [
-        { label: "Hỏi bà là ai", primary: true, fn: () => K.showSheet({
-          label: "Giữa các ngôi mộ",
-          lines: ["“Bà là bà ngoại đây. Lúc sống, bà tiếc từng hạt gạo, không cho ai cái gì.”", "“Giờ thì đói. Nếu có ai làm phước rồi hồi hướng, bà mới được no.”"],
-          choices: [
-            { label: "Con sẽ tìm cách giúp bà", primary: true, fn: () => {
-              q.step = "rice"; K.save(); K.closeSheet();
-              // Bi only when the player chooses to help after hearing her; leaving after the story gives no card.
-              K.award("bi", "Người này nghe bà kể nỗi khổ và muốn giúp bà bớt đói.", () => {
-                K.cooldown(2500);
-                toast("Bà cụ ở giếng làng thường nấu cơm. Thử ra đó xin một bát.");
-              });
-            } },
-            { label: "Nghe xong rồi đi", fn: () => { snooze(q); K.closeSheet(); } },
-          ],
-        }) },
+        { label: "Lại gần hỏi bà cần gì", primary: true, fn: ask },
         { label: "Xem tâm bà", fn: () => K.beingMind("Tâm của ngạ quỷ", "Bà đói, tiếc, nhớ nhà.", [["Tham", 80, false], ["Bỏn xẻn", 86, false], ["Si", 58, false], ["Không tham", 12, true], ["Không sân", 30, true]], "Theo kinh điển, người nặng tham và bỏn xẻn có thể sinh vào cõi ngạ quỷ, luôn đói khát.", petaMeet) },
-        { label: "Sợ quá, lùi lại", fn: () => { snooze(q, 45000); K.closeSheet(); api().swingMood(-0.1); } },
+        { label: "Lùi lại, để hôm khác", fn: () => K.closeSheet() },
       ],
+    });
+  }
+  // Characters with the world clock keep the monk's rule: no food after noon, so the rice is carried in the morning.
+  function grannyExplain() {
+    const q = Q("peta");
+    if (q.told) {
+      K.showSheet({
+        label: "Giếng làng",
+        lines: ["“Sáng mai nhé con. Bà để dành gạo rồi.”"],
+        choices: [{ label: "Dạ", primary: true, fn: () => { K.closeSheet(); snooze(q, 60000); } }],
+      });
+      return;
+    }
+    K.showSheet({
+      label: "Giếng làng",
+      lines: ["“Mộ thấp hả… Bà ấy mất lâu rồi. Con cháu đi xa cả.”", "“Người khuất thì mình đâu đưa cơm tận tay được. Xưa giờ ông bà mình làm vầy: dâng cơm cho một vị sư, rồi gửi phần phước cho người đã mất.”"],
+      choices: [{ label: "Hỏi: vậy giờ con mang cơm ra cho sư được không?", primary: true, fn: () => K.showSheet({
+        label: "Giếng làng",
+        lines: ["“Giờ này sư không nhận cơm đâu con. Sáng mai sư ôm bát đi ngang ngõ.”", "“Sáng ra đây, bà nấu nồi cơm mới. Con xới một bát rồi đặt vào bát của sư.”"],
+        choices: [{ label: "Dạ, sáng mai con ra", primary: true, fn: () => { q.told = true; K.save(); K.closeSheet(); snooze(q, 60000); } }],
+      }) }],
     });
   }
   function grannyRice() {
     const q = Q("peta");
+    const clocked = phase() !== null;
+    if (clocked && !morning()) return grannyExplain();
     let picked = new Set(), closed = false;
     // Short scooping step first: three taps on the rice, no fail and no score.
     const area = K.el("div", "scoop-row");
@@ -218,61 +252,91 @@
     }
     const receive = (shared) => {
       q.shared = shared; q.step = "offer"; K.giveItem("bat_com"); K.save(); K.closeSheet(); K.setOpen(true);
-      K.gotItem("bat_com", () => { K.setOpen(false); K.cooldown(2500); toast("Đem bát cơm dâng vị sư già ở nghĩa địa."); });
+      const msg = !clocked ? "Đem bát cơm dâng vị sư già ở nghĩa địa."
+        : shared ? "“Vậy bát cơm này có hai nhà góp.” Sư già sắp đi ngang ngõ làng."
+        : "Sư già sắp đi ngang ngõ làng. Đặt cơm vào bát của sư.";
+      K.gotItem("bat_com", () => { K.setOpen(false); K.cooldown(2500); toast(msg); });
     };
     function choose() {
+      const meal = clocked ? "sáng" : "tối";
       K.showSheet({
         label: "Giếng làng",
-        lines: ["Cơm đã xới xong, còn bốc khói nhẹ.", "Người này có thể nhận bát cơm của bà, hoặc đặt thêm phần cơm tối của mình vào bát."],
+        lines: ["Cơm đầy bát, còn bốc khói.", `Trong túi Người này còn nắm cơm để dành cho bữa ${meal}.`],
         choices: [
-          { label: "Nhận bát cơm của bà", primary: true, fn: () => receive(false) },
-          { label: "Nhận, và đặt thêm phần cơm tối của mình vào bát", fn: () => receive(true) },
+          { label: "Mang bát cơm của bà cụ đi", primary: true, fn: () => receive(false) },
+          { label: clocked ? "Sớt cả phần cơm sáng của mình vào bát, sáng nay nhịn một bữa cũng được" : "Sớt cả phần cơm tối của mình vào bát, tối nay nhịn một bữa cũng được", fn: () => receive(true) },
         ],
       });
     }
     K.showSheet({
       label: "Giếng làng",
-      lines: ["Bà cụ nghe chuyện, gật gù: “Ừ, phải làm phước cho người đã khuất.”", "Bà xới đầy một bát cơm trắng còn nóng. Chạm vào từng muỗng để xới cơm."],
+      lines: [q.told ? "“Cơm mới chín đó con.”" : "Bà cụ nghe chuyện, gật gù: “Người khuất thì mình đâu đưa cơm tận tay được. Dâng cơm cho một vị sư, rồi gửi phần phước cho người đã mất.”", "Bà xới đầy một bát cơm trắng còn nóng. Chạm vào từng muỗng để xới cơm."],
       body: area,
       choices: [{ label: "Để sau", fn: () => { closed = true; snooze(q); K.closeSheet(); } }],
     });
   }
-  function offerRice() {
+  // The release scene: the bell, the moon, the closing sheet. The legacy path runs it right after the dedication
+  // (and settles Không tham there); the clocked path runs it at dusk as its own step.
+  function petaScene(legacyShared) {
     const q = Q("peta");
     // After the scene: both choices close it; cards come one after another, never during the scene.
     function finish(stayed) {
-      const shared = !!q.shared;
       q.shared = false;
       q.step = "done"; deed("peta_fed"); K.save(); K.closeSheet(); fx.peta = null; World.resetLook();
       Save.log("Đã giúp bà ngoại bên mộ thấp được an.");
-      const endCooldown = () => K.cooldown(2500);
+      const endCooldown = () => { K.cooldown(2500); toast("Bà không còn ở đó nữa. Chỗ bà đứng chỉ còn gió và một chiếc lá."); };
       const tuyHy = () => (stayed
-        ? K.award("tuy_hy", "Người này đứng lại nhìn bà sáng lên rồi tan vào ánh trăng, lòng vui vì bà được an.", endCooldown)
+        ? K.award("tuy_hy", "Người này đứng lại nhìn bà được yên và mừng cho bà.", endCooldown)
         : endCooldown());
-      if (shared) return K.award("khong_tham", "Người này chia cả phần cơm tối của mình để hồi hướng cho bà ngoại.", tuyHy);
+      if (legacyShared) return K.award("khong_tham", "Người này sớt phần cơm tối của mình vào bát để gửi phước cho bà.", tuyHy);
       tuyHy();
     }
+    K.setOpen(true);
+    fx.peta = { t: 0 };
+    if (sound()) NightAudio.bell(0.8);
+    World.lookAt(spot.peta().y - 20, spot.peta().x);
+    setTimeout(() => {
+      K.showSheet({
+        label: "Giữa các ngôi mộ",
+        lines: ["Bà ngoại ngẩng lên. Lần đầu tiên, mặt bà có nét yên.", "“Bà nhận được rồi… Cảm ơn con.” Cái bóng gầy sáng dần, rồi tan vào ánh trăng."],
+        choices: [
+          { label: "Đứng lại nhìn cho tới khi ánh trăng tan, mừng cho bà", primary: true, fn: () => finish(true) },
+          { label: "Chắp tay rồi đi", fn: () => finish(false) },
+        ],
+      });
+    }, 3800);
+  }
+  function offerRice() {
+    const q = Q("peta");
+    const clocked = phase() !== null;
     K.showSheet({
       label: "Dâng cơm",
-      lines: ["Sư già nhận bát cơm, chắp tay.", "“Phước này, xin hồi hướng cho bà ngoại. Mong bà được no, được an.”"],
-      choices: [{ label: "Cùng hồi hướng: “Lành thay”", primary: true, fn: () => {
-        q.step = "release"; K.dropItem("bat_com"); K.grow("tham", -2.5); K.grow("tin", 2); K.save(); K.closeSheet(); K.setOpen(true);
-        fx.peta = { t: 0 };
+      lines: [clocked ? "Sư già ôm bát đi chậm qua ngõ, mắt nhìn xuống. Thấy có người chờ, sư dừng lại." : "Sư già đưa hai tay nhận bát cơm.", "“Phước này là của con. Con muốn gửi cho ai?”"],
+      choices: [{ label: clocked ? "Đặt cơm vào bát, cùng hồi hướng: mong bà được no, được yên" : "Dâng cơm, cùng hồi hướng: mong bà được no, được yên", primary: true, fn: () => {
+        K.dropItem("bat_com"); K.grow("tham", -2.5); K.grow("tin", 2);
         if (sound()) NightAudio.bell(0.8);
-        World.lookAt(spot.peta().y - 20, spot.peta().x);
-        setTimeout(() => {
-          K.showSheet({
-            label: "Giữa các ngôi mộ",
-            lines: ["Bà ngoại ngẩng lên, cái bóng gầy guộc sáng dần.", "“Lành thay, lành thay…”, rồi bà tan vào ánh trăng."],
-            choices: [
-              { label: "Đứng lại nhìn cho tới khi ánh trăng tan", primary: true, fn: () => finish(true) },
-              { label: "Chắp tay rồi đi", fn: () => finish(false) },
-            ],
-          });
-        }, 3800);
+        if (!clocked) {
+          q.step = "release"; K.save(); K.closeSheet();
+          petaScene(!!q.shared);
+          return;
+        }
+        K.save();
+        K.showSheet({
+          label: "Ngõ làng",
+          lines: ["“Phần phước này, xin gửi tới bà ngoại bên mộ thấp. Mong bà được no, được an.”", "Sư già ôm bát đi tiếp, chậm như lúc đến."],
+          choices: [{ label: "Chắp tay tiễn sư", primary: true, fn: () => {
+            const shared = !!q.shared;
+            q.step = "dedicated"; K.save(); K.closeSheet();
+            Save.log("Đã đặt cơm vào bát của sư già và hồi hướng cho bà ngoại.");
+            const after = () => { q.shared = false; K.save(); K.cooldown(2500); toast("Chạng vạng, quay lại ngôi mộ thấp xem bà thế nào."); };
+            if (shared) K.award("khong_tham", "Người này sớt phần cơm sáng của mình vào bát để gửi phước cho bà.", after); else after();
+          } }],
+        });
       } }],
     });
   }
+  // Dusk after the dedication: she brightens and dissolves (the legacy path plays this at once instead).
+  function petaRelease() { petaScene(false); }
 
   // ---------- địa thần at the village gate ----------
   function earthMeet() {
@@ -449,9 +513,12 @@
       if (villageRole()) {
         const pq = Q("peta");
         if (fx.peta) out.push({ kind: "peta", ...spot.peta(), glow: Math.min(1, fx.peta.t / 3), alpha: Math.max(0, 1 - Math.max(0, fx.peta.t - 3) / 1.5), label: "bà ngoại" });
-        else if (night() && pq.step !== "done" && pq.step !== "release") out.push({ kind: "peta", ...spot.peta(), label: pq.step === "none" ? "" : "bà ngoại" });
+        else if ((night() || (pq.step === "dedicated" && dusk())) && pq.step !== "done" && pq.step !== "release") out.push({ kind: "peta", ...spot.peta(), label: pq.step === "none" ? "" : "bà ngoại" });
         const dogStep = K.S.quest.step;
-        if ((pq.step === "offer" || pq.step === "release") && !["monk", "sit", "deva", "done"].includes(dogStep)) out.push({ kind: "monk", ...K.MONK_SPOT(), label: "sư già" });
+        if (phase() !== null) {
+          // the old monk passes the lane only in the morning, and only while the bowl is still to be given
+          if (pq.step === "offer" && morning()) out.push({ kind: "monk", ...spot.alms(), label: "sư già" });
+        } else if ((pq.step === "offer" || pq.step === "release") && !["monk", "sit", "deva", "done"].includes(dogStep)) out.push({ kind: "monk", ...K.MONK_SPOT(), label: "sư già" });
       }
       const eq = Q("earth");
       if (villageRole() && eq.step !== "done" && earthReady()) out.push({ kind: "earthgod", ...spot.earth(), alpha: Math.min(1, fx.earth), label: fx.earth > 0.6 ? "địa thần" : "" });
@@ -465,8 +532,16 @@
       if (villageRole() && tq.step === "follow") out.push({ title: "Đưa bé Na về ngõ làng", body: "Mẹ bé đang đứng chờ ở ngõ làng.", ...stand(spot.mother()), name: "Mẹ bé Na" });
       if (villageRole() && tq.step === "thank") out.push({ title: "Quay lại gốc cây gạo", body: dusk() ? "Thọ thần đang đợi ở gốc gạo." : "Thọ thần chỉ hiện ra lúc chạng vạng trở đi.", ...stand(spot.tree(), -30, 10), name: "Thọ thần" });
       if (villageRole()) {
-        if (pq.step === "rice") out.push({ title: "Xin một bát cơm ở giếng làng", body: "Để làm phước rồi hồi hướng cho bà ngoại.", ...stand(spot.granny(), -26, 10), name: "Bà cụ" });
-        if (pq.step === "offer") out.push({ title: "Dâng cơm cho sư già", body: "Sư già ngồi giữa các ngôi mộ.", ...stand(K.MONK_SPOT(), 30, 4), name: "Sư già" });
+        const clocked = phase() !== null;
+        const granny = (title, body) => out.push({ title, body, ...stand(spot.granny(), -26, 10), name: "Bà cụ" });
+        if (pq.step === "rice") {
+          if (clocked && !pq.told) granny("Hỏi bà cụ ở giếng", "Bà sống ở làng lâu nhất. Bà có thể biết cách giúp bà ngoại.");
+          else if (clocked && !morning()) granny("Sáng mai ra giếng xới cơm", night() ? "Bà cụ nấu nồi cơm mới vào buổi sáng. Kết thúc đêm rồi quay lại." : "Bà cụ nấu nồi cơm mới vào buổi sáng. Sáng mai quay lại.");
+          else granny("Xới một bát cơm ở giếng làng", "Để dâng sư già rồi gửi phước cho bà ngoại.");
+        }
+        if (pq.step === "offer" && clocked) out.push({ title: "Đặt cơm vào bát của sư già", body: morning() ? "Sư già đang đi ngang ngõ làng." : night() ? "Sư chỉ nhận cơm buổi sáng. Kết thúc đêm rồi ra ngõ làng." : "Sư chỉ nhận cơm buổi sáng. Sáng mai ra ngõ làng.", ...stand(spot.alms(), 0, 30), name: "Sư già" });
+        else if (pq.step === "offer") out.push({ title: "Dâng cơm cho sư già", body: "Sư già ngồi giữa các ngôi mộ.", ...stand(K.MONK_SPOT(), 30, 4), name: "Sư già" });
+        if (pq.step === "dedicated") out.push({ title: "Quay lại ngôi mộ thấp", body: dusk() ? "Bà ngoại vẫn đứng đó." : "Bà chỉ hiện lúc chạng vạng. Chờ chiều tàn, hoặc sang đêm mới.", ...stand(spot.peta(), 0, 30) });
       }
       if (villageRole() && has("hoa_sen")) out.push({ title: "Dâng sen ở tịnh thất", body: "Đóa sen trắng đặt lên bàn thờ Đức Phật.", ...stand(P().hermitage, 0, 30), name: "Tịnh thất" });
       // rumours: no marker, only a hint and a way there
@@ -515,7 +590,8 @@
         if (pq.step === "none" && night() && near(spot.peta(), 50)) return K.offer("peta", "Đến gần bóng người", petaMeet);
         if (!snoozed(pq)) {
           if (pq.step === "rice" && near(spot.granny(), 44)) { grannyRice(); return true; }
-          if (pq.step === "offer" && near(K.MONK_SPOT(), 54)) { offerRice(); return true; }
+          if (pq.step === "offer" && (phase() === null ? near(K.MONK_SPOT(), 54) : morning() && near(spot.alms(), 50))) { offerRice(); return true; }
+          if (pq.step === "dedicated" && phase() !== null && dusk() && !fx.peta && near(spot.peta(), 50)) { petaRelease(); return true; }
         }
       }
       const eq = Q("earth");
