@@ -78,7 +78,9 @@ window.Storylets = (() => {
     return { ...s, done, tonight: { runId, ids } };
   }
 
-  // Sample storylets for villagers (HG26 Tịnh thất, HG12 Ao sen, HG20 Ngõ làng). Draft text for the owner to rewrite.
+  // Sample storylets for villagers (HG26 Tịnh thất, HG12 Ao sen, HG20 Ngõ làng).
+  // Wording from docs/human-world-villager-night-script.md §7 (Proposed, waiting for the owner's approval).
+  const BELL = "Chuông chiều từ tịnh thất vọng ra, chậm và thưa.";
   const DEFS = [
     {
       id: "chuong_chieu", kind: "side", weight: 1, roles: ["villager"], needs: [],
@@ -88,12 +90,20 @@ window.Storylets = (() => {
       scene: {
         label: "Tịnh thất",
         lines: {
-          default: ["Tiếng chuông chiều ngân lên từ tịnh thất, chậm và thưa.", "Chim bay về tổ. Không có việc gì phải làm."],
-          tham: ["Tiếng chuông chiều ngân lên, chậm và thưa.", "Người này muốn đứng nghe mãi, chưa muốn đi đâu."],
-          san: ["Tiếng chuông chiều ngân lên, chậm và thưa.", "Cơn bực dọc trong ngày dịu đi một chút."],
+          default: [BELL, "Chim bay về tổ. Không có việc gì phải làm."],
+          tham: [BELL, "Người này muốn tiếng ấy kéo dài thêm, chưa muốn đi đâu."],
+          san: [BELL, "Cái bực dọc trong ngày lắng xuống một chút."],
+          si: ["Chuông chiều từ tịnh thất vọng ra.", "Người này nghe mà không đếm, không biết đã mấy tiếng rồi."],
+          tam: [BELL, "Giữa hai tiếng chuông, đầu Người này vẫn kịp nghĩ ba chuyện."],
+          tin: [BELL, "Người này thấy yên, như có ai vừa khép cửa giùm."],
+          tri: ["Chuông chiều từ tịnh thất vọng ra.", "Người này để ý: tiếng sau nhỏ hơn tiếng trước, rồi tới lúc không rõ còn hay hết."],
         },
+        again: [
+          ["Hôm nay chuông vẫn vậy. Chỉ có tiếng dế vào sớm hơn."],
+          ["Chuông chiều. Tới tiếng cuối, cả cánh đồng như cùng nghe."],
+        ],
         choices: [
-          { label: "Đứng nghe thêm một lúc", log: "Đã đứng nghe tiếng chuông chiều ở tịnh thất." },
+          { label: "Đứng nghe cho tới tiếng cuối", log: "Đã đứng nghe chuông chiều ở tịnh thất." },
           { label: "Đi tiếp", snooze: true },
         ],
       },
@@ -102,12 +112,23 @@ window.Storylets = (() => {
       id: "ao_sen", kind: "side", weight: 1, roles: ["villager"], needs: [],
       phases: ["Sáng sớm", "Sáng", "Trưa", "Chiều"], cooldownDays: 2,
       place: "ao", placeName: "Ao sen", radius: 70,
-      prompt: "Ngắm ao sen", title: "Ao sen", body: "Ao sen đầu làng, mặt nước phẳng lặng.",
+      prompt: "Ngắm ao sen", title: "Ao sen", body: "Sen trong ao hôm nay khác hôm qua.",
       scene: {
         label: "Ao sen",
         lines: {
-          default: ["Mặt ao phẳng lặng. Vài bông sen đã nở, vài bông còn búp.", "Bóng mây trôi chậm dưới nước."],
+          default: ["Mặt ao phẳng. Một bông sen vừa nở, mấy bông khác còn búp.", "Chuồn chuồn đậu lên búp sen, rồi bay."],
+          tham: ["Một bông sen vừa nở, hồng như mới nhuộm.", "Người này muốn hái, rồi thôi. Để đó thì mai còn ngắm."],
+          san: ["Một bông sen vừa nở.", "Nắng chói, nhưng đứng bên ao thì dịu. Người này thôi nhăn mặt."],
+          si: ["Mặt ao phẳng. Bóng mây trôi dưới nước.", "Người này nhìn mãi, quên mất mình ra đây làm gì."],
+          tam: ["Một bông sen vừa nở, mấy bông khác còn búp.", "Người này tự hỏi: búp nào nở trước, và ai quyết chuyện đó."],
+          tin: ["Một bông sen vừa nở.", "Người này thấy vui không lý do, và không cần lý do."],
+          tri: ["Một bông sen vừa nở.", "Người này để ý: lá sen nào cũng có một giọt nước tròn, lăn mà không thấm."],
         },
+        again: [
+          ["Bông sen hôm trước đã rụng một cánh. Cánh hoa nằm trên lá, như chiếc thuyền nhỏ."],
+          ["Đài sen đã trơ. Sát bên, một cái búp mới nhô lên khỏi mặt nước."],
+          ["Ao sen. Hôm nay không đếm được bông nào giống hôm qua."],
+        ],
         choices: [
           { label: "Ngắm một lúc", log: "Đã ngắm ao sen." },
           { label: "Đi tiếp", snooze: true },
@@ -122,8 +143,18 @@ window.Storylets = (() => {
       scene: {
         label: "Ngõ làng",
         lines: {
-          default: ["Một buổi sáng bình thường. Gà gáy ở đâu đó, khói bếp lên từ nhà ai.", "Không có gì đặc biệt, và thế là đủ."],
+          default: ["Gà nhà ai gáy muộn. Khói bếp lên thẳng, trời không gió.", "Không có gì đặc biệt, và thế là đủ."],
+          tham: ["Mùi cơm mới bay ra ngõ.", "Người này hít một hơi dài, thấy sáng nay mình giàu."],
+          san: ["Gà gáy muộn, chổi tre quét sân loẹt xoẹt.", "Sáng nay chưa có gì làm Người này bực. Kể cũng lạ."],
+          si: ["Khói bếp lên thẳng.", "Người này đứng giữa ngõ, chưa nhớ ra hôm nay định làm gì. Cũng chẳng sao."],
+          tam: ["Gà gáy muộn. Khói bếp lên thẳng.", "Đầu Người này sáng nay chưa kịp nghĩ gì, và ngạc nhiên vì điều đó."],
+          tin: ["Chị Ba quét sân, ngẩng lên gật đầu chào.", "Người này thấy mình có một chỗ ở cái làng này."],
+          tri: ["Khói bếp lên thẳng, trời không gió.", "Người này để ý: sáng nào cũng giống nhau, mà không sáng nào lặp lại."],
         },
+        again: [
+          ["Lại một buổi sáng. Con Vàng ngáp ở đầu ngõ, không buồn sủa."],
+          ["Sáng. Có người đi chợ ngang qua, hỏi: “Ăn sáng chưa?”"],
+        ],
         choices: [
           { label: "Ngồi nghe chim một lát", log: "Đã có một buổi sáng bình thường ở làng." },
           { label: "Đi tiếp", snooze: true },

@@ -254,23 +254,23 @@ test("module: a villager near the place in the right phase is offered the errand
   assert.equal(g.prompt(), null, "the button goes away once the scene is open");
   assert.equal(g.sheetOpen(), true);
   assert.equal(g.sheetLabel(), "Tịnh thất");
-  assert.deepEqual(g.lines(), ["Tiếng chuông chiều ngân lên từ tịnh thất, chậm và thưa.", "Chim bay về tổ. Không có việc gì phải làm."]);
-  assert.deepEqual(g.choiceLabels(), ["Đứng nghe thêm một lúc", "Đi tiếp"]);
+  assert.deepEqual(g.lines(), ["Chuông chiều từ tịnh thất vọng ra, chậm và thưa.", "Chim bay về tổ. Không có việc gì phải làm."]);
+  assert.deepEqual(g.choiceLabels(), ["Đứng nghe cho tới tiếng cuối", "Đi tiếp"]);
 });
 
 test("module: a temperament variant of the lines is used when the character has one", () => {
   const g = boot({ save: saved({ carita: "tham" }), pos: { x: 610, y: 600 } });
   g.tick();
   g.tap();
-  assert.deepEqual(g.lines(), ["Tiếng chuông chiều ngân lên, chậm và thưa.", "Người này muốn đứng nghe mãi, chưa muốn đi đâu."]);
+  assert.deepEqual(g.lines(), ["Chuông chiều từ tịnh thất vọng ra, chậm và thưa.", "Người này muốn tiếng ấy kéo dài thêm, chưa muốn đi đâu."]);
 });
 
 test("module: a choice with a log writes one journal line, completes the errand, and waits for a new run and cooldown", () => {
   const g = boot({ pos: { x: 610, y: 600 } });
   g.tick();
   g.tap();
-  g.choice("Đứng nghe thêm một lúc");
-  assert.deepEqual(g.logs, ["Đã đứng nghe tiếng chuông chiều ở tịnh thất."]);
+  g.choice("Đứng nghe cho tới tiếng cuối");
+  assert.deepEqual(g.logs, ["Đã đứng nghe chuông chiều ở tịnh thất."]);
   assert.equal(g.sheetOpen(), false);
   assert.equal(g.S().q.storylets.done.chuong_chieu.n, 1);
   assert.equal(g.S().q.storylets.done.chuong_chieu.lastDay, 1);
@@ -284,6 +284,8 @@ test("module: a choice with a log writes one journal line, completes the errand,
   g.set({ runId: "run-3", day: 3 });
   g.tick();
   assert.equal(g.prompt(), "Đứng nghe chuông", "after 2 days it is offered again");
+  g.tap();
+  assert.deepEqual(g.lines(), ["Hôm nay chuông vẫn vậy. Chỉ có tiếng dế vào sớm hơn."], "the second visit has its own line");
 });
 
 test("module: 'Đi tiếp' closes the errand without completing it; it never reopens by itself, and the button leaves when the player walks on", () => {
@@ -326,4 +328,17 @@ test("module: a monk gets none of the villager storylets", () => {
   assert.equal(g.M.questList().some((q) => q.title === "Tiếng chuông chiều"), false);
   g.tick();
   assert.equal(g.sheetOpen(), false);
+});
+
+test("DEFS: every sample storylet has a line for each temperament and at least two later-visit lines, two sentences at most", () => {
+  const S = pure();
+  const sentences = (t) => t.split(/(?<=[.?!…”])\s+/).filter(Boolean).length;
+  for (const d of S.DEFS) {
+    assert.deepEqual(Object.keys(d.scene.lines).sort(), ["default", "san", "si", "tam", "tham", "tin", "tri"], d.id);
+    assert.ok(d.scene.again.length >= 2, d.id);
+    for (const block of [...Object.values(d.scene.lines), ...d.scene.again]) {
+      assert.ok(block.length <= 2, `${d.id}: at most two lines a turn`);
+      for (const line of block) assert.ok(sentences(line) <= 2, `${d.id}: "${line}"`);
+    }
+  }
 });
