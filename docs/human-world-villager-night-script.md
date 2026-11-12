@@ -375,11 +375,13 @@ Ba nhịp thở chậm (không bấm liên tục).
 1. Câu hồi hướng ở trên.
 2. **Dâng cơm cho sư vào ban đêm.** Người viết e rằng việc này không hợp giờ thọ thực và việc không cất giữ vật thực qua đêm của tỳ-khưu Theravāda. Code hiện có cũng đang để sư nhận cơm ban đêm. Xem review **R-2** và **bản hai nhịp** ngay dưới.
 
-**Bản hai nhịp (đề xuất thay thế, hợp với đồng hồ ngày đêm mới):**
+**Bản hai nhịp (chủ project đã chọn ngày 2026-11-12; đang dựng ở nhánh `feature/hg27-two-beats`):**
 
 - *Đêm:* gặp bà, nhận lời (Bi). Bà cụ ở giếng: "Giờ này sư không nhận cơm đâu con. Sáng mai sư đi ngang ngõ, con đặt vào bát."
 - *Sáng hôm sau (ban ngày):* sư già ôm bát đi ngang ngõ. `Đặt cơm vào bát, sớt cả phần sáng của mình` (Không tham) → sư dừng lại, hồi hướng.
 - *Chạng vạng hôm ấy:* người chơi ra mộ thấp; cảnh bà sáng lên (2.5) diễn ra ở đây.
+
+Nhân vật legacy chưa có đồng hồ tạm giữ luồng một đêm. Câu chữ và việc dâng cơm vẫn chờ giáo thọ Theravāda duyệt.
 
 Bản này cho ban ngày một việc **có nghĩa**, và đúng với ý "HG27 có thể trải qua hơn một đêm".
 
@@ -1275,7 +1277,7 @@ Khung "việc trong đêm + nút Kết thúc đêm" đúng tinh thần không é
 
 1. **Xưng hô:** NPC gọi PC thế nào khi chưa biết tuổi, giới? Có hỏi người chơi một lần lúc tạo nhân vật ("mọi người gọi bạn là…") không? Kịch bản đang né bằng cách tránh đại từ.
 2. Đêm 1 có cấp Bi / Tùy hỷ không (R-1)?
-3. HG27 dâng cơm ban đêm (như code) hay bản hai nhịp qua sáng hôm sau (R-2)?
+3. HG27 dâng cơm ban đêm (như code) hay bản hai nhịp qua sáng hôm sau (R-2)? **Đã chốt 2026-11-12: bản hai nhịp.**
 4. Thẻ bất thiện từ lời kể: giữ, bỏ, hay cho gạt đi (R-3)?
 5. Có giữ nút `Quát` ở bé Na và con Vàng không (R-4)?
 6. Có làm chuyện đồn ở giếng (6.3) trong bảy đêm đầu không (R-22)?

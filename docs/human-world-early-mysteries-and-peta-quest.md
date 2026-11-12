@@ -39,6 +39,10 @@ Người chơi **gặp một chúng sinh khổ rất sớm**, tự tìm cách gi
 
 ### 3.2. Tiến trình trải nghiệm
 
+> **Cập nhật 12-11-2026:** chủ project đã chọn "bản hai nhịp" cho nhân vật có đồng hồ thế giới. (1) Đêm: gặp bà ngoại, chọn giúp (Bi); hỏi bà cụ ở giếng, sáng mai quay lại. (2) Sáng: xới cơm ở giếng, có thể sớt phần cơm sáng của mình vào bát khi sư già đi ngang ngõ (Không tham chỉ khi đã sớt). (3) Chạng vạng trở đi: quay lại mộ thấp, bà sáng lên rồi tan vào ánh trăng (Tùy hỷ chỉ khi đứng lại nhìn).
+>
+> Bảng dưới mô tả luồng một đêm cũ; các ô nói về dâng cơm cho sư ban đêm được thay bằng bản hai nhịp cho nhân vật có đồng hồ. Nhân vật legacy giữ luồng cũ tạm thời. Câu chữ và việc dâng cơm còn chờ giáo thọ Theravāda duyệt; lời thoại xem [kịch bản bảy đêm §5, đêm 2](human-world-villager-night-script.md).
+
 | Chặng | Cảnh/tín hiệu | Chủ động tương tác và lời thoại mẫu | Phản hồi và dữ liệu |
 |---|---|---|---|
 | **0 — Lời đồn (tự chọn)** | Người làng bảo có tiếng “đói quá” ở mộ thấp | PC hỏi tại giếng hoặc chỉ đi ngắm nghĩa địa | `rumour:peta_grandmother` nếu nghe; **không bắt phải có** |
@@ -56,9 +60,9 @@ Người chơi **gặp một chúng sinh khổ rất sớm**, tự tìm cách gi
 
 | Thẻ ghi trong album | Khoảnh khắc trong **mô phỏng** | Ý nghĩa nên hiển thị |
 |---|---|---|
-| **Bi — `bi`** | **Nghe bà kể nỗi khổ và chủ động chọn sẽ giúp** | “Nghe bà kể, bạn muốn giúp bà bớt khổ.” |
-| **Không tham — `khong_tham`** | **Thực sự bố thí/cúng dường để hồi hướng cho bà**, không chỉ chuẩn bị bát cơm | “Bạn tự nguyện chia sẻ để hồi hướng cho bà.” |
-| **Tùy hỷ — `tuy_hy`** | **Sau hồi hướng, chứng kiến bà sáng lên, rời cảnh khổ và vui vì bà được an** | “Bạn thật lòng vui khi thấy bà được an.” |
+| **Bi — `bi`** | **Nghe bà kể nỗi khổ và chủ động chọn sẽ giúp** | “Người này nghe bà kể mình đói và muốn bà bớt khổ.” |
+| **Không tham — `khong_tham`** | **Thực sự bố thí/cúng dường để hồi hướng cho bà**, không chỉ chuẩn bị bát cơm | “Người này sớt phần cơm của mình vào bát để gửi phước cho bà.” |
+| **Tùy hỷ — `tuy_hy`** | **Sau hồi hướng, chứng kiến bà sáng lên, rời cảnh khổ và vui vì bà được an** | “Người này đứng lại nhìn bà được yên và mừng cho bà.” |
 
 **Đặt tên:** người chơi có thể gọi thông thường “thẻ Hỷ”, nhưng trong album **nên dùng `Tùy hỷ (muditā)`** cho ý vui với hạnh phúc người khác; **không đánh đồng với hỷ `pīti`** trong bối cảnh thiền. Cần rà `public/cetasika.js` và luật thẻ trước khi code.
 

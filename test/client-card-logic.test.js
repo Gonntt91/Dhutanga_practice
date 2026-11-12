@@ -98,8 +98,8 @@ test("B1: hearing the grandmother's story gives no Bỏn xẻn; choosing to help
   g.tick();
   g.tap();
   assert.equal(g.sheetLabel(), "Giữa các ngôi mộ");
-  g.choice("Hỏi bà là ai");
-  g.choice("Con sẽ tìm cách giúp bà");
+  g.choice("Lại gần hỏi bà cần gì");
+  g.choice("Chưa biết làm sao, nhưng muốn bà bớt đói: “Để con đi hỏi.”");
   assert.equal(g.S().q.peta.step, "rice");
   assert.equal(g.S().cards.bon_xen, undefined, "no Bỏn xẻn card");
   assert.ok(g.cardOpen(), "the Bi card opens (chosen help)");
@@ -107,7 +107,7 @@ test("B1: hearing the grandmother's story gives no Bỏn xẻn; choosing to help
   assert.ok(g.S().cards.bi, "Bi is recorded");
   assert.equal(g.cardOpen(), false, "card closed");
   assert.equal(g.sheetOpen(), false, "sheet closed");
-  assert.ok(g.toasts.some((t) => t.includes("xin một bát")), "the hint to ask for rice is shown");
+  assert.ok(g.toasts.some((t) => t.includes("Bà cụ ở giếng")), "the hint to ask for rice is shown");
   // the next step runs straight from the loop, with no award callback in between
   g.setPos(322, 308);
   g.tick();
