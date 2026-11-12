@@ -21,7 +21,7 @@
   // "lần theo tiếng khóc": the crying rhythm and the distance hints (not saved; rebuilt from the step each time)
   const cryState = { next: 0, level: null };
   const cryLevel = (d) => (d > 260 ? "far" : d > 120 ? "mid" : "close");
-  const CRY_TEXT = { far: "Tiếng khóc còn xa…", mid: "Tiếng khóc gần hơn…", close: "Rất gần rồi…" };
+  const CRY_TEXT = { far: "Tiếng khóc lúc gần lúc xa, lẫn trong tiếng tre cọ nhau.", mid: "Gần hơn rồi. Có tiếng nấc sau khóm tre to.", close: "Ngay đây. Lá tre dưới đất bị ai ngồi đè lên." };
   function cryTick(tq) {
     if (tq.step !== "child" || !villageRole()) { fx.cry = null; cryState.level = null; cryState.next = 0; return; }
     if (api().busy() || (Mind.isOpen && Mind.isOpen())) return;
@@ -56,52 +56,78 @@
     if (sound()) NightAudio.bell(0.4);
     K.showSheet({
       label: "Gốc cây gạo",
-      lines: ["Lá cây gạo sáng lên từng chiếc. Một bà cụ hiền hậu hiện ra từ thân cây.", "“Có đứa bé lạc trong bụi tre, khóc mãi. Đưa nó về nhà giúp ta nhé.”"],
+      lines: ["Lá cây gạo sáng lên, từng chiếc một, dù trời không có gió. Một bà cụ hiền bước ra từ sau thân cây.", "“Có đứa bé lạc trong bụi tre, khóc từ chiều. Ta gọi mà nó không nghe được. Đưa nó về giúp ta nhé?”"],
       choices: [
-        { label: "Đi tìm đứa bé", primary: true, fn: () => { q.step = "child"; K.save(); K.closeSheet(); toast("Có tiếng khóc nhỏ vọng ra từ bụi tre. Lần theo tiếng khóc nhé."); } },
+        { label: "Đi tìm đứa bé, kẻo trời tối hẳn", primary: true, fn: () => { q.step = "child"; K.save(); K.closeSheet(); toast("Có tiếng khóc nhỏ vọng ra từ bụi tre. Lần theo tiếng khóc nhé."); } },
         { label: "Xem tâm vị ấy", fn: () => K.beingMind("Tâm của thọ thần", "Vị này hiền, thương người, ít giận.", [["Không tham", 70, true], ["Không sân", 84, true], ["Không si", 60, true], ["Tham", 22, false], ["Sân", 10, false], ["Si", 30, false]], "Theo kinh điển, thọ thần là chư thiên ở mặt đất, nương nơi cây lớn, nhờ phước đời trước.", treeMeet) },
-        { label: "Để sau", fn: () => { snooze(q); K.closeSheet(); } },
+        { label: "Để sau", fn: () => { snooze(q); K.closeSheet(); toast("“Ừ. Ta trông chừng nó từ đây.”"); } },
       ],
     });
   }
+  // One line of the scene in the bamboo changes with the temperament (docs/human-world-villager-night-script.md, BT-1).
+  // It only colours the telling: every temperament sees the same choices, and no card comes from the line itself.
+  const NA_LINE = {
+    default: "Bé khóc đã lâu, giọng khản đi.",
+    tham: "Người này thoáng tiếc buổi tối đầu tiên ở làng, đáng lẽ được thong thả.",
+    san: "Tiếng khóc xoáy vào tai. Người này thấy bực, dù chưa biết bực ai.",
+    si: "Người này đứng ngẩn ra một lúc, quên mất mình định làm gì.",
+    tam: "Đầu Người này chạy đủ thứ: nhà bé ở đâu, sao lại ra đây, lỡ người ta tưởng mình dọa nó.",
+    tin: "Người này nhớ lời vị ở gốc gạo, và tin là mình tìm đúng chỗ.",
+    tri: "Người này để ý: đất trên tay bé còn ướt. Bé mới ngã đâu đây thôi.",
+  };
   function childFound() {
     const q = Q("tree");
     if (sound()) NightAudio.sigh && NightAudio.sigh();
     K.showSheet({
       label: "Bụi tre",
-      lines: ["Bé Na ngồi thu lu sau bụi tre, khóc nấc. Hai bàn tay lấm đất."],
+      lines: ["Một bé gái ngồi thu lu sau bụi tre, khóc nấc. Hai bàn tay lấm đất.", NA_LINE[K.S.carita] || NA_LINE.default],
       choices: [
-        { label: "Quát: “Về nhà ngay!”", fn: () => {
-          K.grow("san", 2); q.step = "follow"; q.scared = true; K.save(); K.closeSheet(); api().swingMood(-0.15);
-          K.award("san", "Người này thấy đứa bé lạc mà bực, quát lên.", () => { K.cooldown(2500); toast("Bé Na càng khóc to hơn, nhưng vẫn lẽo đẽo đi theo."); });
+        { label: "Ngồi xuống ngang tầm, cho bé bớt sợ", primary: true, fn: () => {
+          K.grow("san", -1.5); K.grow("tin", 1); q.step = "follow"; q.scared = false; K.save(); K.closeSheet(); api().swingMood(0.2);
+          K.award("bi", "Người này thấy bé khóc, ngồi xuống, muốn bé bớt sợ.", () => { K.cooldown(2500); toast("“Con tên Na. Con đi theo đom đóm, rồi trời tối mất.” Bé nắm tay, đi theo về làng."); api().goTo(spot.mother().x + 24, spot.mother().y + 10); });
         } },
-        { label: "Ngồi xuống, dỗ dành", primary: true, fn: () => {
-          K.grow("san", -1.5); K.grow("tin", 1); q.step = "follow"; K.save(); K.closeSheet(); api().swingMood(0.2);
-          K.award("bi", "Người này thấy bé Na khóc, ngồi xuống dỗ dành, muốn bé bớt sợ.", () => { K.cooldown(2500); toast("Bé Na nắm tay, đi theo về làng."); api().goTo(spot.mother().x + 24, spot.mother().y + 10); });
+        { label: "Quát cho nó nín: “Về nhà ngay!”", fn: () => {
+          K.grow("san", 2); q.step = "follow"; q.scared = true; K.save(); K.closeSheet(); api().swingMood(-0.15);
+          K.award("san", "Người này nghe bé khóc mãi mà bực, và quát lên.", () => { K.cooldown(2500); toast("Bé khóc to hơn, nhưng vẫn lẽo đẽo theo sau, cách ba bước."); });
+        } },
+        // A kind choice with no card: waiting is ordinary decency, not a moment the game names.
+        { label: "Đứng xa một chút, chờ bé tự nín", fn: () => {
+          q.step = "follow"; q.scared = false; K.save(); K.closeSheet(); K.cooldown(2500);
+          toast("Một lúc sau tiếng khóc nhỏ dần. Bé ló đầu ra, nhìn, rồi rón rén đi theo.");
         } },
       ],
     });
   }
   function childHome() {
     const q = Q("tree");
+    const home = () => { q.step = "thank"; q.scared = false; deed("na_home"); K.save(); K.closeSheet(); api().swingMood(0.25); };
+    const after = () => { K.cooldown(2500); toast(dusk() ? "Ở gốc cây gạo, lá lại sáng lên." : "Lúc chạng vạng, quay lại gốc cây gạo nhé."); };
+    if (q.scared) {
+      // The child was shouted at: no Tùy hỷ here, whatever is said next. Owning up is ordinary decency, not a card.
+      return K.showSheet({
+        label: "Ngõ làng",
+        lines: ["Chị Ba ôm lấy con. Bé Na úp mặt vào vai mẹ, không nhìn lại.", "“…Cảm ơn đã đưa cháu về.”"],
+        choices: [
+          { label: "Nói nhỏ: lúc nãy lỡ to tiếng với bé", primary: true, fn: () => { q.repaired = true; home(); K.cooldown(2500); toast("“Ừ. Nó khóc dai lắm, tôi biết. Về được là mừng rồi.”"); } },
+          { label: "Gật đầu rồi đi", fn: () => { home(); after(); } },
+        ],
+      });
+    }
     K.showSheet({
       label: "Ngõ làng",
-      lines: ["Mẹ bé Na chạy ra ôm chầm lấy con, khóc mà cười.", "“Con tôi đây rồi. Cảm ơn, cảm ơn.”"],
-      choices: [{ label: "Tiếp", primary: true, fn: () => {
-        // Tùy hỷ is earned only by comforting the child; a child who was shouted at goes home without it.
-        const scared = !!q.scared;
-        q.step = "thank"; q.scared = false; deed("na_home"); K.save(); K.closeSheet(); api().swingMood(0.25);
-        const after = () => { K.cooldown(2500); toast(dusk() ? "Ở gốc cây gạo, lá lại sáng lên." : "Lúc chạng vạng, quay lại gốc cây gạo nhé."); };
-        if (scared) return after();
-        K.award("tuy_hy", "Người này thấy hai mẹ con đoàn tụ và vui lây niềm vui của họ.", after);
-      } }],
+      lines: ["Chị Ba chạy ra ôm chầm lấy con, vừa khóc vừa cười. “Na! Mẹ tìm con khắp nơi.”", "“Cảm ơn nhiều lắm. Nhà mới dọn về đầu ngõ phải không?”"],
+      choices: [
+        // Tùy hỷ only when the player chooses to stay and be glad for them (plan rule R3), never for pressing on.
+        { label: "Đứng lại nhìn hai mẹ con một lát, mừng cho họ", primary: true, fn: () => { home(); K.award("tuy_hy", "Người này đứng lại nhìn hai mẹ con gặp nhau và mừng cho họ.", after); } },
+        { label: "Gật đầu chào rồi đi", fn: () => { home(); after(); } },
+      ],
     });
   }
   function treeThanks() {
     const q = Q("tree");
     K.showSheet({
       label: "Gốc cây gạo",
-      lines: ["Thọ thần mỉm cười. Một chiếc lá gạo rơi xuống, vẫn còn sáng.", "“Giữ lấy. Có những dấu vết chỉ hiện ra cho người có lòng.”"],
+      lines: ["“Nó về rồi. Ta nghe tiếng cửa đóng.” Một chiếc lá gạo rơi xuống, vẫn còn sáng.", "“Giữ chiếc lá này. Có những thứ, trời tối mới thấy.”"],
       choices: [{ label: "Nhận chiếc lá", primary: true, fn: () => {
         q.step = "done"; K.giveItem("la_gao"); K.save(); K.closeSheet(); K.setOpen(true);
         K.gotItem("la_gao", () => { K.setOpen(false); K.cooldown(2500); });

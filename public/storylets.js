@@ -1,5 +1,8 @@
 // Storylets: "việc trong đêm" as data (see docs/kich-ban-vong-ngay.md §2 and the villager night plan).
 // A storylet has conditions (role, phase of the clock, day, cooldown, needs) and a short scene.
+// Conditions, all optional: phases, once, cooldownDays, needs (other storylets done), fromDay / untilDay (which
+// night of the character), needsQuest ({ tree: ["done"] }: the step of an errand kept by encounters.js or mind.js).
+// scene.again holds the lines of later visits: again[0] the second time, the last entry from then on.
 // Only characters on the clock ("đến nơi") get them; a legacy character has phase null and sees none.
 // Part 1 (window.Storylets) is pure and testable. Part 2 registers the errands with Mind (see mind.js).
 
@@ -12,7 +15,7 @@ window.Storylets = (() => {
     return h >>> 0;
   }
 
-  // ctx = { role, phase, day, state, carita }; state = { done: { [id]: { n, lastDay } }, tonight: { runId, ids } }
+  // ctx = { role, phase, day, state, carita, quests }; quests = the saved errands (S.q), read only. state = { done: { [id]: { n, lastDay } }, tonight: { runId, ids } }
   function eligible(defs, ctx) {
     const done = (ctx.state && ctx.state.done) || {};
     if (ctx.phase == null) return [];
@@ -22,6 +25,13 @@ window.Storylets = (() => {
       const rec = done[d.id];
       if (d.once && rec && rec.n > 0) return false;
       if (d.cooldownDays && rec && rec.lastDay != null && ctx.day - rec.lastDay < d.cooldownDays) return false;
+      if (d.fromDay != null && ctx.day < d.fromDay) return false;
+      if (d.untilDay != null && ctx.day > d.untilDay) return false;
+      const quests = ctx.quests || {};
+      for (const name of Object.keys(d.needsQuest || {})) {
+        const stepNow = (quests[name] && quests[name].step) || "none";
+        if (!d.needsQuest[name].includes(stepNow)) return false;
+      }
       return (d.needs || []).every((id) => id in done);
     });
   }
@@ -39,13 +49,20 @@ window.Storylets = (() => {
     const mains = open.filter((d) => d.kind === "main");
     const sides = open.filter((d) => d.kind === "side");
     // Side errands left for tonight: at most 2 per run, and at most 2 shown at once.
-    const quota = t.ids.length >= 2 ? 0 : Math.min(2 - t.ids.length, 2);
+    // Only side errands count: finishing the main errand must not use up a side slot.
+    const kindOf = {};
+    for (const d of defs) kindOf[d.id] = d.kind;
+    const sidesDone = t.ids.filter((id) => kindOf[id] !== "main").length;
+    const quota = Math.max(0, 2 - sidesDone);
     sides.sort((a, b) => (b.weight || 1) - (a.weight || 1) || hash(String(seed) + a.id) - hash(String(seed) + b.id));
     return mains.concat(sides.slice(0, quota));
   }
 
-  // The lines for this temperament; the default when there is no variant.
-  function lines(def, carita) {
+  // The lines to show. On a later visit (timesDone > 0) the "again" lines when the scene has them;
+  // otherwise the lines for this temperament, or the default when there is no variant.
+  function lines(def, carita, timesDone) {
+    const again = def.scene.again;
+    if (timesDone > 0 && again && again.length) return again[Math.min(timesDone, again.length) - 1];
     const L = def.scene.lines;
     return carita && Object.prototype.hasOwnProperty.call(L, carita) ? L[carita] : L.default;
   }
@@ -61,7 +78,9 @@ window.Storylets = (() => {
     return { ...s, done, tonight: { runId, ids } };
   }
 
-  // Sample storylets for villagers (HG26 Tịnh thất, HG12 Ao sen, HG20 Ngõ làng). Draft text for the owner to rewrite.
+  // Sample storylets for villagers (HG26 Tịnh thất, HG12 Ao sen, HG20 Ngõ làng).
+  // Wording from docs/human-world-villager-night-script.md §7 (Proposed, waiting for the owner's approval).
+  const BELL = "Chuông chiều từ tịnh thất vọng ra, chậm và thưa.";
   const DEFS = [
     {
       id: "chuong_chieu", kind: "side", weight: 1, roles: ["villager"], needs: [],
@@ -71,12 +90,20 @@ window.Storylets = (() => {
       scene: {
         label: "Tịnh thất",
         lines: {
-          default: ["Tiếng chuông chiều ngân lên từ tịnh thất, chậm và thưa.", "Chim bay về tổ. Không có việc gì phải làm."],
-          tham: ["Tiếng chuông chiều ngân lên, chậm và thưa.", "Người này muốn đứng nghe mãi, chưa muốn đi đâu."],
-          san: ["Tiếng chuông chiều ngân lên, chậm và thưa.", "Cơn bực dọc trong ngày dịu đi một chút."],
+          default: [BELL, "Chim bay về tổ. Không có việc gì phải làm."],
+          tham: [BELL, "Người này muốn tiếng ấy kéo dài thêm, chưa muốn đi đâu."],
+          san: [BELL, "Cái bực dọc trong ngày lắng xuống một chút."],
+          si: ["Chuông chiều từ tịnh thất vọng ra.", "Người này nghe mà không đếm, không biết đã mấy tiếng rồi."],
+          tam: [BELL, "Giữa hai tiếng chuông, đầu Người này vẫn kịp nghĩ ba chuyện."],
+          tin: [BELL, "Người này thấy yên, như có ai vừa khép cửa giùm."],
+          tri: ["Chuông chiều từ tịnh thất vọng ra.", "Người này để ý: tiếng sau nhỏ hơn tiếng trước, rồi tới lúc không rõ còn hay hết."],
         },
+        again: [
+          ["Hôm nay chuông vẫn vậy. Chỉ có tiếng dế vào sớm hơn."],
+          ["Chuông chiều. Tới tiếng cuối, cả cánh đồng như cùng nghe."],
+        ],
         choices: [
-          { label: "Đứng nghe thêm một lúc", log: "Đã đứng nghe tiếng chuông chiều ở tịnh thất." },
+          { label: "Đứng nghe cho tới tiếng cuối", log: "Đã đứng nghe chuông chiều ở tịnh thất." },
           { label: "Đi tiếp", snooze: true },
         ],
       },
@@ -85,12 +112,23 @@ window.Storylets = (() => {
       id: "ao_sen", kind: "side", weight: 1, roles: ["villager"], needs: [],
       phases: ["Sáng sớm", "Sáng", "Trưa", "Chiều"], cooldownDays: 2,
       place: "ao", placeName: "Ao sen", radius: 70,
-      prompt: "Ngắm ao sen", title: "Ao sen", body: "Ao sen đầu làng, mặt nước phẳng lặng.",
+      prompt: "Ngắm ao sen", title: "Ao sen", body: "Sen trong ao hôm nay khác hôm qua.",
       scene: {
         label: "Ao sen",
         lines: {
-          default: ["Mặt ao phẳng lặng. Vài bông sen đã nở, vài bông còn búp.", "Bóng mây trôi chậm dưới nước."],
+          default: ["Mặt ao phẳng. Một bông sen vừa nở, mấy bông khác còn búp.", "Chuồn chuồn đậu lên búp sen, rồi bay."],
+          tham: ["Một bông sen vừa nở, hồng như mới nhuộm.", "Người này muốn hái, rồi thôi. Để đó thì mai còn ngắm."],
+          san: ["Một bông sen vừa nở.", "Nắng chói, nhưng đứng bên ao thì dịu. Người này thôi nhăn mặt."],
+          si: ["Mặt ao phẳng. Bóng mây trôi dưới nước.", "Người này nhìn mãi, quên mất mình ra đây làm gì."],
+          tam: ["Một bông sen vừa nở, mấy bông khác còn búp.", "Người này tự hỏi: búp nào nở trước, và ai quyết chuyện đó."],
+          tin: ["Một bông sen vừa nở.", "Người này thấy vui không lý do, và không cần lý do."],
+          tri: ["Một bông sen vừa nở.", "Người này để ý: lá sen nào cũng có một giọt nước tròn, lăn mà không thấm."],
         },
+        again: [
+          ["Bông sen hôm trước đã rụng một cánh. Cánh hoa nằm trên lá, như chiếc thuyền nhỏ."],
+          ["Đài sen đã trơ. Sát bên, một cái búp mới nhô lên khỏi mặt nước."],
+          ["Ao sen. Hôm nay không đếm được bông nào giống hôm qua."],
+        ],
         choices: [
           { label: "Ngắm một lúc", log: "Đã ngắm ao sen." },
           { label: "Đi tiếp", snooze: true },
@@ -105,8 +143,18 @@ window.Storylets = (() => {
       scene: {
         label: "Ngõ làng",
         lines: {
-          default: ["Một buổi sáng bình thường. Gà gáy ở đâu đó, khói bếp lên từ nhà ai.", "Không có gì đặc biệt, và thế là đủ."],
+          default: ["Gà nhà ai gáy muộn. Khói bếp lên thẳng, trời không gió.", "Không có gì đặc biệt, và thế là đủ."],
+          tham: ["Mùi cơm mới bay ra ngõ.", "Người này hít một hơi dài, thấy sáng nay mình giàu."],
+          san: ["Gà gáy muộn, chổi tre quét sân loẹt xoẹt.", "Sáng nay chưa có gì làm Người này bực. Kể cũng lạ."],
+          si: ["Khói bếp lên thẳng.", "Người này đứng giữa ngõ, chưa nhớ ra hôm nay định làm gì. Cũng chẳng sao."],
+          tam: ["Gà gáy muộn. Khói bếp lên thẳng.", "Đầu Người này sáng nay chưa kịp nghĩ gì, và ngạc nhiên vì điều đó."],
+          tin: ["Chị Ba quét sân, ngẩng lên gật đầu chào.", "Người này thấy mình có một chỗ ở cái làng này."],
+          tri: ["Khói bếp lên thẳng, trời không gió.", "Người này để ý: sáng nào cũng giống nhau, mà không sáng nào lặp lại."],
         },
+        again: [
+          ["Lại một buổi sáng. Con Vàng ngáp ở đầu ngõ, không buồn sủa."],
+          ["Sáng. Có người đi chợ ngang qua, hỏi: “Ăn sáng chưa?”"],
+        ],
         choices: [
           { label: "Ngồi nghe chim một lát", log: "Đã có một buổi sáng bình thường ở làng." },
           { label: "Đi tiếp", snooze: true },
@@ -132,7 +180,7 @@ window.Storylets = (() => {
     if (!K.S.q.storylets) K.S.q.storylets = { done: {}, tonight: { runId: null, ids: [] } };
     return {
       role: K.role(), phase, day: api.day(), runId: api.runId ? api.runId() : null,
-      state: K.S.q.storylets, carita: K.S.carita,
+      state: K.S.q.storylets, carita: K.S.carita, quests: K.S.q,
     };
   }
   const stand = (p, dx = 26, dy = 6) => ({ x: p.x + dx, y: p.y + dy });
@@ -165,7 +213,7 @@ window.Storylets = (() => {
   function show(d, c) {
     K.showSheet({
       label: d.scene.label,
-      lines: Storylets.lines(d, c.carita),
+      lines: Storylets.lines(d, c.carita, ((c.state.done || {})[d.id] || { n: 0 }).n),
       choices: d.scene.choices.map((ch) => ({ label: ch.label, fn: () => choose(d, ch, c) })),
     });
   }

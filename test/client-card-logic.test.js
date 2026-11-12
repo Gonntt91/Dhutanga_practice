@@ -124,14 +124,15 @@ function childSetup(choiceAtFound) {
 }
 
 test("B2: a child who was shouted at goes home with no Tùy hỷ", () => {
-  const g = childSetup("Quát: “Về nhà ngay!”");
+  const g = childSetup("Quát cho nó nín: “Về nhà ngay!”");
   assert.equal(g.S().q.tree.scared, true);
   g.cardOk(); // the Sân card from shouting
   assert.equal(g.S().q.tree.step, "follow");
   g.setPos(252, 214);
   g.tick();
   assert.equal(g.sheetLabel(), "Ngõ làng");
-  g.choice("Tiếp");
+  assert.deepEqual(g.choiceLabels(), ["Nói nhỏ: lúc nãy lỡ to tiếng với bé", "Gật đầu rồi đi"], "no choice here leads to Tùy hỷ");
+  g.choice("Gật đầu rồi đi");
   assert.equal(g.S().cards.tuy_hy, undefined, "no Tùy hỷ");
   assert.equal(g.cardOpen(), false);
   assert.equal(g.S().q.tree.step, "thank", "the rest of the errand still moves on");
@@ -139,14 +140,39 @@ test("B2: a child who was shouted at goes home with no Tùy hỷ", () => {
   assert.ok(g.toasts.some((t) => t.includes("chạng vạng")), "the return hint is still shown");
 });
 
+test("B2: owning up to the shouting gives no card either; the mother answers and the errand moves on", () => {
+  const g = childSetup("Quát cho nó nín: “Về nhà ngay!”");
+  g.cardOk();
+  g.setPos(252, 214);
+  g.tick();
+  g.choice("Nói nhỏ: lúc nãy lỡ to tiếng với bé");
+  assert.equal(g.S().cards.tuy_hy, undefined);
+  assert.equal(g.S().cards.khong_san, undefined);
+  assert.equal(g.cardOpen(), false);
+  assert.equal(g.S().q.tree.step, "thank");
+  assert.equal(g.S().q.tree.repaired, true);
+  assert.ok(g.toasts.some((t) => t.includes("Về được là mừng rồi")));
+});
+
+test("B2 / R3: a comforted child at home gives Tùy hỷ only when the player chooses to stay and be glad", () => {
+  const g = childSetup("Ngồi xuống ngang tầm, cho bé bớt sợ");
+  g.cardOk();
+  g.setPos(252, 214);
+  g.tick();
+  g.choice("Gật đầu chào rồi đi");
+  assert.equal(g.S().cards.tuy_hy, undefined, "leaving gives no Tùy hỷ");
+  assert.equal(g.cardOpen(), false);
+  assert.equal(g.S().q.tree.step, "thank");
+});
+
 test("B2: a child who was comforted still gives Tùy hỷ at home", () => {
-  const g = childSetup("Ngồi xuống, dỗ dành");
-  assert.equal(g.S().q.tree.scared, undefined, "not scared");
+  const g = childSetup("Ngồi xuống ngang tầm, cho bé bớt sợ");
+  assert.equal(g.S().q.tree.scared, false, "not scared");
   g.cardOk(); // the Bi card from comforting
   assert.equal(g.S().q.tree.step, "follow");
   g.setPos(252, 214);
   g.tick();
-  g.choice("Tiếp");
+  g.choice("Đứng lại nhìn hai mẹ con một lát, mừng cho họ");
   assert.equal(g.cardOpen(), true, "the Tùy hỷ card opens");
   g.cardOk();
   assert.ok(g.S().cards.tuy_hy, "Tùy hỷ is recorded");

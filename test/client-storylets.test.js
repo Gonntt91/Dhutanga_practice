@@ -191,6 +191,51 @@ test("tonightFor: a record of another run reads as empty", () => {
   assert.deepEqual(J(S.tonightFor({ tonight: { runId: "a", ids: ["q"] } }, "a")), { runId: "a", ids: ["q"] });
 });
 
+// ---------- pure: night range, errand steps, later visits ----------
+test("eligible: fromDay / untilDay limit a storylet to some nights", () => {
+  const S = pure();
+  const defs = [DEF({ id: "early", untilDay: 2 }), DEF({ id: "mid", fromDay: 3, untilDay: 4 }), DEF({ id: "late", fromDay: 5 })];
+  const ids = (day) => S.eligible(defs, { role: "villager", phase: "Sáng", day, state: { done: {} } }).map((d) => d.id).join(",");
+  assert.equal(ids(1), "early");
+  assert.equal(ids(2), "early");
+  assert.equal(ids(3), "mid");
+  assert.equal(ids(4), "mid");
+  assert.equal(ids(5), "late");
+  assert.equal(ids(9), "late");
+});
+
+test("eligible: needsQuest reads the step of an errand kept elsewhere; a missing errand counts as 'none'", () => {
+  const S = pure();
+  const defs = [DEF({ id: "after_na", needsQuest: { tree: ["thank", "done"] } }), DEF({ id: "before_peta", needsQuest: { peta: ["none"] } })];
+  const ids = (quests) => S.eligible(defs, { role: "villager", phase: "Sáng", day: 1, state: { done: {} }, quests }).map((d) => d.id).join(",");
+  assert.equal(ids(undefined), "before_peta");
+  assert.equal(ids({ tree: { step: "child" } }), "before_peta");
+  assert.equal(ids({ tree: { step: "done" }, peta: { step: "rice" } }), "after_na");
+  assert.equal(ids({ tree: { step: "thank" }, peta: {} }), "after_na,before_peta");
+});
+
+test("offered: a finished main errand does not use up a side slot", () => {
+  const S = pure();
+  const defs = [DEF({ id: "m1", kind: "main" }), DEF({ id: "s1" }), DEF({ id: "s2" }), DEF({ id: "s3" })];
+  const ctx = (ids) => ({ role: "villager", phase: "Sáng", day: 1, state: { done: {}, tonight: { runId: "r", ids } } });
+  const sides = (ids) => S.offered(defs, ctx(ids), "r").filter((d) => d.kind === "side").length;
+  assert.equal(sides(["m1"]), 2, "main done: both side slots are still open");
+  assert.equal(sides(["m1", "s1"]), 1, "main and one side done: one slot left");
+  assert.equal(sides(["m1", "s1", "s2"]), 0);
+  assert.equal(sides(["gone_from_defs"]), 1, "an id no longer in the list counts as a side errand");
+});
+
+test("lines: later visits use the 'again' lines, the last one from then on; without them the first lines stay", () => {
+  const S = pure();
+  const d = DEF({ scene: { lines: { default: ["first"], tham: ["first, tham"] }, again: [["second"], ["third and after"]], choices: [] } });
+  assert.deepEqual(J(S.lines(d, "tham", 0)), ["first, tham"]);
+  assert.deepEqual(J(S.lines(d, "tham")), ["first, tham"], "no count given reads as the first visit");
+  assert.deepEqual(J(S.lines(d, "tham", 1)), ["second"]);
+  assert.deepEqual(J(S.lines(d, null, 2)), ["third and after"]);
+  assert.deepEqual(J(S.lines(d, null, 7)), ["third and after"]);
+  assert.deepEqual(J(S.lines(DEF({}), null, 3)), ["d"]);
+});
+
 // ---------- module: the errands in the game loop ----------
 test("module: a legacy character (phase null) gets no targets and no sheet", () => {
   const g = boot({ phase: null, pos: { x: 610, y: 600 } });
@@ -209,23 +254,23 @@ test("module: a villager near the place in the right phase is offered the errand
   assert.equal(g.prompt(), null, "the button goes away once the scene is open");
   assert.equal(g.sheetOpen(), true);
   assert.equal(g.sheetLabel(), "Tịnh thất");
-  assert.deepEqual(g.lines(), ["Tiếng chuông chiều ngân lên từ tịnh thất, chậm và thưa.", "Chim bay về tổ. Không có việc gì phải làm."]);
-  assert.deepEqual(g.choiceLabels(), ["Đứng nghe thêm một lúc", "Đi tiếp"]);
+  assert.deepEqual(g.lines(), ["Chuông chiều từ tịnh thất vọng ra, chậm và thưa.", "Chim bay về tổ. Không có việc gì phải làm."]);
+  assert.deepEqual(g.choiceLabels(), ["Đứng nghe cho tới tiếng cuối", "Đi tiếp"]);
 });
 
 test("module: a temperament variant of the lines is used when the character has one", () => {
   const g = boot({ save: saved({ carita: "tham" }), pos: { x: 610, y: 600 } });
   g.tick();
   g.tap();
-  assert.deepEqual(g.lines(), ["Tiếng chuông chiều ngân lên, chậm và thưa.", "Người này muốn đứng nghe mãi, chưa muốn đi đâu."]);
+  assert.deepEqual(g.lines(), ["Chuông chiều từ tịnh thất vọng ra, chậm và thưa.", "Người này muốn tiếng ấy kéo dài thêm, chưa muốn đi đâu."]);
 });
 
 test("module: a choice with a log writes one journal line, completes the errand, and waits for a new run and cooldown", () => {
   const g = boot({ pos: { x: 610, y: 600 } });
   g.tick();
   g.tap();
-  g.choice("Đứng nghe thêm một lúc");
-  assert.deepEqual(g.logs, ["Đã đứng nghe tiếng chuông chiều ở tịnh thất."]);
+  g.choice("Đứng nghe cho tới tiếng cuối");
+  assert.deepEqual(g.logs, ["Đã đứng nghe chuông chiều ở tịnh thất."]);
   assert.equal(g.sheetOpen(), false);
   assert.equal(g.S().q.storylets.done.chuong_chieu.n, 1);
   assert.equal(g.S().q.storylets.done.chuong_chieu.lastDay, 1);
@@ -239,6 +284,8 @@ test("module: a choice with a log writes one journal line, completes the errand,
   g.set({ runId: "run-3", day: 3 });
   g.tick();
   assert.equal(g.prompt(), "Đứng nghe chuông", "after 2 days it is offered again");
+  g.tap();
+  assert.deepEqual(g.lines(), ["Hôm nay chuông vẫn vậy. Chỉ có tiếng dế vào sớm hơn."], "the second visit has its own line");
 });
 
 test("module: 'Đi tiếp' closes the errand without completing it; it never reopens by itself, and the button leaves when the player walks on", () => {
@@ -281,4 +328,17 @@ test("module: a monk gets none of the villager storylets", () => {
   assert.equal(g.M.questList().some((q) => q.title === "Tiếng chuông chiều"), false);
   g.tick();
   assert.equal(g.sheetOpen(), false);
+});
+
+test("DEFS: every sample storylet has a line for each temperament and at least two later-visit lines, two sentences at most", () => {
+  const S = pure();
+  const sentences = (t) => t.split(/(?<=[.?!…”])\s+/).filter(Boolean).length;
+  for (const d of S.DEFS) {
+    assert.deepEqual(Object.keys(d.scene.lines).sort(), ["default", "san", "si", "tam", "tham", "tin", "tri"], d.id);
+    assert.ok(d.scene.again.length >= 2, d.id);
+    for (const block of [...Object.values(d.scene.lines), ...d.scene.again]) {
+      assert.ok(block.length <= 2, `${d.id}: at most two lines a turn`);
+      for (const line of block) assert.ok(sentences(line) <= 2, `${d.id}: "${line}"`);
+    }
+  }
 });

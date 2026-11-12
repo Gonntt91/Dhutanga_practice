@@ -1,6 +1,7 @@
 // The player's own first nights ("player_arrival"): short, neutral scenes for a character who has a name of their own.
 // Sư Tịnh, Ông Tư and Bà Sáu are NPCs the player may meet, never the player (docs/player-character-narrative-model.md).
-// PLACEHOLDER CONTENT: written to make the new flow playable; the owner will rewrite the wording.
+// The monk and ghost scenes are PLACEHOLDER CONTENT (the owner will rewrite the wording). The villager scenes use
+// the proposed wording of docs/human-world-villager-night-script.md, still waiting for the owner's approval.
 // Chapters (chapters.js): pa = the first night, pb = every ordinary night after it.
 // Voice: "bạn", one or two short lines, then one small choice. Meter meaning as in story.js:
 // monk "Tâm an" and villager "Lòng tin" high = good, ghost "Chấp" LOW = lighter, so the ghost endings run the other way.
@@ -52,16 +53,18 @@ Object.assign(STORY.monk.scenes, {
 });
 
 Object.assign(STORY.villager.scenes, {
+  // Wording from docs/human-world-villager-night-script.md §4 (Proposed). The endings are neutral on purpose:
+  // the meter picks one of three lines, and none of them comments on the player.
   pa_0: {
     time: "Chiều tàn",
     place: "village",
     lines: [
-      "Bạn mới về ở làng. Hàng xóm chỉ cho bạn cái giếng đầu ngõ, bảo ngõ này tối sớm lắm.",
-      "Có người nhắc: ngoài nghĩa địa dạo này có vị sư ở lại. Ai cũng tò mò, chưa ai dám hỏi.",
+      "Bạn dọn về làng chiều nay. Đồ chưa xếp xong thì nắng đã vàng ngoài ngõ.",
+      "Chị hàng xóm ghé ngang, chỉ tay về đầu ngõ: “Giếng ở kia. Ra đó là gặp cả làng.”",
     ],
     choices: [
-      { label: "Ra giếng làm quen với mọi người", delta: 1, next: "pa_end" },
-      { label: "Về nhà trước, mai tính", delta: 0, next: "pa_end" },
+      { label: "Ra giếng cho biết mặt mọi người", delta: 1, next: "pa_end" },
+      { label: "Đi một vòng xem làng trước đã", delta: 0, next: "pa_end" },
     ],
   },
   pa_end: {
@@ -69,20 +72,20 @@ Object.assign(STORY.villager.scenes, {
     place: "village",
     end: true,
     endings: [
-      { max: 4, text: "Đêm đầu ở làng mới hơi lạ giường. Mai chắc sẽ khác." },
-      { max: 6, text: "Một đêm yên. Bạn nằm nghe tiếng dế và nghĩ: ở đây cũng được." },
-      { max: 10, text: "Sáng ra đã có người chào bạn ngoài ngõ. Làng này đã bắt đầu quen mặt bạn." },
+      { max: 4, text: "Đêm đầu ở làng mới. Mai trời vẫn sáng như mọi hôm." },
+      { max: 6, text: "Đêm êm. Chẳng có gì to tát, và thế là đủ." },
+      { max: 10, text: "Gà gáy. Ngoài ngõ đã có tiếng chổi tre." },
     ],
   },
   pb_0: {
     time: "Chạng vạng",
     place: "village",
     lines: [
-      "Cơm xong, bạn ra hiên. Trăng lên sau rặng tre, con chó nhà ai nằm dưới ngõ.",
+      "Cơm xong, bạn ra hiên. Trăng lên sau rặng tre.",
     ],
     choices: [
-      { label: "Đi dạo ra giếng", delta: 1, next: "pb_end" },
-      { label: "Ngồi hóng mát thêm chút nữa", delta: 0, next: "pb_end" },
+      { label: "Đi dạo một vòng", delta: 1, next: "pb_end" },
+      { label: "Ngồi hiên thêm chút nữa", delta: 0, next: "pb_end" },
     ],
   },
   pb_end: {
@@ -90,9 +93,9 @@ Object.assign(STORY.villager.scenes, {
     place: "village",
     end: true,
     endings: [
-      { max: 4, text: "Một đêm nhiều nghĩ ngợi. Sáng ra bạn thấy nhẹ hơn một chút." },
-      { max: 6, text: "Đêm êm. Chẳng có gì xảy ra, và thế là đủ." },
-      { max: 10, text: "Gà gáy, bạn thức dậy với lòng nhẹ. Hôm nay chắc sẽ có chuyện nhỏ vui vui." },
+      { max: 4, text: "Một đêm nữa ở làng. Mai trời vẫn sáng như mọi hôm." },
+      { max: 6, text: "Đêm êm. Chẳng có gì to tát, và thế là đủ." },
+      { max: 10, text: "Gà gáy. Ngoài ngõ đã có tiếng chổi tre." },
     ],
   },
 });
